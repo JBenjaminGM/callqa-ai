@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Phone, UploadCloud } from 'lucide-react';
+import { Phone, RefreshCw, UploadCloud } from 'lucide-react';
 import { useAgents, useCalls } from '@/lib/queries';
 import { getErrorMessage } from '@/lib/api';
 import { Header } from '@/components/layout/header';
@@ -25,7 +25,7 @@ export default function CallsPage() {
   const [page, setPage] = useState(1);
 
   const { data: agents } = useAgents();
-  const { data, isLoading, error } = useCalls({
+  const { data, isLoading, error, refetch, isFetching } = useCalls({
     agent_id: agentId ? Number(agentId) : undefined,
     status: status || undefined,
     date_from: dateFrom || undefined,
@@ -114,7 +114,19 @@ export default function CallsPage() {
               Limpiar filtros
             </Button>
           )}
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-3">
+            <Button
+              variant="secondary"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              title="Actualizar estado de las llamadas"
+            >
+              <RefreshCw
+                size={18}
+                className={isFetching ? 'animate-spin' : undefined}
+              />
+              Actualizar
+            </Button>
             <Link href="/calls/new">
               <Button>
                 <UploadCloud size={18} />

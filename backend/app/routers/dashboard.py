@@ -32,7 +32,7 @@ PERIOD_DAYS = {"7d": 7, "30d": 30, "90d": 90}
 def _period_start(period: str) -> datetime:
     """Devuelve la fecha de inicio del periodo solicitado."""
     days = PERIOD_DAYS.get(period, 30)
-    return datetime.now(timezone.utc) - timedelta(days=days)
+    return datetime.utcnow() - timedelta(days=days)
 
 
 def _done_analyses(db: Session, since: datetime, agent_id: int | None = None):
@@ -62,7 +62,7 @@ def dashboard_summary(
     average_score = round(sum(scores) / total_calls, 1) if total_calls else 0.0
 
     # Tendencia: compara la primera mitad del periodo con la segunda.
-    mid = since + (datetime.now(timezone.utc) - since) / 2
+    mid = since + (datetime.utcnow() - since) / 2
     first_half = [a.global_score for c, a in rows if c.created_at < mid]
     second_half = [a.global_score for c, a in rows if c.created_at >= mid]
     if first_half and second_half:
@@ -204,7 +204,7 @@ def agent_dashboard(
     ]
 
     # Tendencia (mismo cálculo que el resumen del equipo).
-    mid = since + (datetime.now(timezone.utc) - since) / 2
+    mid = since + (datetime.utcnow() - since) / 2
     first = [a.global_score for c, a in agent_rows if c.created_at < mid]
     second = [a.global_score for c, a in agent_rows if c.created_at >= mid]
     if first and second:

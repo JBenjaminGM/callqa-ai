@@ -44,7 +44,7 @@ export default function CallDetailPage() {
   const router = useRouter();
   const id = Number(params.id);
 
-  const { data: call, isLoading, error } = useCall(id, true);
+  const { data: call, isLoading, error, refetch, isFetching } = useCall(id, true);
   const retry = useRetryCall();
   const remove = useDeleteCall();
   const [downloading, setDownloading] = useState(false);
@@ -129,6 +129,19 @@ export default function CallDetailPage() {
               </div>
               <div className="flex items-center gap-3">
                 <StatusBadge status={call.status} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => refetch()}
+                  disabled={isFetching}
+                  title="Actualizar estado"
+                >
+                  <RefreshCw
+                    size={16}
+                    className={isFetching ? 'animate-spin' : undefined}
+                  />
+                  Actualizar
+                </Button>
                 {call.status === 'ERROR' && (
                   <Button
                     variant="secondary"
