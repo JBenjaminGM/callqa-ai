@@ -48,9 +48,10 @@ colors:
   background: '#131315'
   on-background: '#e4e2e4'
   surface-variant: '#353436'
-  deep-plum: '#480e2a'
-  electric-rose: '#ff0054'
-  canvas-light: '#f7f4f6'
+  slate-navy: '#0b1020'
+  indigo: '#6366f1'
+  indigo-strong: '#4f46e5'
+  canvas-light: '#f6f7fb'
   surface-white: '#ffffff'
 typography:
   display-lg:
@@ -113,11 +114,13 @@ The design system embodies a "High-Tech Editorial" aesthetic, merging the precis
 The visual style utilizes **Glassmorphism** and **Corporate Modernism**. It relies on translucent layers, soft background blurs, and vibrant accent glows to simulate a digital environment that feels tangible and high-end. Layouts should prioritize whitespace and "breathable" content blocks, echoing the pacing of a prestige magazine.
 
 ## Colors
-The palette is anchored by **Electric Rose** (#ff0054), used sparingly for high-impact actions and data highlights. The foundation is built on **Deep Plum** (#480e2a), which provides a more sophisticated, "intellectual" alternative to standard black or navy in dark mode.
+> **Paleta vigente (jun 2026): Índigo / Slate.** La implementación canónica son las variables CSS de `frontend/app/globals.css`; este documento es una referencia, no un dogma.
 
-- **Dark Mode (Default):** Uses Deep Plum as the primary canvas. Translucency is applied to surfaces to allow background gradients to peek through.
-- **Light Mode:** Shifts to a soft off-white canvas (#f7f4f6) with pure white surfaces. The Deep Plum becomes a secondary accent for deep-contrast text or structural elements.
-- **AI Accents:** Use radial gradients transitioning from Electric Rose to transparent for "glow" effects behind key interface elements.
+The palette is anchored by **Indigo** (#4f46e5 en claro / #6366f1 en oscuro), used for primary actions, links and data highlights — a professional, trustworthy tone well suited to a banking context. The foundation is a **Slate-navy** canvas in dark mode and a cool off-white in light mode (a calmer, more corporate alternative to the previous Electric Rose / Deep Plum).
+
+- **Dark Mode (Default):** Deep slate-navy canvas (#0b1020). Translucency is applied to surfaces to let subtle background gradients peek through.
+- **Light Mode:** Cool off-white canvas (#f6f7fb) with pure white surfaces. Slate tones provide deep-contrast text and structure.
+- **AI Accents:** Soft radial gradients transitioning from Indigo (with a hint of cyan) to transparent for "glow" effects behind key interface elements.
 
 ## Typography
 The system uses **Inter** exclusively to achieve a clean, geometric, and systematic feel. The hierarchy is heavily weighted toward large "Display" and "Headline" sizes to facilitate editorial storytelling. 

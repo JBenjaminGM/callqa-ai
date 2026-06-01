@@ -184,13 +184,31 @@ export function useAssignCall() {
 
 /* ------------------------------ Dashboard ----------------------------- */
 
-export function useDashboardSummary(period: string) {
+export interface DashboardFilters {
+  period?: string;
+  campaign?: string;
+  agent_id?: number;
+  date_from?: string;
+  date_to?: string;
+}
+
+export function useDashboardSummary(filters: DashboardFilters) {
   return useQuery({
-    queryKey: ['dashboard', period],
+    queryKey: ['dashboard', filters],
     queryFn: async () => {
       const { data } = await api.get<DashboardSummary>('/dashboard/summary', {
-        params: { period },
+        params: filters,
       });
+      return data;
+    },
+  });
+}
+
+export function useCampaigns() {
+  return useQuery({
+    queryKey: ['campaigns'],
+    queryFn: async () => {
+      const { data } = await api.get<string[]>('/dashboard/campaigns');
       return data;
     },
   });

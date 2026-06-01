@@ -14,11 +14,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Phone, Star, TrendingUp } from 'lucide-react';
-import { useDashboardSummary } from '@/lib/queries';
+import { Phone, Star, TrendingUp, X } from 'lucide-react';
+import { useAgents, useCampaigns, useDashboardSummary } from '@/lib/queries';
 import { getErrorMessage } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Card, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { ScoreBadge } from '@/components/ui/badge';
@@ -34,27 +36,102 @@ const DISTRIBUTION_COLORS: Record<string, string> = {
 /** Dashboard principal con KPIs agregados del equipo. */
 export default function DashboardPage() {
   const [period, setPeriod] = useState('30d');
-  const { data, isLoading, error } = useDashboardSummary(period);
+  const [campaign, setCampaign] = useState('');
+  const [agentId, setAgentId] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
+  const { data: agents } = useAgents();
+  const { data: campaigns } = useCampaigns();
+  const { data, isLoading, error } = useDashboardSummary({
+    period,
+    campaign: campaign || undefined,
+    agent_id: agentId ? Number(agentId) : undefined,
+    date_from: dateFrom || undefined,
+    date_to: dateTo || undefined,
+  });
+
+  const hasFilters = Boolean(campaign || agentId || dateFrom || dateTo);
+  function clearFilters() {
+    setCampaign('');
+    setAgentId('');
+    setDateFrom('');
+    setDateTo('');
+    setPeriod('30d');
+  }
 
   return (
     <>
       <Header title="Dashboard" />
       <main className="flex-1 overflow-y-auto p-6">
-        <div className="mb-5 flex items-center justify-between">
-          <p className="text-body text-text-secondary">
-            Resumen de calidad del equipo
-          </p>
+        <div className="mb-5 flex flex-wrap items-end gap-3">
+          <div className="w-44">
+            <label className="mb-1.5 block text-small text-text-secondary">
+              Campaña
+            </label>
+            <Select value={campaign} onChange={(e) => setCampaign(e.target.value)}>
+              <option value="">Todas</option>
+              {campaigns?.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="w-44">
+            <label className="mb-1.5 block text-small text-text-secondary">
+              Ejecutivo
+            </label>
+            <Select value={agentId} onChange={(e) => setAgentId(e.target.value)}>
+              <option value="">Todos</option>
+              {agents?.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </Select>
+          </div>
           <div className="w-40">
+            <label className="mb-1.5 block text-small text-text-secondary">
+              Desde
+            </label>
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+            />
+          </div>
+          <div className="w-40">
+            <label className="mb-1.5 block text-small text-text-secondary">
+              Hasta
+            </label>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+            />
+          </div>
+          <div className="w-40">
+            <label className="mb-1.5 block text-small text-text-secondary">
+              Periodo rápido
+            </label>
             <Select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
               aria-label="Periodo"
+              disabled={Boolean(dateFrom || dateTo)}
             >
               <option value="7d">Últimos 7 días</option>
               <option value="30d">Últimos 30 días</option>
               <option value="90d">Últimos 90 días</option>
             </Select>
           </div>
+          {hasFilters && (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              <X size={16} />
+              Limpiar
+            </Button>
+          )}
         </div>
 
         {isLoading && (
@@ -70,15 +147,21 @@ export default function DashboardPage() {
         {data && data.total_calls === 0 && (
           <EmptyState
             icon={<Phone size={48} />}
-            title="Aún no hay llamadas analizadas"
-            description="Sube tu primera llamada para empezar a ver métricas del equipo."
+            title={hasFilters ? 'Sin resultados' : 'Aún no hay llamadas analizadas'}
+            description={
+              hasFilters
+                ? 'No hay llamadas que coincidan con los filtros seleccionados.'
+                : 'Sube tu primera llamada para empezar a ver métricas del equipo.'
+            }
             action={
-              <Link
-                href="/calls/new"
-                className="rounded-lg bg-accent-primary px-4 py-2 text-body text-white"
-              >
-                Subir llamada
-              </Link>
+              hasFilters ? undefined : (
+                <Link
+                  href="/calls/new"
+                  className="rounded-lg bg-accent-primary px-4 py-2 text-body text-white"
+                >
+                  Subir llamada
+                </Link>
+              )
             }
           />
         )}

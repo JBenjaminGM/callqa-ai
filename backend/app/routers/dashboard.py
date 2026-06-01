@@ -1,7 +1,7 @@
 """Endpoints del dashboard: KPIs agregados del equipo y por ejecutivo."""
 
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -35,34 +35,56 @@ def _period_start(period: str) -> datetime:
     return datetime.utcnow() - timedelta(days=days)
 
 
-def _done_analyses(db: Session, since: datetime, agent_id: int | None = None):
-    """Devuelve las filas (Call, Analysis) con estado DONE dentro del periodo."""
+def _done_analyses(
+    db: Session,
+    start: datetime,
+    end: datetime | None = None,
+    agent_id: int | None = None,
+    campaign: str | None = None,
+):
+    """Devuelve las filas (Call, Analysis) DONE dentro de la ventana y los filtros."""
     query = (
         select(Call, Analysis)
         .join(Analysis, Analysis.call_id == Call.id)
-        .where(Call.status == CallStatus.DONE, Call.created_at >= since)
+        .where(Call.status == CallStatus.DONE, Call.created_at >= start)
     )
+    if end is not None:
+        query = query.where(Call.created_at <= end)
     if agent_id is not None:
         query = query.where(Call.agent_id == agent_id)
+    if campaign:
+        query = query.where(Call.campaign_type == campaign)
     return db.execute(query).all()
 
 
 @router.get("/summary", response_model=DashboardSummaryOut)
 def dashboard_summary(
     period: str = Query(default="30d", pattern="^(7d|30d|90d)$"),
+    campaign: str | None = Query(default=None),
+    agent_id: int | None = Query(default=None),
+    date_from: date | None = Query(default=None),
+    date_to: date | None = Query(default=None),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    """KPIs agregados del equipo para el dashboard principal."""
-    since = _period_start(period)
-    rows = _done_analyses(db, since)
+    """KPIs agregados del equipo, con filtros de campaña, ejecutivo y rango de fechas."""
+    # Ventana temporal: el rango de fechas tiene prioridad sobre el periodo rápido.
+    end = datetime.combine(date_to, time.max) if date_to else datetime.utcnow()
+    if date_from:
+        start = datetime.combine(date_from, time.min)
+    elif date_to:
+        start = end - timedelta(days=PERIOD_DAYS.get(period, 30))
+    else:
+        start = _period_start(period)
+
+    rows = _done_analyses(db, start, end=end, agent_id=agent_id, campaign=campaign)
 
     total_calls = len(rows)
     scores = [a.global_score for _, a in rows]
     average_score = round(sum(scores) / total_calls, 1) if total_calls else 0.0
 
-    # Tendencia: compara la primera mitad del periodo con la segunda.
-    mid = since + (datetime.utcnow() - since) / 2
+    # Tendencia: compara la primera mitad de la ventana con la segunda.
+    mid = start + (end - start) / 2
     first_half = [a.global_score for c, a in rows if c.created_at < mid]
     second_half = [a.global_score for c, a in rows if c.created_at >= mid]
     if first_half and second_half:
@@ -154,6 +176,21 @@ def dashboard_summary(
         top_performers=agent_avgs[:5],
         improvement_opportunities=list(reversed(agent_avgs[-5:])),
     )
+
+
+@router.get("/campaigns", response_model=list[str])
+def list_campaigns(
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    """Lista las campañas distintas presentes en las llamadas (para los filtros)."""
+    rows = db.scalars(
+        select(Call.campaign_type)
+        .where(Call.campaign_type.is_not(None), Call.campaign_type != "")
+        .distinct()
+        .order_by(Call.campaign_type)
+    ).all()
+    return list(rows)
 
 
 @router.get("/agents/{agent_id}", response_model=AgentDashboardOut)

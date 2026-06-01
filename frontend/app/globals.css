@@ -4,54 +4,55 @@
 
 /* ============================================================
    Sistema de diseño "Aetheric Intelligence" — CallQA AI
-   Estética High-Tech Editorial + Glassmorphism.
-   Canvas Deep Plum / off-white, acento Electric Rose (#ff0054).
+   Estética profesional + Glassmorphism sutil.
+   Paleta Índigo / Slate: acento Indigo, base Slate-navy en oscuro
+   y cool-white en claro. (Implementación: estas variables CSS.)
    ============================================================ */
 
-/* Modo claro: canvas off-white, superficies blancas */
+/* Modo claro: canvas cool-white, superficies blancas. */
 :root {
-  --bg-primary: #f7f4f6;
+  --bg-primary: #f6f7fb;
   --bg-secondary: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.72);
-  --bg-accent: #f0e7eb;
-  --accent-primary: #ff0054;
-  --accent-secondary: #ff506d;
-  --text-primary: #2a0a18;
-  --text-secondary: #6e4a58;
-  --text-muted: #9b838d;
-  --border: #e7dce1;
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-border: rgba(72, 14, 42, 0.1);
-  --glow: rgba(255, 0, 84, 0.18);
-  --shadow: rgba(42, 10, 24, 0.1);
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --bg-accent: #eceef5;
+  --accent-primary: #4f46e5; /* indigo-600 */
+  --accent-secondary: #6366f1; /* indigo-500 */
+  --text-primary: #0f172a; /* slate-900 */
+  --text-secondary: #475569; /* slate-600 */
+  --text-muted: #94a3b8; /* slate-400 */
+  --border: #e2e8f0; /* slate-200 */
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glow: rgba(79, 70, 229, 0.16);
+  --shadow: rgba(15, 23, 42, 0.08);
 
-  --success: #1f9d6b;
-  --warning: #c87f00;
-  --danger: #e11d48;
-  --info: #3b5bdb;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #2563eb;
 }
 
-/* Modo oscuro (por defecto): canvas Deep Plum / casi negro */
+/* Modo oscuro (por defecto): canvas Slate-navy profundo. */
 .dark {
-  --bg-primary: #131315;
-  --bg-secondary: #1b1b1d;
-  --bg-card: rgba(31, 31, 33, 0.55);
-  --bg-accent: #2a2a2b;
-  --accent-primary: #ff0054;
-  --accent-secondary: #ff506d;
-  --text-primary: #e4e2e4;
-  --text-secondary: #e8bcbe;
-  --text-muted: #ae8789;
-  --border: #5e3e41;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glow: rgba(255, 0, 84, 0.38);
-  --shadow: rgba(0, 0, 0, 0.5);
+  --bg-primary: #0b1020;
+  --bg-secondary: #131a2e;
+  --bg-card: rgba(26, 33, 53, 0.55);
+  --bg-accent: #232c45;
+  --accent-primary: #6366f1; /* indigo-500 */
+  --accent-secondary: #818cf8; /* indigo-400 */
+  --text-primary: #e8ecf6;
+  --text-secondary: #aab4cb;
+  --text-muted: #6b7798;
+  --border: #2a3450;
+  --glass-bg: rgba(255, 255, 255, 0.045);
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glow: rgba(99, 102, 241, 0.32);
+  --shadow: rgba(0, 0, 0, 0.55);
 
-  --success: #69dbab;
-  --warning: #ffc24d;
-  --danger: #ff5d73;
-  --info: #8aa6ff;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #fb7185;
+  --info: #60a5fa;
 }
 
 body {
@@ -65,13 +66,14 @@ body {
 /* Resplandores radiales (AI glow) del fondo, distintos por modo. */
 .dark body {
   background-image:
-    radial-gradient(900px circle at 12% -8%, rgba(72, 14, 42, 0.65), transparent 60%),
-    radial-gradient(720px circle at 100% 4%, rgba(255, 0, 84, 0.14), transparent 55%);
+    radial-gradient(900px circle at 12% -8%, rgba(99, 102, 241, 0.2), transparent 60%),
+    radial-gradient(760px circle at 100% 4%, rgba(56, 189, 248, 0.1), transparent 55%);
   background-attachment: fixed;
 }
 :root body {
   background-image:
-    radial-gradient(800px circle at 12% -10%, rgba(255, 0, 84, 0.06), transparent 55%);
+    radial-gradient(820px circle at 12% -10%, rgba(99, 102, 241, 0.07), transparent 55%),
+    radial-gradient(700px circle at 100% 0%, rgba(56, 189, 248, 0.05), transparent 50%);
   background-attachment: fixed;
 }
 
