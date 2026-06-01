@@ -136,6 +136,7 @@ def _run_pipeline(db, call: Call) -> None:
             "dimension_key": r.dimension_key,
             "dimension_name": r.dimension_name,
             "description": r.description,
+            "criteria": r.criteria or [],
         }
         for r in rubric_rows
     ]

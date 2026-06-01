@@ -151,12 +151,27 @@ export interface AgentDashboard {
   timeline: { date: string; avg_score: number }[];
 }
 
+export interface RubricCriterion {
+  name: string;
+  enabled: boolean;
+}
+
 export interface RubricDimension {
   dimension_key: string;
   dimension_name: string;
   description?: string | null;
   weight: number;
   display_order?: number | null;
+  criteria: RubricCriterion[];
+}
+
+/** Forma enviada al guardar la rúbrica (dimension_key vacío = categoría nueva). */
+export interface RubricDimensionInput {
+  dimension_key?: string;
+  dimension_name: string;
+  description?: string | null;
+  weight: number;
+  criteria: RubricCriterion[];
 }
 
 export interface AppSettings {

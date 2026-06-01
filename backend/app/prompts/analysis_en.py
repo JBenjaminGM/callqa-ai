@@ -1,61 +1,65 @@
-"""Call analysis prompt in English."""
+"""Call analysis prompt in English (dynamic rubric with subcriteria)."""
 
 
 def build_analysis_prompt(segments: list[dict], rubric: list[dict]) -> str:
     """Build the prompt sent to the LLM to analyze a call (English version).
 
-    `segments` is the transcript segment list (each with already-masked 'text').
-    They are numbered so the model attributes the speaker of each segment by its
-    CONTENT (not order), which fixes diarization.
+    `segments`: transcript segments (each with already-masked 'text'), numbered so
+    the model attributes the speaker by CONTENT. `rubric`: dimensions with
+    {dimension_key, dimension_name, description, criteria:[{name, enabled}]}. Only
+    ENABLED subcriteria are included, and `dimension_scores` is generated from the
+    real keys.
     """
     rubric_lines = []
     for i, dim in enumerate(rubric, start=1):
         desc = dim.get("description") or ""
-        rubric_lines.append(
-            f"{i}. {dim['dimension_name'].upper()} (key: {dim['dimension_key']}): {desc}"
-        )
+        line = f"{i}. {dim['dimension_name'].upper()} (key: {dim['dimension_key']})"
+        if desc:
+            line += f": {desc}"
+        enabled = [
+            c.get("name")
+            for c in (dim.get("criteria") or [])
+            if c.get("enabled") and c.get("name")
+        ]
+        if enabled:
+            line += "\n   Sub-criteria to evaluate: " + "; ".join(enabled)
+        rubric_lines.append(line)
     rubric_block = "\n".join(rubric_lines)
 
     transcript = "\n".join(
         f"[{i}] {seg.get('text', '')}" for i, seg in enumerate(segments)
     )
     n = len(segments)
+    score_lines = ",\n".join(
+        f'    "{dim["dimension_key"]}": <int 0-100>' for dim in rubric
+    )
 
     return f"""You are an expert in Quality Assurance for banking call centers. You will evaluate the following call between a bank AGENT and a CUSTOMER.
 
 TRANSCRIPT (each line is a numbered segment [i]):
 {transcript}
 
-EVALUATION RUBRIC (score 0-100 each dimension):
+EVALUATION RUBRIC (score 0-100 per dimension):
 
 {rubric_block}
 
-Dimension guide:
-1. GREETING & PROTOCOL: Did the agent greet properly, identify themselves, mention the recording, and close appropriately?
-2. ASSERTIVENESS & TONE: Empathetic, clear, patient? Professional tone? Active listening?
-3. PROMOTIONS/PRODUCTS: Did the agent mention relevant products and explain benefits correctly?
-4. COMPLIANCE: Disclaimers mentioned? Sensitive data protected? Consent requested?
-5. RESOLUTION: Was the reason for the call resolved? Concrete solutions offered?
-6. OBJECTION HANDLING: Were the customer's doubts/objections handled well?
-7. CUSTOMER SENTIMENT: Was the customer satisfied? (Infer from tone, words, farewell)
-
 INSTRUCTIONS:
-- Be objective and base each score on concrete evidence from the transcript.
+- Score EACH rubric dimension 0-100, considering ONLY the sub-criteria listed in it.
+  Base each score on concrete evidence from the transcript.
 - SPEAKER ATTRIBUTION (very important): the transcript is NOT pre-labeled. For EACH
   segment [0..{n - 1}] decide "agent" (bank AGENT) or "customer" (CUSTOMER) based on
   CONTENT, not order. Cues:
   · "agent": greets and identifies the bank; OFFERS products/promotions/benefits;
     asks the customer for data; explains terms; closes the call. Any product or
-    promotion OFFER ("you have a promotion", "let me explain the benefits") is
-    ALWAYS the agent.
+    promotion OFFER is ALWAYS the agent.
   · "customer": states their query/problem; gives data when asked; asks questions;
     accepts or declines; thanks at the end.
   Return "diarization": a list of EXACTLY {n} elements ("agent" or "customer"), one
   per segment in the same order.
-- Generate 3-5 prioritized actionable recommendations (high/medium/low).
+- Generate 3-5 prioritized actionable recommendations (high/medium/low). Each
+  recommendation's "dimension" must be one of the rubric keys.
 - The summary must be 2-3 sentences.
-- IDENTIFY THE AGENT'S NAME: at the start the agent usually introduces themselves.
-  Extract that full name into "detected_agent_name"; use null if unsure.
+- IDENTIFY THE AGENT'S NAME into "detected_agent_name"; use null if unsure.
 
 Respond EXCLUSIVELY with valid JSON in this exact structure:
 
@@ -63,13 +67,7 @@ Respond EXCLUSIVELY with valid JSON in this exact structure:
   "detected_agent_name": "<agent name or null>",
   "diarization": ["agent or customer, one element per segment, {n} total"],
   "dimension_scores": {{
-    "greeting": <int 0-100>,
-    "assertiveness": <int 0-100>,
-    "promotions": <int 0-100>,
-    "compliance": <int 0-100>,
-    "resolution": <int 0-100>,
-    "objections": <int 0-100>,
-    "sentiment": <int 0-100>
+{score_lines}
   }},
   "summary": "<executive summary of the call>",
   "recommendations": [

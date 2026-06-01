@@ -1,6 +1,9 @@
 """Endpoints de configuración: rúbrica de evaluación y settings globales."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import re
+import unicodedata
+
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -25,16 +28,21 @@ SETTINGS_DEFAULTS = {
 }
 
 
+def _slugify(name: str) -> str:
+    """Genera una clave estable a partir del nombre (sin tildes, minúsculas)."""
+    nfkd = unicodedata.normalize("NFKD", name or "")
+    ascii_name = "".join(c for c in nfkd if not unicodedata.combining(c))
+    slug = re.sub(r"[^a-z0-9]+", "_", ascii_name.lower()).strip("_")
+    return (slug or "dim")[:46]
+
+
 @router.get("/rubric", response_model=list[RubricDimensionOut])
 def get_rubric(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    """Devuelve las 7 dimensiones de la rúbrica con sus pesos."""
-    rows = db.scalars(
-        select(RubricConfig).order_by(RubricConfig.display_order)
-    ).all()
-    return rows
+    """Devuelve las dimensiones de la rúbrica con sus pesos y subcriterios."""
+    return db.scalars(select(RubricConfig).order_by(RubricConfig.display_order)).all()
 
 
 @router.put("/rubric", response_model=list[RubricDimensionOut])
@@ -43,24 +51,46 @@ def update_rubric(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    """Actualiza los pesos (y descripciones) de la rúbrica. La suma debe ser 100%."""
-    for dim in payload.dimensions:
-        row = db.scalar(
-            select(RubricConfig).where(RubricConfig.dimension_key == dim.dimension_key)
-        )
+    """
+    Reemplaza la rúbrica completa: actualiza las dimensiones existentes, crea las
+    nuevas y elimina las que ya no se envían. La IA usará los subcriterios ACTIVOS
+    de cada dimensión como guía del análisis. Los pesos deben sumar 100%.
+    """
+    existing = {r.dimension_key: r for r in db.scalars(select(RubricConfig)).all()}
+    seen: set[str] = set()
+
+    for i, dim in enumerate(payload.dimensions):
+        # Clave estable: la enviada, o una generada desde el nombre (categoría nueva).
+        key = (dim.dimension_key or "").strip() or _slugify(dim.dimension_name)
+        base, n = key, 2
+        while key in seen:
+            key = f"{base[:43]}_{n}"
+            n += 1
+        seen.add(key)
+
+        criteria = [
+            {"name": c.name.strip(), "enabled": bool(c.enabled)}
+            for c in dim.criteria
+            if c.name and c.name.strip()
+        ]
+
+        row = existing.get(key)
         if row is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Dimensión desconocida: {dim.dimension_key}",
-            )
+            row = RubricConfig(dimension_key=key)
+            db.add(row)
+        row.dimension_name = dim.dimension_name.strip()
+        row.description = dim.description
         row.weight = dim.weight
-        if dim.description is not None:
-            row.description = dim.description
+        row.display_order = i + 1
+        row.criteria = criteria
+
+    # Elimina las dimensiones que ya no están en la rúbrica enviada.
+    for key, row in existing.items():
+        if key not in seen:
+            db.delete(row)
 
     db.commit()
-    return db.scalars(
-        select(RubricConfig).order_by(RubricConfig.display_order)
-    ).all()
+    return db.scalars(select(RubricConfig).order_by(RubricConfig.display_order)).all()
 
 
 @router.get("/settings", response_model=SettingsOut)

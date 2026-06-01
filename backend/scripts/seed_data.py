@@ -40,6 +40,18 @@ RUBRIC = [
     ("sentiment", "Detección de sentimiento del cliente", 14.32, 7),
 ]
 
+# Subcriterios (subcategorías) por defecto de cada dimensión. Cada uno se puede
+# activar/desactivar desde Configuración; la IA solo evalúa los activos.
+CRITERIA = {
+    "greeting": ["Saludo inicial", "Identificación del ejecutivo y banco", "Aviso de grabación", "Despedida y cierre"],
+    "assertiveness": ["Empatía", "Claridad al explicar", "Paciencia", "Escucha activa", "Tono profesional"],
+    "promotions": ["Menciona productos relevantes", "Explica beneficios", "Condiciones claras y completas"],
+    "compliance": ["Disclaimers obligatorios", "Protección de datos sensibles", "Solicitud de consentimiento"],
+    "resolution": ["Atiende el motivo de la llamada", "Ofrece solución concreta", "Confirma la resolución"],
+    "objections": ["Identifica la objeción", "Responde con argumentos", "Persuasión profesional"],
+    "sentiment": ["Satisfacción percibida", "Tono emocional del cliente", "Cierre en positivo"],
+}
+
 SETTINGS = {
     "default_language": "es",
     "ai_provider": "claude",
@@ -73,17 +85,23 @@ def seed() -> None:
 
         # --- Rúbrica ---
         for key, name, weight, order in RUBRIC:
-            if db.scalar(
+            default_criteria = [{"name": c, "enabled": True} for c in CRITERIA.get(key, [])]
+            existing = db.scalar(
                 select(RubricConfig).where(RubricConfig.dimension_key == key)
-            ) is None:
+            )
+            if existing is None:
                 db.add(
                     RubricConfig(
                         dimension_key=key,
                         dimension_name=name,
                         weight=weight,
                         display_order=order,
+                        criteria=default_criteria,
                     )
                 )
+            elif not existing.criteria:
+                # Backfill: si la dimensión ya existía sin subcriterios, los añade.
+                existing.criteria = default_criteria
         print("[seed] Rúbrica de 7 dimensiones verificada.")
 
         # --- Settings globales ---

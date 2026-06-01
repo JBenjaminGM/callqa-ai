@@ -1,48 +1,52 @@
-"""Prompt de análisis de llamadas en español."""
+"""Prompt de análisis de llamadas en español (rúbrica dinámica con subcriterios)."""
 
 
 def build_analysis_prompt(segments: list[dict], rubric: list[dict]) -> str:
     """
     Construye el prompt que se envía al LLM para analizar una llamada.
 
-    `segments` es la lista de segmentos de la transcripción (cada uno con 'text',
-    ya enmascarado). Se numeran para que el modelo atribuya el hablante de cada
-    segmento por su CONTENIDO (no por el orden ni las pausas), corrigiendo así la
-    diarización. `rubric` describe las dimensiones a evaluar.
+    `segments`: lista de segmentos (cada uno con 'text', ya enmascarado). Se numeran
+    para que el modelo atribuya el hablante de cada uno por su CONTENIDO.
+    `rubric`: lista de dimensiones {dimension_key, dimension_name, description,
+    criteria:[{name, enabled}]}. Solo los subcriterios ACTIVOS se incluyen como guía,
+    y la estructura de salida `dimension_scores` se genera con las claves reales.
     """
     rubric_lines = []
     for i, dim in enumerate(rubric, start=1):
         desc = dim.get("description") or ""
-        rubric_lines.append(
-            f"{i}. {dim['dimension_name'].upper()} (clave: {dim['dimension_key']}): {desc}"
-        )
+        line = f"{i}. {dim['dimension_name'].upper()} (clave: {dim['dimension_key']})"
+        if desc:
+            line += f": {desc}"
+        enabled = [
+            c.get("name")
+            for c in (dim.get("criteria") or [])
+            if c.get("enabled") and c.get("name")
+        ]
+        if enabled:
+            line += "\n   Subcriterios a evaluar: " + "; ".join(enabled)
+        rubric_lines.append(line)
     rubric_block = "\n".join(rubric_lines)
 
     transcript = "\n".join(
         f"[{i}] {seg.get('text', '')}" for i, seg in enumerate(segments)
     )
     n = len(segments)
+    score_lines = ",\n".join(
+        f'    "{dim["dimension_key"]}": <int 0-100>' for dim in rubric
+    )
 
     return f"""Eres un experto en Quality Assurance de call centers bancarios. Vas a evaluar la siguiente llamada entre un EJECUTIVO del banco y un CLIENTE.
 
 TRANSCRIPCIÓN (cada línea es un segmento numerado [i]):
 {transcript}
 
-RÚBRICA DE EVALUACIÓN (score 0-100 cada dimensión):
+RÚBRICA DE EVALUACIÓN (score 0-100 por dimensión):
 
 {rubric_block}
 
-Guía de cada dimensión:
-1. SALUDO Y PROTOCOLO: ¿Saludó correctamente? ¿Se identificó? ¿Mencionó la grabación? ¿Cerró adecuadamente?
-2. ASERTIVIDAD Y TONO: ¿Empático, claro, paciente? ¿Tono profesional? ¿Escuchó activamente?
-3. MENCIÓN DE PROMOCIONES/PRODUCTOS: ¿Mencionó productos relevantes? ¿Explicó beneficios correctamente?
-4. CUMPLIMIENTO NORMATIVO: ¿Mencionó disclaimers? ¿Protegió datos sensibles? ¿Pidió consentimiento?
-5. RESOLUCIÓN: ¿Resolvió el motivo de la llamada? ¿Ofreció soluciones concretas?
-6. MANEJO DE OBJECIONES: ¿Manejó bien las dudas/objeciones del cliente?
-7. SENTIMIENTO DEL CLIENTE: ¿El cliente quedó satisfecho? (Inferir del tono, palabras, despedida)
-
 INSTRUCCIONES:
-- Sé objetivo y basa cada score en evidencia concreta de la transcripción.
+- Evalúa CADA dimensión de la rúbrica de 0 a 100, teniendo en cuenta ÚNICAMENTE los
+  subcriterios listados en ella. Basa cada score en evidencia concreta de la transcripción.
 - ATRIBUCIÓN DE HABLANTE (muy importante): la transcripción NO indica quién habla.
   Para CADA segmento [0..{n - 1}] decide "agent" (EJECUTIVO del banco) o "customer"
   (CLIENTE) SEGÚN EL CONTENIDO, no por el orden. Pistas:
@@ -54,10 +58,11 @@ INSTRUCCIONES:
     pregunta dudas; acepta o rechaza; agradece al final.
   Devuelve "diarization": lista de EXACTAMENTE {n} elementos ("agent" o "customer"),
   uno por segmento y en el mismo orden.
-- Genera 3-5 recomendaciones accionables priorizadas (high/medium/low).
+- Genera 3-5 recomendaciones accionables priorizadas (high/medium/low). El campo
+  "dimension" de cada recomendación debe ser una de las claves de la rúbrica.
 - El resumen debe ser de 2-3 frases.
-- IDENTIFICA EL NOMBRE DEL EJECUTIVO: al inicio el ejecutivo casi siempre se
-  presenta ("Le atiende Juan Pérez", "Mi nombre es..."). Extrae ese nombre en
+- IDENTIFICA EL NOMBRE DEL EJECUTIVO: al inicio el ejecutivo casi siempre se presenta
+  ("Le atiende Juan Pérez", "Mi nombre es..."). Extrae ese nombre en
   "detected_agent_name"; si no estás seguro, usa null.
 
 Responde EXCLUSIVAMENTE con un JSON válido con esta estructura exacta:
@@ -66,13 +71,7 @@ Responde EXCLUSIVAMENTE con un JSON válido con esta estructura exacta:
   "detected_agent_name": "<nombre del ejecutivo o null>",
   "diarization": ["agent o customer, un elemento por segmento, {n} en total"],
   "dimension_scores": {{
-    "greeting": <int 0-100>,
-    "assertiveness": <int 0-100>,
-    "promotions": <int 0-100>,
-    "compliance": <int 0-100>,
-    "resolution": <int 0-100>,
-    "objections": <int 0-100>,
-    "sentiment": <int 0-100>
+{score_lines}
   }},
   "summary": "<resumen ejecutivo de la llamada>",
   "recommendations": [

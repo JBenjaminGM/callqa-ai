@@ -2,10 +2,14 @@
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, Numeric, String, Text, func
+from sqlalchemy import JSON, DateTime, Integer, Numeric, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
+
+# Tipo JSON portable: JSONB en PostgreSQL, JSON genérico en otras BD (tests SQLite).
+JSONType = JSON().with_variant(JSONB(), "postgresql")
 
 
 class RubricConfig(Base):
@@ -17,6 +21,9 @@ class RubricConfig(Base):
     dimension_key: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     dimension_name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # criteria: subcriterios/subcategorías de la dimensión, cada uno activable.
+    # Formato: [{"name": str, "enabled": bool}]
+    criteria: Mapped[list | None] = mapped_column(JSONType, nullable=True, default=list)
     # weight: peso porcentual; la suma de todas las dimensiones debe ser 100.00
     weight: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False)
     display_order: Mapped[int | None] = mapped_column(Integer, nullable=True)

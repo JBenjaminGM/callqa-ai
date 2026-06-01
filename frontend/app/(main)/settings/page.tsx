@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Save } from 'lucide-react';
+import { Plus, Save, Trash2 } from 'lucide-react';
 import {
   useRubric,
   useSettings,
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { ErrorState, Skeleton, Spinner } from '@/components/ui/feedback';
+import type { RubricDimensionInput } from '@/types';
 
 const LANGUAGES = [
   { code: 'es', label: 'Español' },
@@ -24,7 +25,7 @@ const LANGUAGES = [
   { code: 'fr', label: 'Francés' },
 ];
 
-/** Página de configuración: rúbrica de evaluación e idioma de análisis. */
+/** Página de configuración: rúbrica de evaluación (con subcategorías) e idioma. */
 export default function SettingsPage() {
   const { data: rubric, isLoading: rubricLoading, error: rubricError } =
     useRubric();
@@ -32,8 +33,8 @@ export default function SettingsPage() {
   const updateRubric = useUpdateRubric();
   const updateSettings = useUpdateSettings();
 
-  // Estado local de los pesos de la rúbrica.
-  const [weights, setWeights] = useState<Record<string, number>>({});
+  // Estado local editable: la rúbrica completa (categorías + subcategorías).
+  const [dims, setDims] = useState<RubricDimensionInput[]>([]);
   const [language, setLanguage] = useState('es');
   const [rubricMsg, setRubricMsg] = useState<string | null>(null);
   const [rubricErr, setRubricErr] = useState<string | null>(null);
@@ -41,11 +42,18 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (rubric) {
-      const initial: Record<string, number> = {};
-      rubric.forEach((d) => {
-        initial[d.dimension_key] = Number(d.weight);
-      });
-      setWeights(initial);
+      setDims(
+        rubric.map((d) => ({
+          dimension_key: d.dimension_key,
+          dimension_name: d.dimension_name,
+          description: d.description ?? '',
+          weight: Number(d.weight),
+          criteria: (d.criteria ?? []).map((c) => ({
+            name: c.name,
+            enabled: c.enabled,
+          })),
+        })),
+      );
     }
   }, [rubric]);
 
@@ -53,25 +61,83 @@ export default function SettingsPage() {
     if (settings) setLanguage(settings.default_language);
   }, [settings]);
 
-  const total = Object.values(weights).reduce((a, b) => a + b, 0);
+  const total = dims.reduce((a, d) => a + (Number(d.weight) || 0), 0);
+
+  // --- Helpers de edición ---
+  function patchDim(i: number, patch: Partial<RubricDimensionInput>) {
+    setDims((ds) => ds.map((d, j) => (j === i ? { ...d, ...patch } : d)));
+  }
+  function patchCriterion(
+    i: number,
+    ci: number,
+    patch: Partial<{ name: string; enabled: boolean }>,
+  ) {
+    setDims((ds) =>
+      ds.map((d, j) =>
+        j === i
+          ? {
+              ...d,
+              criteria: d.criteria.map((c, k) =>
+                k === ci ? { ...c, ...patch } : c,
+              ),
+            }
+          : d,
+      ),
+    );
+  }
+  function addCriterion(i: number) {
+    setDims((ds) =>
+      ds.map((d, j) =>
+        j === i
+          ? { ...d, criteria: [...d.criteria, { name: '', enabled: true }] }
+          : d,
+      ),
+    );
+  }
+  function removeCriterion(i: number, ci: number) {
+    setDims((ds) =>
+      ds.map((d, j) =>
+        j === i
+          ? { ...d, criteria: d.criteria.filter((_, k) => k !== ci) }
+          : d,
+      ),
+    );
+  }
+  function addDimension() {
+    setDims((ds) => [
+      ...ds,
+      { dimension_name: '', description: '', weight: 0, criteria: [] },
+    ]);
+  }
+  function removeDimension(i: number) {
+    setDims((ds) => ds.filter((_, j) => j !== i));
+  }
 
   async function saveRubric() {
     setRubricMsg(null);
     setRubricErr(null);
+    if (dims.some((d) => !d.dimension_name.trim())) {
+      setRubricErr('Todas las categorías deben tener nombre.');
+      return;
+    }
     if (Math.abs(total - 100) > 0.5) {
       setRubricErr(
         `Los pesos deben sumar 100%. Suma actual: ${total.toFixed(2)}%.`,
       );
       return;
     }
+    const payload: RubricDimensionInput[] = dims.map((d) => ({
+      dimension_key: d.dimension_key,
+      dimension_name: d.dimension_name.trim(),
+      description: d.description?.trim() || null,
+      weight: Number(d.weight) || 0,
+      criteria: d.criteria
+        .filter((c) => c.name.trim())
+        .map((c) => ({ name: c.name.trim(), enabled: c.enabled })),
+    }));
     try {
-      await updateRubric.mutateAsync(
-        Object.entries(weights).map(([dimension_key, weight]) => ({
-          dimension_key,
-          weight,
-        })),
-      );
-      setRubricMsg('Rúbrica actualizada correctamente.');
+      await updateRubric.mutateAsync(payload);
+      setRubricMsg('Rúbrica actualizada. Aplica a las próximas llamadas.');
     } catch (err) {
       setRubricErr(getErrorMessage(err));
     }
@@ -91,58 +157,117 @@ export default function SettingsPage() {
     <>
       <Header title="Configuración" />
       <main className="flex-1 overflow-y-auto p-6">
-        <div className="mx-auto flex max-w-2xl flex-col gap-6">
+        <div className="mx-auto flex max-w-3xl flex-col gap-6">
           {/* Rúbrica */}
           <Card>
             <CardTitle className="mb-1">Rúbrica de evaluación</CardTitle>
             <p className="mb-4 text-small text-text-secondary">
-              Ajusta el peso de cada dimensión. La suma debe ser exactamente
-              100%.
+              Define las categorías (con su peso %) y las subcategorías que la IA
+              tendrá en cuenta. Activa/desactiva subcategorías, añade las tuyas o
+              crea categorías nuevas. La suma de pesos debe ser 100%.
             </p>
 
             {rubricLoading && (
               <div className="flex flex-col gap-2">
                 {[0, 1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-10" />
+                  <Skeleton key={i} className="h-20" />
                 ))}
               </div>
             )}
-            {rubricError && (
-              <ErrorState message={getErrorMessage(rubricError)} />
-            )}
+            {rubricError && <ErrorState message={getErrorMessage(rubricError)} />}
 
-            {rubric && (
-              <div className="flex flex-col gap-3">
-                {rubric.map((dim) => (
+            {!rubricLoading && (
+              <div className="flex flex-col gap-4">
+                {dims.map((dim, i) => (
                   <div
-                    key={dim.dimension_key}
-                    className="flex items-center justify-between gap-4"
+                    key={dim.dimension_key ?? `new-${i}`}
+                    className="rounded-lg border border-border bg-bg-secondary p-3"
                   >
-                    <span className="text-body text-text-primary">
-                      {dim.dimension_name}
-                    </span>
-                    <div className="flex w-28 items-center gap-1">
+                    {/* Cabecera: nombre + peso + eliminar */}
+                    <div className="mb-2 flex items-center gap-2">
                       <Input
-                        type="number"
-                        min={0}
-                        max={100}
-                        step="0.01"
-                        value={weights[dim.dimension_key] ?? 0}
+                        value={dim.dimension_name}
+                        placeholder="Nombre de la categoría"
                         onChange={(e) =>
-                          setWeights((w) => ({
-                            ...w,
-                            [dim.dimension_key]: Number(e.target.value),
-                          }))
+                          patchDim(i, { dimension_name: e.target.value })
                         }
+                        className="flex-1 font-semibold"
                       />
-                      <span className="text-small text-text-muted">%</span>
+                      <div className="flex w-24 items-center gap-1">
+                        <Input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.01"
+                          value={dim.weight}
+                          onChange={(e) =>
+                            patchDim(i, { weight: Number(e.target.value) })
+                          }
+                        />
+                        <span className="text-small text-text-muted">%</span>
+                      </div>
+                      <button
+                        onClick={() => removeDimension(i)}
+                        title="Eliminar categoría"
+                        className="rounded-md p-2 text-text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    {/* Subcategorías */}
+                    <div className="flex flex-col gap-1.5 pl-1">
+                      {dim.criteria.map((c, ci) => (
+                        <div key={ci} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={c.enabled}
+                            onChange={(e) =>
+                              patchCriterion(i, ci, { enabled: e.target.checked })
+                            }
+                            className="accent-[var(--accent-primary)]"
+                            title={c.enabled ? 'Activa' : 'Inactiva'}
+                          />
+                          <Input
+                            value={c.name}
+                            placeholder="Subcategoría a evaluar"
+                            onChange={(e) =>
+                              patchCriterion(i, ci, { name: e.target.value })
+                            }
+                            className={
+                              c.enabled
+                                ? 'flex-1 !py-1.5 text-small'
+                                : 'flex-1 !py-1.5 text-small line-through opacity-60'
+                            }
+                          />
+                          <button
+                            onClick={() => removeCriterion(i, ci)}
+                            title="Quitar subcategoría"
+                            className="rounded-md p-1.5 text-text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => addCriterion(i)}
+                        className="mt-1 flex w-fit items-center gap-1 text-small text-accent-primary transition-opacity hover:opacity-80"
+                      >
+                        <Plus size={14} />
+                        Añadir subcategoría
+                      </button>
                     </div>
                   </div>
                 ))}
 
-                <div className="mt-2 flex items-center justify-between border-t border-border pt-3">
+                <Button variant="secondary" onClick={addDimension}>
+                  <Plus size={18} />
+                  Añadir categoría
+                </Button>
+
+                <div className="flex items-center justify-between border-t border-border pt-3">
                   <span className="text-body font-semibold text-text-primary">
-                    Total
+                    Total de pesos
                   </span>
                   <span
                     className={
@@ -161,10 +286,7 @@ export default function SettingsPage() {
                 )}
 
                 <div>
-                  <Button
-                    onClick={saveRubric}
-                    disabled={updateRubric.isPending}
-                  >
+                  <Button onClick={saveRubric} disabled={updateRubric.isPending}>
                     {updateRubric.isPending ? <Spinner /> : <Save size={18} />}
                     Guardar rúbrica
                   </Button>
@@ -194,10 +316,7 @@ export default function SettingsPage() {
                   ))}
                 </Select>
               </div>
-              <Button
-                onClick={saveLanguage}
-                disabled={updateSettings.isPending}
-              >
+              <Button onClick={saveLanguage} disabled={updateSettings.isPending}>
                 {updateSettings.isPending ? <Spinner /> : <Save size={18} />}
                 Guardar
               </Button>
@@ -228,8 +347,8 @@ export default function SettingsPage() {
                 </div>
               </dl>
               <p className="mt-3 text-small text-text-muted">
-                El proveedor de IA y transcripción se configura por variables
-                de entorno en el backend.
+                El proveedor de IA y transcripción se configura por variables de
+                entorno en el backend.
               </p>
             </Card>
           )}

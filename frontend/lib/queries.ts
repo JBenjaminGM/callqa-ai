@@ -16,6 +16,7 @@ import type {
   CallStatusInfo,
   DashboardSummary,
   RubricDimension,
+  RubricDimensionInput,
 } from '@/types';
 
 /* ----------------------------- Ejecutivos ----------------------------- */
@@ -224,9 +225,7 @@ export function useRubric() {
 export function useUpdateRubric() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (
-      dimensions: { dimension_key: string; weight: number }[],
-    ) => {
+    mutationFn: async (dimensions: RubricDimensionInput[]) => {
       const { data } = await api.put('/config/rubric', { dimensions });
       return data;
     },

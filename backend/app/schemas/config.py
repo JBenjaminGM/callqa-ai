@@ -1,36 +1,57 @@
-"""Schemas de configuración: rúbrica y settings globales."""
+"""Schemas de configuración: rúbrica (con subcriterios) y settings globales."""
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+
+class RubricCriterion(BaseModel):
+    """Un subcriterio (subcategoría) de una dimensión, que se puede activar."""
+
+    name: str
+    enabled: bool = True
 
 
 class RubricDimensionOut(BaseModel):
-    """Una dimensión de la rúbrica."""
+    """Una dimensión de la rúbrica con sus subcriterios."""
 
     dimension_key: str
     dimension_name: str
     description: str | None = None
     weight: float
     display_order: int | None = None
+    criteria: list[RubricCriterion] = []
 
     model_config = {"from_attributes": True}
 
+    @field_validator("criteria", mode="before")
+    @classmethod
+    def _none_to_empty(cls, v):
+        """La columna JSON puede venir como None; lo normaliza a lista vacía."""
+        return v or []
+
 
 class RubricDimensionUpdate(BaseModel):
-    """Datos editables de una dimensión de la rúbrica."""
+    """Una dimensión enviada al guardar la rúbrica.
 
-    dimension_key: str
-    weight: float = Field(ge=0, le=100)
+    `dimension_key` vacío o ausente indica una categoría NUEVA (se genera la clave
+    en el backend a partir del nombre).
+    """
+
+    dimension_key: str | None = None
+    dimension_name: str = Field(min_length=1)
     description: str | None = None
+    weight: float = Field(ge=0, le=100)
+    criteria: list[RubricCriterion] = []
 
 
 class RubricUpdateRequest(BaseModel):
-    """Petición para actualizar toda la rúbrica. La suma de pesos debe ser 100."""
+    """Rúbrica completa a guardar (reemplaza la actual). Los pesos deben sumar 100."""
 
     dimensions: list[RubricDimensionUpdate]
 
     @model_validator(mode="after")
-    def check_weights_sum_100(self) -> "RubricUpdateRequest":
-        """Valida que los pesos sumen 100 (con tolerancia por redondeo)."""
+    def _check(self) -> "RubricUpdateRequest":
+        if not self.dimensions:
+            raise ValueError("La rúbrica debe tener al menos una dimensión.")
         total = sum(d.weight for d in self.dimensions)
         if abs(total - 100.0) > 0.5:
             raise ValueError(
