@@ -5,6 +5,7 @@ from datetime import date
 
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     Depends,
     File,
     Form,
@@ -16,6 +17,7 @@ from fastapi import (
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.agent import Agent
@@ -48,6 +50,20 @@ def _agent_ref(call: Call) -> AgentRef | None:
     return AgentRef.model_validate(call.agent) if call.agent else None
 
 
+def _queue_processing(call_id: int, background_tasks: BackgroundTasks) -> None:
+    """
+    Lanza el procesamiento de una llamada.
+
+    - Con Celery (por defecto): encola la tarea en el worker.
+    - Con PROCESS_INLINE=true (despliegue gratis sin worker): la procesa en una
+      tarea en segundo plano del propio proceso de la API.
+    """
+    if settings.process_inline:
+        background_tasks.add_task(process_call, call_id)
+    else:
+        process_call.delay(call_id)
+
+
 def _save_call(
     db: Session,
     *,
@@ -56,6 +72,7 @@ def _save_call(
     campaign: str | None,
     comment: str | None,
     responsible: str | None,
+    background_tasks: BackgroundTasks,
 ) -> Call:
     """
     Valida y persiste una llamada, sube el audio y encola su procesamiento.
@@ -87,13 +104,13 @@ def _save_call(
     db.commit()
     db.refresh(call)
 
-    # Encola el procesamiento asíncrono en Celery.
-    process_call.delay(call.id)
+    _queue_processing(call.id, background_tasks)
     return call
 
 
 @router.post("", response_model=CallCreatedOut, status_code=status.HTTP_202_ACCEPTED)
 def upload_call(
+    background_tasks: BackgroundTasks,
     audio: UploadFile = File(...),
     campaign: str | None = Form(default=None),
     comment: str | None = Form(default=None),
@@ -109,12 +126,14 @@ def upload_call(
         campaign=campaign,
         comment=comment,
         responsible=responsible or current_user.name,
+        background_tasks=background_tasks,
     )
     return CallCreatedOut(id=call.id, status=call.status, agent_id=call.agent_id)
 
 
 @router.post("/batch", response_model=BatchCreatedOut, status_code=status.HTTP_202_ACCEPTED)
 def upload_calls_batch(
+    background_tasks: BackgroundTasks,
     audios: list[UploadFile] = File(...),
     campaign: str | None = Form(default=None),
     comment: str | None = Form(default=None),
@@ -149,6 +168,7 @@ def upload_calls_batch(
             campaign=campaign,
             comment=comment,
             responsible=responsible or current_user.name,
+            background_tasks=background_tasks,
         )
         created_ids.append(call.id)
 
@@ -318,6 +338,7 @@ def assign_call(
 @router.post("/{call_id}/retry", status_code=status.HTTP_202_ACCEPTED)
 def retry_call(
     call_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
@@ -334,7 +355,7 @@ def retry_call(
     call.status = CallStatus.QUEUED
     call.error_message = None
     db.commit()
-    process_call.delay(call.id)
+    _queue_processing(call.id, background_tasks)
     return {"id": call.id, "status": call.status}
 
 

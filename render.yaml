@@ -1,0 +1,51 @@
+# ============================================================
+# render.yaml — Despliegue GRATIS del backend de CallQA AI en Render.
+# (El frontend va en Vercel; ver DEPLOY_GRATIS.md.)
+#
+# Crea, en el plan gratuito y ya conectados:
+#   - un servicio web con el backend FastAPI (Docker),
+#   - una base de datos PostgreSQL.
+#
+# NO usa worker Celery ni Redis: las llamadas se procesan dentro de la propia
+# API (PROCESS_INLINE=true), porque el plan gratis de Render no ofrece workers.
+# ============================================================
+
+databases:
+  - name: callqa-db
+    plan: free
+    databaseName: callqa
+    user: callqa
+
+services:
+  - type: web
+    name: callqa-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    # Aplica migraciones + datos iniciales y arranca el servidor (1 worker).
+    dockerCommand: sh -c "alembic upgrade head && python scripts/seed_data.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PROCESS_INLINE        # procesa sin worker Celery
+        value: "true"
+      - key: AI_PROVIDER
+        value: groq
+      - key: WHISPER_PROVIDER
+        value: groq
+      - key: AI_MODEL_GROQ
+        value: llama-3.3-70b-versatile
+      - key: STORAGE_PROVIDER
+        value: local
+      - key: STORAGE_PATH
+        value: /data/audios
+      - key: DATABASE_URL          # se conecta automaticamente a la BD de arriba
+        fromDatabase:
+          name: callqa-db
+          property: connectionString
+      - key: JWT_SECRET            # Render genera uno aleatorio
+        generateValue: true
+      - key: GROQ_API_KEY          # SECRETO: lo pones tu en el dashboard
+        sync: false
+      - key: CORS_ORIGINS          # la URL de tu frontend en Vercel (la pones tu)
+        sync: false

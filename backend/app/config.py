@@ -8,6 +8,7 @@ en el código: siempre debe venir del entorno.
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -61,7 +62,19 @@ class Settings(BaseSettings):
     app_env: str = "production"
     app_default_language: str = "es"
     app_max_audio_size_mb: int = 100
+    # Si es True, las llamadas se procesan en una tarea en segundo plano de la
+    # propia API (sin worker Celery). Pensado para planes gratis que no ofrecen
+    # workers (Render free, etc.). En local/Docker se deja en False (usa Celery).
+    process_inline: bool = False
     cors_origins: str = "http://localhost:3000"
+
+    @field_validator("database_url")
+    @classmethod
+    def _normalize_db_url(cls, v: str) -> str:
+        """Render/Heroku entregan 'postgres://'; SQLAlchemy 2.0 exige 'postgresql://'."""
+        if v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
+        return v
 
     @property
     def cors_origins_list(self) -> list[str]:

@@ -274,3 +274,29 @@ def test_pipeline_retry_is_idempotent(monkeypatch):
     assert reloaded.status == CallStatus.DONE
     assert n_trans == 1
     assert n_analysis == 1
+
+
+# ---------------------------------------------------------------
+# Procesamiento inline (despliegue gratis sin worker Celery)
+# ---------------------------------------------------------------
+def test_upload_processed_inline_without_celery(client, auth_headers, monkeypatch):
+    """Con PROCESS_INLINE=true, la llamada se procesa en una BackgroundTask (sin Celery)."""
+    from app.config import settings as cfg
+
+    monkeypatch.setattr(cfg, "process_inline", True)
+    procesadas: list[int] = []
+    # En modo inline se invoca directamente process_call (no .delay): lo mockeamos.
+    monkeypatch.setattr(
+        "app.routers.calls.process_call",
+        lambda call_id: procesadas.append(call_id),
+    )
+
+    response = client.post(
+        "/api/v1/calls",
+        headers=auth_headers,
+        files={"audio": ("inline.mp3", io.BytesIO(b"audio"), "audio/mpeg")},
+        data={"campaign": "Inline"},
+    )
+    assert response.status_code == 202
+    # La tarea en segundo plano corre tras enviar la respuesta (TestClient la ejecuta).
+    assert procesadas == [response.json()["id"]]
