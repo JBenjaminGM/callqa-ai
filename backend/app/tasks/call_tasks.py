@@ -121,8 +121,12 @@ def _run_pipeline(db, call: Call) -> None:
     db.commit()
     logger.info("Llamada id=%s: analizando", call.id)
 
-    # Enmascarar datos sensibles ANTES de enviar al LLM.
-    masked_text = mask_sensitive_data(full_text)
+    # Enmascarar datos sensibles ANTES de enviar al LLM (por segmento).
+    masked_segments = (
+        [{"text": mask_sensitive_data(s.get("text", ""))} for s in segments]
+        if segments
+        else [{"text": mask_sensitive_data(full_text)}]
+    )
 
     rubric_rows = db.scalars(
         select(RubricConfig).order_by(RubricConfig.display_order)
@@ -137,9 +141,21 @@ def _run_pipeline(db, call: Call) -> None:
     ]
     rubric_weights = {r.dimension_key: float(r.weight) for r in rubric_rows}
 
-    prompt = get_analysis_prompt(masked_text, rubric_list, call.language)
+    prompt = get_analysis_prompt(masked_segments, rubric_list, call.language)
     provider = get_analysis_provider()
     analysis_result = asyncio.run(provider.analyze(prompt))
+
+    # Diarización por contenido (LLM): corrige la heurística de pausas cuando la
+    # lista devuelta cuadra en longitud con los segmentos.
+    diarization = analysis_result.get("diarization")
+    if segments and isinstance(diarization, list) and diarization:
+        # Aplica las etiquetas del LLM por posición. Tolera que la longitud no
+        # coincida exactamente: los segmentos sin etiqueta conservan la heurística.
+        for i, seg in enumerate(segments):
+            if i < len(diarization):
+                role = str(diarization[i]).strip().lower()
+                seg["speaker"] = "agent" if role.startswith("a") else "customer"
+        transcription.segments = list(segments)  # reasignar para detectar el cambio
 
     dimension_scores = {
         k: int(v) for k, v in analysis_result.get("dimension_scores", {}).items()

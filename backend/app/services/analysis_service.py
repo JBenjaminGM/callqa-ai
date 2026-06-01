@@ -114,7 +114,7 @@ class ClaudeProvider(AnalysisProvider):
                 },
                 json={
                     "model": self._model,
-                    "max_tokens": 2000,
+                    "max_tokens": 4000,
                     "messages": [{"role": "user", "content": prompt}],
                 },
             )
@@ -156,6 +156,7 @@ class OpenAIProvider(AnalysisProvider):
                     "model": self._model,
                     "messages": [{"role": "user", "content": prompt}],
                     "response_format": {"type": "json_object"},
+                    "max_tokens": 4000,
                 },
             )
         if response.status_code != 200:
@@ -218,7 +219,7 @@ class AzureOpenAIProvider(AnalysisProvider):
                 json={
                     "messages": [{"role": "user", "content": prompt}],
                     "response_format": {"type": "json_object"},
-                    "max_tokens": 2000,
+                    "max_tokens": 4000,
                 },
             )
         if response.status_code != 200:
