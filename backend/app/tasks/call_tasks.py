@@ -57,15 +57,28 @@ def process_call(call_id: int) -> None:
         except Exception as exc:  # noqa: BLE001
             # Cualquier fallo deja la llamada en estado ERROR con el detalle.
             logger.exception("Error procesando la llamada id=%s", call_id)
-            call.status = CallStatus.ERROR
-            call.error_message = str(exc)[:1000]
-            db.commit()
+            # Si el fallo ocurrió durante un flush/commit, la sesión queda en
+            # estado "needs rollback": hay que limpiarla antes de poder escribir,
+            # o este commit lanzaría PendingRollbackError y la llamada se quedaría
+            # sin marcar como ERROR.
+            db.rollback()
+            call = db.get(Call, call_id)
+            if call is not None:
+                call.status = CallStatus.ERROR
+                call.error_message = str(exc)[:1000]
+                db.commit()
     finally:
         db.close()
 
 
 def _run_pipeline(db, call: Call) -> None:
     """Ejecuta los pasos de transcripción y análisis de una llamada."""
+    # Idempotencia para reintentos: elimina cualquier transcripción/análisis
+    # previo de esta llamada. Sin esto, reintentar una llamada que ya había
+    # transcrito violaría la restricción UNIQUE(call_id) y volvería a ERROR.
+    db.query(Transcription).filter(Transcription.call_id == call.id).delete()
+    db.query(Analysis).filter(Analysis.call_id == call.id).delete()
+
     # ---- 1. Transcripción ----
     call.status = CallStatus.TRANSCRIBING
     db.commit()

@@ -168,3 +168,109 @@ def test_list_calls_empty(client, auth_headers):
     response = client.get("/api/v1/calls", headers=auth_headers)
     assert response.status_code == 200
     assert response.json()["total"] == 0
+
+
+# ---------------------------------------------------------------
+# Enmascaramiento endurecido (formatos reales de transcripción de voz)
+# ---------------------------------------------------------------
+def test_mask_card_with_dashes():
+    """Tarjeta con guiones (como la formatea Whisper) -> [TARJETA]."""
+    masked = mask_sensitive_data("es 4532-0151-1283-0366 gracias")
+    assert "4532" not in masked
+    assert "[TARJETA]" in masked
+
+
+def test_mask_card_with_spaces():
+    """Tarjeta en grupos de 4 separados por espacios -> [TARJETA]."""
+    masked = mask_sensitive_data("es 4532 0151 1283 0366 gracias")
+    assert "0366" not in masked
+    assert "[TARJETA]" in masked
+
+
+def test_mask_spoken_number_words():
+    """Un número dictado en palabras (>=7 seguidas) -> [NUMERO]."""
+    text = "es cuatro cinco tres dos cero uno cinco uno uno dos ocho tres"
+    masked = mask_sensitive_data(text)
+    assert "[NUMERO]" in masked
+    assert "cuatro cinco" not in masked
+
+
+def test_mask_does_not_touch_few_number_words():
+    """Pocas palabras-número en lenguaje normal NO se enmascaran."""
+    text = "tengo dos hijos y tres mascotas"
+    assert mask_sensitive_data(text) == text
+
+
+# ---------------------------------------------------------------
+# Idempotencia del pipeline: reintentar no debe romper por UNIQUE(call_id)
+# ---------------------------------------------------------------
+def test_pipeline_retry_is_idempotent(monkeypatch):
+    """Reprocesar una llamada borra los resultados previos y termina en DONE."""
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.pool import StaticPool
+
+    import app.tasks.call_tasks as ct
+    from app.models import Analysis, Base, Call, CallStatus, RubricConfig, Transcription, User
+
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    TS = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    Base.metadata.create_all(engine)
+
+    class _Storage:
+        def load(self, url):
+            return b"x"
+
+        def save(self, content, filename):
+            return "f"
+
+        def delete(self, url):
+            pass
+
+    class _Trans:
+        async def transcribe(self, path, language):
+            return {
+                "text": "Le atiende Ana.",
+                "segments": [{"start": 0.0, "end": 1.0, "text": "Le atiende Ana."}],
+            }
+
+    class _An:
+        async def analyze(self, prompt):
+            return {
+                "detected_agent_name": "Ana",
+                "dimension_scores": {"greeting": 80},
+                "summary": "ok",
+                "recommendations": [],
+                "ai_model": "x",
+                "tokens_used": 1,
+            }
+
+    monkeypatch.setattr(ct, "SessionLocal", TS)
+    monkeypatch.setattr(ct, "get_storage_provider", lambda: _Storage())
+    monkeypatch.setattr(ct, "get_transcription_provider", lambda: _Trans())
+    monkeypatch.setattr(ct, "get_analysis_provider", lambda: _An())
+
+    s = TS()
+    s.add(User(email="u@u.com", password_hash="x", name="U", role="supervisor"))
+    s.flush()
+    s.add(RubricConfig(dimension_key="greeting", dimension_name="Saludo", weight=100.0, display_order=1))
+    call = Call(uploaded_by=1, audio_url="f", audio_filename="a.mp3", language="es", status=CallStatus.QUEUED)
+    s.add(call)
+    s.commit()
+    call_id = call.id
+    s.close()
+
+    ct.process_call(call_id)  # primer procesamiento
+    ct.process_call(call_id)  # reintento: NO debe romper
+
+    chk = TS()
+    reloaded = chk.get(Call, call_id)
+    n_trans = chk.query(Transcription).filter_by(call_id=call_id).count()
+    n_analysis = chk.query(Analysis).filter_by(call_id=call_id).count()
+    chk.close()
+
+    assert reloaded.status == CallStatus.DONE
+    assert n_trans == 1
+    assert n_analysis == 1

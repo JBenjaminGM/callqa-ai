@@ -81,15 +81,15 @@ Si nuestro call center procesa **500 llamadas/día** y queremos auditar el 100%:
 
 ## 🔐 Seguridad y cumplimiento
 
-Considerando que somos una entidad financiera:
+Considerando que somos una entidad financiera, y siendo honestos sobre el estado **prototipo**:
 
-- ✅ **Cifrado en tránsito** (HTTPS/TLS 1.2+) y en reposo
-- ✅ **Datos sensibles enmascarados automáticamente** (números de tarjeta, DNI, CVV se ocultan antes de cualquier procesamiento)
-- ✅ **Autenticación robusta** con JWT y bcrypt
-- ✅ **Sin datos en claro a terceros:** los audios y transcripciones se procesan en nuestra infraestructura
-- ✅ **Auditoría completa:** logs de quién hizo qué y cuándo
-- ✅ **Retención configurable:** audios se eliminan automáticamente tras 90 días (configurable según política)
-- ✅ **Preparado para evolucionar a Whisper on-premise** si se requiere mayor control de datos
+- ✅ **Cifrado en tránsito** (HTTPS/TLS 1.2+).
+- ⚠️ **Enmascarado automático (best-effort) de datos sensibles** en la transcripción de texto (tarjetas, DNI, CVV, teléfonos), incluso dictados en palabras. **No es una garantía**: puede no captar todos los formatos.
+- ⚠️ **Procesamiento por proveedores externos (EE. UU.):** hoy el audio y el texto se envían a Groq (transcripción) y al LLM de análisis, por lo que **datos sensibles salen del perímetro**. Aceptable solo con audios sintéticos / de prueba; para datos reales se requiere validación de DPO/CISO.
+- ✅ **Autenticación robusta** con JWT y bcrypt.
+- ✅ **Auditoría:** logs de operaciones (quién hizo qué y cuándo).
+- ✅ **Retención configurable:** audios se eliminan automáticamente tras 90 días (configurable según política).
+- 🛣️ **Ruta a producción:** transcripción on-premise (Whisper) o Azure AI Speech + Azure OpenAI dentro de infraestructura Indra, para que **ningún dato salga del perímetro**. (Ver `docs/01_VISION_Y_CASOS_DE_USO.md`, sección 7.)
 
 ---
 
@@ -173,14 +173,12 @@ Comparado con el costo de 1 supervisor (~$1,500-2,500/mes en el mercado peruano)
 
 - Cada análisis incluye el reasoning para que el supervisor pueda validar
 - El supervisor puede ajustar/anular evaluaciones (futuro release)
-- Los datos se usan para mejorar el modelo continuamente
+- Los resultados quedan registrados para que el supervisor los valide (los proveedores de IA por API no usan estos datos para entrenar sus modelos)
 
-### ¿Es seguro para datos bancarios?
+### ¿Es seguro para datos bancarios? (estado actual: prototipo)
 
-- Datos sensibles se enmascaran ANTES de cualquier análisis
-- La IA nunca ve números de tarjeta, DNI completo o CVV
-- Hospedaje en infraestructura cloud certificada
-- Posibilidad futura de migrar 100% on-premise
+- Se aplica un **enmascarado best-effort** de datos sensibles en el texto antes del análisis, pero **no es infalible** y el **audio** se procesa en proveedores externos (EE. UU.). Por eso, en esta fase, **solo debe usarse con audios de prueba / sintéticos**.
+- Para datos reales, la ruta es transcripción y análisis **dentro de la infraestructura Indra** (Azure AI Speech / Azure OpenAI u on-premise), con aprobación previa de **Compliance, DPO y Seguridad de la Información**.
 
 ### ¿Cuánto tarda implementar a producción?
 
