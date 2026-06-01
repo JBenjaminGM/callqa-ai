@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
 
     # --- Análisis con IA ---
-    ai_provider: str = "claude"              # claude | openai | groq | azure
+    ai_provider: str = "groq"                # groq | claude | openai | azure
     anthropic_api_key: str = ""
     openai_api_key: str = ""
     ai_model_claude: str = "claude-sonnet-4-6"

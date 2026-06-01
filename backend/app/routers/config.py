@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import settings as app_config
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.settings import AppSettings, RubricConfig
@@ -23,7 +24,7 @@ router = APIRouter(prefix="/config", tags=["config"])
 # Claves de settings gestionadas y sus valores por defecto.
 SETTINGS_DEFAULTS = {
     "default_language": "es",
-    "ai_provider": "claude",
+    "ai_provider": "groq",
     "whisper_provider": "groq",
 }
 
@@ -102,8 +103,11 @@ def get_settings_endpoint(
     rows = {s.key: s.value for s in db.scalars(select(AppSettings)).all()}
     return SettingsOut(
         default_language=rows.get("default_language", SETTINGS_DEFAULTS["default_language"]),
-        ai_provider=rows.get("ai_provider", SETTINGS_DEFAULTS["ai_provider"]),
-        whisper_provider=rows.get("whisper_provider", SETTINGS_DEFAULTS["whisper_provider"]),
+        # El proveedor de IA y de transcripción los determina la variable de
+        # entorno (no la BD): se reportan los valores REALES en uso para que la
+        # UI nunca muestre un proveedor distinto al que de verdad analiza.
+        ai_provider=app_config.ai_provider,
+        whisper_provider=app_config.whisper_provider,
     )
 
 

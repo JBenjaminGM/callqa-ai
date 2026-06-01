@@ -61,7 +61,7 @@ export function formatDateTime(iso?: string | null): string {
   });
 }
 
-/** Nombres legibles de las 7 dimensiones de la rúbrica. */
+/** Nombres legibles de las dimensiones por defecto de la rúbrica. */
 export const DIMENSION_LABELS: Record<string, string> = {
   greeting: 'Saludo y protocolo',
   assertiveness: 'Asertividad y tono',
@@ -72,8 +72,15 @@ export const DIMENSION_LABELS: Record<string, string> = {
   sentiment: 'Sentimiento del cliente',
 };
 
+/**
+ * Nombre legible de una dimensión. Las dimensiones por defecto usan el mapa de
+ * arriba; las categorías personalizadas (añadidas en la rúbrica) se humanizan a
+ * partir de su clave (p.ej. "deteccion_de_fraude" → "Deteccion de fraude").
+ */
 export function dimensionLabel(key: string): string {
-  return DIMENSION_LABELS[key] ?? key;
+  if (DIMENSION_LABELS[key]) return DIMENSION_LABELS[key];
+  const text = key.replace(/[_-]+/g, ' ').trim();
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : key;
 }
 
 /** Etiquetas legibles de los estados de procesamiento. */

@@ -54,7 +54,7 @@ CRITERIA = {
 
 SETTINGS = {
     "default_language": "es",
-    "ai_provider": "claude",
+    "ai_provider": "groq",
     "whisper_provider": "groq",
 }
 
