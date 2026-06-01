@@ -59,7 +59,7 @@ def test_mask_keeps_normal_text():
 
 
 # ---------------------------------------------------------------
-# Diarización por pausas
+# Diarización por pausas (heurística de fallback)
 # ---------------------------------------------------------------
 def test_diarization_first_speaker_is_agent():
     """El primer segmento siempre se asigna al ejecutivo (agent)."""

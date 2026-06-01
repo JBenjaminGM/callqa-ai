@@ -32,8 +32,8 @@
 ### Servicios externos
 | Servicio | Uso | Costo aprox |
 |---|---|---|
-| **Groq API** | Transcripción (Whisper) | Gratis hasta cuota, luego $0.04/hora audio |
-| **Anthropic Claude API** | Análisis de transcripción | ~$0.01-0.03 por llamada |
+| **Groq API** | Transcripción (Whisper large v3) **y análisis por defecto** (Llama 3.3 70B) | Gratis hasta cuota (luego ~$0.04/hora audio en transcripción) |
+| **Anthropic Claude API** (alternativa) | Análisis de transcripción (configurable) | ~$0.01-0.03 por llamada |
 | **OpenAI API** (alternativa) | Análisis (configurable) | ~$0.01-0.03 por llamada |
 | **Resend** (opcional) | Envío de emails | Gratis hasta 100/día |
 
@@ -98,6 +98,11 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+> **Nota:** por defecto el análisis lo realiza **Groq (Llama 3.3 70B)**, el
+> mismo proveedor usado para la transcripción (Whisper). Anthropic Claude y
+> OpenAI aparecen en el diagrama como **alternativas configurables** del
+> servicio de análisis.
+
 ---
 
 ## 3. Flujo de Procesamiento de una Llamada
@@ -123,7 +128,7 @@
         │
         ├─► Enmascara datos sensibles (regex)
         ├─► Construye prompt con la rúbrica + transcripción
-        ├─► Envía a Claude/GPT API
+        ├─► Envía al LLM configurado (Groq por defecto)
         ├─► Parsea respuesta JSON (scores + recomendaciones)
         ├─► Guarda análisis en BD
         └─► Marca status="DONE"
@@ -278,7 +283,7 @@ CREATE TABLE analyses (
     dimension_scores JSONB NOT NULL,  -- {greeting: 85, assertiveness: 72, ...}
     recommendations JSONB,  -- [{priority, title, description}]
     summary TEXT,
-    ai_provider VARCHAR(50),  -- 'claude' o 'openai'
+    ai_provider VARCHAR(50),  -- 'groq', 'claude', 'openai' o 'azure'
     ai_model VARCHAR(100),
     tokens_used INT,
     created_at TIMESTAMP DEFAULT NOW()
@@ -314,7 +319,7 @@ INSERT INTO rubric_config (dimension_key, dimension_name, weight, display_order)
 
 INSERT INTO app_settings (key, value) VALUES
 ('default_language', 'es'),
-('ai_provider', 'claude'),
+('ai_provider', 'groq'),
 ('whisper_provider', 'groq');
 ```
 
@@ -576,7 +581,7 @@ INSERT INTO app_settings (key, value) VALUES
 #### GET `/config/settings`
 **Respuesta 200:**
 ```json
-{ "default_language": "es", "ai_provider": "claude" }
+{ "default_language": "es", "ai_provider": "groq" }
 ```
 
 #### PUT `/config/settings`
@@ -729,7 +734,8 @@ WHISPER_PROVIDER=groq   # groq | local
 GROQ_API_KEY=
 
 # AI Analysis
-AI_PROVIDER=claude      # claude | openai | azure
+AI_PROVIDER=groq        # groq | claude | openai | azure
+AI_MODEL_GROQ=llama-3.3-70b-versatile
 ANTHROPIC_API_KEY=
 OPENAI_API_KEY=
 AI_MODEL_CLAUDE=claude-sonnet-4-6

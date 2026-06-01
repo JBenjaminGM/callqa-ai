@@ -8,7 +8,7 @@ const base =
   'focus:border-accent-primary focus:shadow-[0_0_0_3px_var(--glow)] ' +
   'focus:outline-none disabled:opacity-50';
 
-/** Campo de texto translúcido con foco resaltado en Electric Rose. */
+/** Campo de texto translúcido con foco resaltado en Índigo. */
 export const Input = forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement>

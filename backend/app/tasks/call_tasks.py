@@ -7,7 +7,7 @@ Flujo completo:
 Pasos:
 1. Descargar el audio del storage.
 2. Transcribir con el proveedor configurado (Groq por defecto).
-3. Aplicar diarización heurística (quién habla).
+3. Diarización por contenido del LLM (con heurística de pausas como fallback).
 4. Guardar la transcripción.
 5. Enmascarar datos sensibles.
 6. Construir el prompt y analizar con el LLM configurado.

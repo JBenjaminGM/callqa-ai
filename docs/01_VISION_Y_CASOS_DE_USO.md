@@ -214,7 +214,7 @@ En esta versión MVP existe un único rol con todos los permisos:
 
 ### RN-01: Dimensiones de evaluación
 
-La rúbrica contiene exactamente 7 dimensiones, cada una evaluada de 0 a 100:
+La rúbrica parte de 7 dimensiones por defecto, cada una evaluada de 0 a 100. La rúbrica es editable: se pueden activar/desactivar subcategorías y añadir/eliminar tanto categorías como subcategorías; la IA evalúa según los subcriterios activos.
 
 1. **Saludo y protocolo de apertura/cierre**
 2. **Asertividad y tono** (empatía, claridad, paciencia)

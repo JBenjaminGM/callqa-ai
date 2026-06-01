@@ -1,5 +1,7 @@
 # 🤖 PROMPT MAESTRO PARA CLAUDE CODE — BACKEND
 
+> 📌 **Documento histórico.** Este es el prompt maestro con el que se generó el backend. El proyecto evolucionó desde entonces (Groq por defecto en vez de Claude, rúbrica con subcategorías, diarización por LLM, paleta Índigo, etc.). Para el estado REAL ver `ESTADO_DEL_PROYECTO.md`.
+
 > **Instrucciones de uso:**
 > 1. Abre Claude Code en una carpeta vacía llamada `callqa-backend`
 > 2. Copia y pega TODO este prompt en una sola conversación

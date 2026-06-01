@@ -1,5 +1,7 @@
 # 🎨 Sistema de Diseño — CallQA AI
 
+> ⚠️ **DOCUMENTO OBSOLETO.** Describe la paleta anterior (vino/borgoña con magenta). La paleta vigente es **Índigo/Slate**; la referencia actual es `docs/DESIGN.md` y la implementación canónica `frontend/app/globals.css`.
+
 > **Paleta de colores y guías visuales para el frontend**
 
 ---

@@ -2,7 +2,8 @@
 
 Backend del **prototipo** de Quality Assurance automatizado para call centers
 bancarios. Permite subir grabaciones de llamadas, transcribirlas con IA y
-evaluarlas automáticamente contra una rúbrica de 7 dimensiones.
+evaluarlas automáticamente contra una rúbrica editable (7 dimensiones por
+defecto, con subcategorías activables).
 
 > ⚠️ **PROTOTIPO — DEMO INTERNA.** Esta es una prueba de concepto. No utilizar
 > con datos reales de clientes sin aprobación previa de Compliance.
@@ -15,7 +16,8 @@ Es una API REST construida con **Python + FastAPI** que:
 
 1. Recibe archivos de audio (MP3, WAV, M4A, OGG, FLAC).
 2. Los transcribe usando **Groq (Whisper)**.
-3. Analiza la transcripción con **Claude (Anthropic)** o **GPT (OpenAI)**.
+3. Analiza la transcripción con **Groq (Llama 3.3 70B) por defecto**, con
+   **Claude (Anthropic)**, **GPT (OpenAI)** o **Azure** como opciones.
 4. Devuelve scores por dimensión, un score global y recomendaciones.
 
 El procesamiento pesado se hace en segundo plano con **Celery + Redis**, así la
@@ -98,9 +100,9 @@ El arranque ejecuta automáticamente las migraciones y el *seed* de datos.
 
    ```
    GROQ_API_KEY=gsk_...
-   ANTHROPIC_API_KEY=sk-ant-...
-   AI_PROVIDER=claude
+   AI_PROVIDER=groq
    WHISPER_PROVIDER=groq
+   # ANTHROPIC_API_KEY=sk-ant-...   # solo si usas AI_PROVIDER=claude (de pago)
    JWT_SECRET=cadena-larga-aleatoria
    APP_ENV=production
    STORAGE_PROVIDER=local

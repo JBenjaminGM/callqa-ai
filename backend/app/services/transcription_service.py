@@ -109,6 +109,11 @@ def add_speaker_diarization(segments: list[dict]) -> list[dict]:
     """
     Asigna un hablante a cada segmento mediante una heurística de pausas.
 
+    NOTA: Esta heurística es solo un FALLBACK. La diarización principal la hace
+    el LLM por contenido durante el análisis (ver call_tasks._run_pipeline), que
+    reasigna los hablantes según lo que realmente dice cada turno. Estas
+    etiquetas iniciales solo se conservan cuando el LLM no devuelve diarización.
+
     - El primer segmento es del ejecutivo ('agent'), que es quien saluda.
     - Si la pausa respecto al segmento anterior supera SPEAKER_SWITCH_GAP,
       se considera un cambio de turno y se alterna el hablante.

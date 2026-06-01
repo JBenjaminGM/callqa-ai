@@ -127,7 +127,7 @@ Los requerimientos funcionales describen **qué debe hacer** el sistema. Cada un
 
 - Usa Groq Whisper API (configurable a Whisper local en el futuro)
 - Genera transcripción con timestamps por segmento
-- Detecta automáticamente quién habla (diarización: ejecutivo vs cliente)
+- Detecta automáticamente quién habla (diarización por contenido vía LLM: ejecutivo vs cliente; la heurística de pausas es solo fallback)
 - Idioma según configuración global (español por defecto)
 - Tiempo objetivo: ≤ 1 minuto por audio de 10 minutos
 
@@ -141,7 +141,7 @@ Los requerimientos funcionales describen **qué debe hacer** el sistema. Cada un
 
 **Criterio de aceptación:**
 
-- Usa Claude API o OpenAI GPT (configurable vía variable de entorno)
+- Usa Groq (Llama 3.3 70B) por defecto; Claude/OpenAI/Azure configurables vía variable de entorno
 - Evalúa las 7 dimensiones definidas en la rúbrica
 - Genera score 0-100 por dimensión
 - Calcula score global ponderado
@@ -260,10 +260,13 @@ Los requerimientos funcionales describen **qué debe hacer** el sistema. Cada un
 
 **Criterio de aceptación:**
 
-- Vista con las 7 dimensiones
+- Vista con las 7 dimensiones por defecto
 - Slider o input numérico para el peso porcentual (suma = 100%)
 - Validación: la suma debe ser exactamente 100%
 - Edición opcional de los criterios descriptivos de cada dimensión
+- Activar/desactivar subcriterios (subcategorías) dentro de cada categoría
+- Añadir/eliminar tanto categorías como subcategorías
+- La IA usa únicamente los subcriterios activos al evaluar
 - Guardar cambios — aplica a futuras llamadas
 
 **Prioridad:** Media
@@ -287,11 +290,11 @@ Los requerimientos funcionales describen **qué debe hacer** el sistema. Cada un
 
 #### RF-18: Configurar proveedor de IA
 
-**Descripción:** El sistema debe permitir alternar entre Claude y GPT.
+**Descripción:** El sistema debe permitir alternar entre Groq (por defecto), Claude, OpenAI y Azure.
 
 **Criterio de aceptación:**
 
-- Configurable vía variable de entorno (`AI_PROVIDER=claude|openai`)
+- Configurable vía variable de entorno (`AI_PROVIDER=groq|claude|openai|azure`); valor por defecto: `groq`
 - No expuesto en la UI en MVP (solo backend)
 - Cambio en caliente no requerido
 

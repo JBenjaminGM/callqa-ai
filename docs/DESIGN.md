@@ -138,7 +138,7 @@ The layout follows an **Editorial Fluid Grid**. It uses a 12-column structure on
 Depth is created through **Glassmorphism** rather than traditional drop shadows. Surfaces are treated as frosted panes with varying levels of backdrop-blur (12px to 40px).
 
 - **Surface Tiers:** Backgrounds use the primary hex; containers use a semi-transparent version (e.g., `rgba(255, 255, 255, 0.05)` in dark mode) with a 1px solid white border at 10% opacity.
-- **AI Glows:** High-importance elements (like the current active step in onboarding) feature a subtle "glow" — a soft, blurred shadow using the Electric Rose color with high diffusion and low opacity.
+- **AI Glows:** High-importance elements (like the current active step in onboarding) feature a subtle "glow" — a soft, blurred shadow using the Indigo color with high diffusion and low opacity.
 - **Micro-shadows:** Only used for functional clarity on top-level modals to separate them from the glass stack.
 
 ## Shapes
@@ -149,8 +149,8 @@ The shape language is **Rounded**, balancing the tech-heavy aesthetic with human
 - **Progress Indicators:** Use pill-shaped (full rounding) for status chips and progress bars to provide a distinct visual contrast to the structural rectangular grid.
 
 ## Components
-- **Smart Buttons:** Use a solid Electric Rose fill for primary actions. The hover state should include a subtle outer glow. Secondary buttons use the "ghost" style with a glass background and a 1px border.
+- **Smart Buttons:** Use a solid Indigo fill (#4f46e5 / #6366f1) for primary actions. The hover state should include a subtle outer glow. Secondary buttons use the "ghost" style with a glass background and a 1px border.
 - **Glass Cards:** Feature a `backdrop-filter: blur(20px)` and a thin internal stroke to catch the "light." Content within cards should follow the editorial grid.
-- **Immersive Inputs:** Text fields are semi-transparent with a bottom-border only or a very subtle ghost-box. Focus states are indicated by the border color shifting to Electric Rose and a micro-glow.
-- **Onboarding Chips:** Small, pill-shaped tags used for multi-select categories. Inactive chips are low-opacity plum/gray; active chips are Electric Rose with white text.
+- **Immersive Inputs:** Text fields are semi-transparent with a bottom-border only or a very subtle ghost-box. Focus states are indicated by the border color shifting to Indigo and a micro-glow.
+- **Onboarding Chips:** Small, pill-shaped tags used for multi-select categories. Inactive chips are low-opacity slate/gray; active chips are Indigo with white text.
 - **Interactive Lists:** Used for step-by-step consulting modules. Each list item should have a hover state that slightly increases its backdrop-blur and scale.

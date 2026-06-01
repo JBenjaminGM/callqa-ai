@@ -1,5 +1,7 @@
 # 📘 Guía de Despliegue Paso a Paso (para no-devs)
 
+> 📌 **Documento de referencia.** El proyecto ya está en GitHub (`JBenjaminGM/callqa-ai`) y corre en local con Docker (`docker compose up`). Con Groq por defecto el coste de IA es $0. Las secciones de Railway/Vercel/Anthropic siguen siendo válidas como referencia si quieres desplegar en la nube o cambiar de proveedor.
+
 > **Esta guía está escrita asumiendo que NO sabes desarrollo.** Cada paso explica exactamente qué hacer y qué deberías ver.
 
 ---
@@ -58,6 +60,8 @@ Vamos a poner tu plataforma CallQA AI **en internet** para que tu jefe pueda abr
 7. Empieza con `gsk_...`
 
 ### 1.2 Anthropic API Key (Análisis IA)
+
+> 💡 **Opcional.** Con Groq por defecto (`AI_PROVIDER=groq`, Llama 3.3 70B, gratis) NO hace falta Anthropic y el coste de IA es **$0**. Sigue estos pasos solo si quieres usar Claude como proveedor de análisis.
 
 1. Ve a https://console.anthropic.com/
 2. Crea una cuenta
@@ -178,7 +182,7 @@ Cuando te pida usuario y contraseña, GitHub ya no acepta contraseña — usa un
 GROQ_API_KEY=gsk_tu_key
 ANTHROPIC_API_KEY=sk-ant-tu_key
 OPENAI_API_KEY=sk-tu_key  (opcional)
-AI_PROVIDER=claude
+AI_PROVIDER=groq
 WHISPER_PROVIDER=groq
 JWT_SECRET=genera-uno-aleatorio-largo-aqui
 JWT_EXPIRE_HOURS=8

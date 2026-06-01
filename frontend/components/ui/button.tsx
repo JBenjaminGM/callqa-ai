@@ -10,7 +10,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants: Record<Variant, string> = {
-  // Acción primaria: relleno Electric Rose con resplandor en hover.
+  // Acción primaria: relleno Índigo con resplandor en hover.
   primary:
     'bg-accent-primary text-white hover:shadow-[0_0_24px_var(--glow)] disabled:opacity-50',
   // Secundaria: estilo cristal con borde fino.

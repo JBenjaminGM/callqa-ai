@@ -32,7 +32,7 @@ En nuestro call center, los supervisores de QA evalúan manualmente las llamadas
 
 ### Tecnología detrás
 - **Transcripción:** Modelo Whisper (estándar de la industria, 92%+ precisión)
-- **Análisis:** Claude (Anthropic) y GPT-4 (OpenAI) — los modelos de IA más avanzados disponibles
+- **Análisis:** por defecto Groq con Llama 3.3 70B (capa gratuita); Claude (Anthropic) y GPT-4 (OpenAI) quedan como opciones configurables
 - **Infraestructura:** Cloud-native, escalable, seguro
 
 ---
@@ -66,14 +66,14 @@ Cada dimensión recibe un score de **0-100**, y se calcula un **score global tip
 | Cobertura del equipo | 1-2% | **100%** | +9,900% |
 | Consistencia evaluación | Variable | **Alta** | ✅ |
 | Detección de incidentes | Días/semanas | **Minutos** | ⚡ |
-| Costo por evaluación | Hora-supervisor | **~$0.05 USD** | -95% |
+| Costo por evaluación | Hora-supervisor | **~$0 (Groq, capa gratuita)** | -99% |
 
 ### Retorno esperado
 
 Si nuestro call center procesa **500 llamadas/día** y queremos auditar el 100%:
 
 - **Manual:** Necesitaríamos ~40 supervisores dedicados → impracticable
-- **CallQA AI:** ~$25 USD/día en costos de IA + 1 supervisor para revisar reportes
+- **CallQA AI:** análisis con Groq en su capa gratuita ($0 en IA) + costos de infraestructura mínimos + 1 supervisor para revisar reportes
 
 **ROI estimado en el primer año:** Reducción del 70-80% en costos de QA + detección temprana de oportunidades de mejora valoradas en cientos de miles de soles.
 
@@ -122,7 +122,7 @@ La plataforma está desplegada y lista para demo:
 
 ### ✅ MVP actual (entregado)
 - Subida manual de audios
-- Análisis con IA configurable (Claude/GPT)
+- Análisis con IA configurable (Groq por defecto; Claude/GPT opcionales)
 - Dashboard de supervisor
 - Reportes exportables (PDF/CSV)
 - Comparativas individuales vs equipo
@@ -147,8 +147,8 @@ La plataforma está desplegada y lista para demo:
 | Hosting frontend (Vercel) | Gratis | Gratis o $20/mes |
 | Base de datos | Incluida | Incluida |
 | API de transcripción (Groq) | Gratis | $20-40/mes |
-| API de análisis IA (Claude) | $5-10/mes | $300-500/mes |
-| **TOTAL OPERACIÓN** | **~$15-20/mes** | **~$400-600/mes** |
+| API de análisis IA (Groq, capa gratuita) | Gratis | Gratis ($0) |
+| **TOTAL OPERACIÓN** | **~$10/mes** | **~$70-160/mes** |
 
 Comparado con el costo de 1 supervisor (~$1,500-2,500/mes en el mercado peruano), **el ROI es inmediato a partir del segundo mes de uso**.
 

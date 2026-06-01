@@ -93,8 +93,8 @@ Mientras Claude Code genera el código, lee el documento 5 para entender los pas
 
 ### Sobre costos
 - **Inversión inicial:** ~$0 (todo gratis para empezar)
-- **Costo demo:** $10-20/mes mientras pruebas
-- **Costo producción:** $400-600/mes para 500 llamadas/día (mucho menor que 1 supervisor)
+- **Costo demo:** ~$0 con Groq (capa gratuita); solo algo de hosting si lo despliegas en la nube
+- **Costo producción:** con Groq el análisis es gratis ($0); el grueso es hosting (~$70-160/mes para 500 llamadas/día) — muy por debajo del costo de 1 supervisor. (Con Claude/GPT como opción de pago, el costo sería mayor.)
 
 ### Sobre tiempos
 - **Backend:** 30-60 min de generación con Claude Code

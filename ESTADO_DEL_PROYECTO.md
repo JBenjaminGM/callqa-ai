@@ -31,8 +31,8 @@ Navegador ──HTTPS──> Frontend (Next.js 14) ──REST──> Backend (Fa
                                   ▼              ▼                ▼
                             PostgreSQL        Redis          Celery worker
                                                               │   │
-                                                       Groq ◄─┘   └─► Claude / GPT
-                                                    (Whisper)        (análisis)
+                                                       Groq ◄─┘   └─► Groq (LLM)
+                                                    (Whisper)     (análisis · Claude/GPT opc.)
 ```
 
 | Capa | Tecnología |
@@ -41,7 +41,7 @@ Navegador ──HTTPS──> Frontend (Next.js 14) ──REST──> Backend (Fa
 | Procesamiento asíncrono | Celery 5 + Redis |
 | Base de datos | PostgreSQL 15 |
 | IA — transcripción | Groq API (Whisper large v3) · factory para Whisper local / Azure Speech |
-| IA — análisis | Anthropic Claude · factory para OpenAI / Azure OpenAI |
+| IA — análisis | Groq (Llama 3.3 70B, gratis) · factory para Claude / OpenAI / Azure |
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS |
 | Datos en frontend | TanStack Query + Axios; estado de sesión con Zustand |
 | Gráficos | Recharts |
@@ -69,7 +69,7 @@ callqa-ai/
 │   │   └── prompts/           # Prompts para los LLM
 │   ├── alembic/               # Migraciones de BD (0001, 0002)
 │   ├── scripts/seed_data.py   # Datos iniciales
-│   ├── tests/                 # 27 tests automatizados
+│   ├── tests/                 # 32 tests automatizados
 │   └── docker-compose.yml     # Compose SOLO del backend (para devs)
 │
 ├── frontend/                 # Aplicación Next.js
@@ -98,7 +98,9 @@ callqa-ai/
 - **Procesamiento asíncrono** (Celery): `QUEUED → TRANSCRIBING → ANALYZING → DONE`.
 - **Dashboard / reporte NPS**: KPIs del equipo, distribución de scores,
   rankings, performance por ejecutivo.
-- **Configuración**: rúbrica de 7 dimensiones (pesos) e idioma de análisis.
+- **Configuración**: rúbrica **editable** (7 dimensiones por defecto, con
+  subcategorías activables y posibilidad de añadir/eliminar categorías y
+  subcategorías; la IA usa las subcategorías activas) e idioma de análisis.
 - **Seguridad**: enmascarado de datos sensibles (tarjetas, DNI, CVV) antes de
   enviar texto a la IA; contraseñas con bcrypt; CORS por lista blanca.
 - **Patrón factory** para proveedores de IA y transcripción → portable a Azure.
@@ -139,15 +141,17 @@ callqa-ai/
 Se aplicó el sistema **"Aetheric Intelligence"** (`docs/DESIGN.md`):
 
 - Estética *High-Tech Editorial* + **Glassmorphism**.
-- **Modo oscuro** (por defecto): canvas Deep Plum / casi-negro con resplandores
+- **Modo oscuro** (por defecto): canvas slate-navy `#0b1020` con resplandores
   radiales; **modo claro**: off-white con superficies blancas.
-- Acento **Electric Rose `#ff0054`** para acciones y datos destacados.
+- Acento **Índigo** (`#4f46e5` en claro / `#6366f1` en oscuro) para acciones y
+  datos destacados.
 - Cards, sidebar, header e inputs como **paneles de cristal** translúcidos con
   desenfoque de fondo; botones con resplandor (glow) en hover.
 - Tipografía **Inter**.
 
 > Nota histórica: una iteración previa usó la paleta corporativa púrpura de
-> Minsait; fue reemplazada por el sistema Aetheric a petición del cliente.
+> Minsait y, más tarde, una paleta Electric Rose / Deep Plum; ambas fueron
+> reemplazadas por la paleta Índigo/Slate actual a petición del cliente.
 
 ---
 
@@ -160,7 +164,7 @@ Se aplicó el sistema **"Aetheric Intelligence"** (`docs/DESIGN.md`):
 | `calls` | Llamadas subidas; `agent_id` puede ser nulo; `detected_agent_name`, `responsible` |
 | `transcriptions` | Transcripción + segmentos con timestamps (1:1 con call) |
 | `analyses` | Scores por dimensión, score global, recomendaciones (1:1 con call) |
-| `rubric_config` | Las 7 dimensiones de la rúbrica con sus pesos |
+| `rubric_config` | Rúbrica editable: 7 dimensiones por defecto con sus pesos, subcategorías activables y categorías/subcategorías que se pueden añadir o eliminar |
 | `app_settings` | Configuración global (idioma, proveedor IA) |
 
 Migraciones: **0001** esquema inicial · **0002** detección de ejecutivo
@@ -201,7 +205,7 @@ Sin ellas, las llamadas subidas quedan en estado `ERROR` al transcribir.
 | Verificación | Resultado |
 |---|---|
 | Build Docker del backend | ✅ |
-| Tests del backend (`pytest`) | ✅ 27/27 |
+| Tests del backend (`pytest`) | ✅ 32/32 |
 | Migraciones 0001 + 0002 | ✅ aplican sin error |
 | Build de producción del frontend | ✅ 10 rutas, tipos TS válidos |
 | Endpoints API (login, agents, calls, dashboard, config) | ✅ |
@@ -229,9 +233,10 @@ Sin ellas, las llamadas subidas quedan en estado `ERROR` al transcribir.
 1. **Generación inicial** del backend completo (FastAPI + Celery + modelo de
    datos + tests) a partir del prompt maestro de `docs/04_PROMPT_BACKEND.md`.
 2. **Frontend** Next.js con todas las páginas y el sistema de diseño inicial.
-3. **Verificación** con Docker: build, 23 tests, stack levantado.
+3. **Verificación** con Docker: build, 32 tests, stack levantado.
 4. **Rediseño de flujo**: subida en lote, detección del ejecutivo por IA,
-   matching difuso, asignación posterior, filtro por fecha. (+4 tests → 27).
+   matching difuso, asignación posterior, filtro por fecha (con tests
+   adicionales hasta llegar a los 32 actuales).
 5. **Reestilo** a la identidad corporativa (púrpura Minsait).
 6. **Reestilo** al sistema "Aetheric Intelligence" (glassmorphism).
 7. **Optimización**: frontend a modo producción (salida standalone) y

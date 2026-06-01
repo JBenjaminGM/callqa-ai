@@ -127,7 +127,7 @@ en `app/globals.css` y mapeada a Tailwind en `tailwind.config.ts`, siguiendo el
 documento de diseño visual del proyecto:
 
 - **Modo claro:** crema y rosa acento.
-- **Modo oscuro:** vino/borgoña con magenta intenso.
+- **Modo oscuro:** Slate-navy (#0b1020) con acento Índigo (#6366f1).
 - El toggle del header persiste la elección en `localStorage`.
 - Scores con color semántico: verde (80-100), amarillo (60-79), rojo (0-59).
 
