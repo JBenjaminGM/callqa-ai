@@ -1,0 +1,84 @@
+"""
+Configuración central de la aplicación.
+
+Todas las opciones se leen de variables de entorno (archivo .env) usando
+Pydantic Settings. Nunca se debe escribir una clave secreta directamente
+en el código: siempre debe venir del entorno.
+"""
+
+from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Contenedor tipado de toda la configuración del backend."""
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    # --- Base de datos ---
+    database_url: str = "postgresql://callqa:callqa@localhost:5432/callqa"
+    redis_url: str = "redis://localhost:6379/0"
+
+    # --- Almacenamiento de audios ---
+    storage_provider: str = "local"          # local | s3
+    storage_path: str = "/data/audios"
+    aws_s3_bucket: str = ""
+    aws_access_key_id: str = ""
+    aws_secret_access_key: str = ""
+    aws_region: str = "us-east-1"
+
+    # --- Transcripción ---
+    whisper_provider: str = "groq"           # groq | local | azure
+    groq_api_key: str = ""
+
+    # --- Análisis con IA ---
+    ai_provider: str = "claude"              # claude | openai | groq | azure
+    anthropic_api_key: str = ""
+    openai_api_key: str = ""
+    ai_model_claude: str = "claude-sonnet-4-6"
+    ai_model_openai: str = "gpt-4o"
+    ai_model_groq: str = "llama-3.3-70b-versatile"  # LLM gratis de Groq para análisis
+
+    # --- Azure (migración futura) ---
+    azure_openai_endpoint: str = ""
+    azure_openai_api_key: str = ""
+    azure_openai_deployment: str = "gpt-4o"
+    azure_openai_api_version: str = "2024-02-15-preview"
+    azure_speech_key: str = ""
+    azure_speech_region: str = "eastus"
+
+    # --- Autenticación ---
+    jwt_secret: str = "cambia-esto-en-produccion"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_hours: int = 8
+
+    # --- Aplicación ---
+    app_env: str = "production"
+    app_default_language: str = "es"
+    app_max_audio_size_mb: int = 100
+    cors_origins: str = "http://localhost:3000"
+
+    @property
+    def cors_origins_list(self) -> list[str]:
+        """Devuelve la lista de orígenes CORS a partir de la cadena separada por comas."""
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def max_audio_size_bytes(self) -> int:
+        """Tamaño máximo de audio permitido, en bytes."""
+        return self.app_max_audio_size_mb * 1024 * 1024
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """Devuelve la configuración (cacheada para no releer el .env en cada uso)."""
+    return Settings()
+
+
+# Instancia global de configuración, lista para importar.
+settings = get_settings()

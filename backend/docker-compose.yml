@@ -1,0 +1,71 @@
+# ============================================================
+# CallQA AI - Entorno de desarrollo local
+# Ejecuta todo el sistema con: docker-compose up
+# ============================================================
+
+services:
+
+  # --- API FastAPI ---
+  api:
+    build: .
+    command: sh -c "alembic upgrade head && python scripts/seed_data.py && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://callqa:callqa@postgres:5432/callqa
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - .:/app
+      - audios:/data/audios
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # --- Worker Celery (transcripción + análisis) ---
+  worker:
+    build: .
+    command: celery -A app.tasks.celery_app worker --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://callqa:callqa@postgres:5432/callqa
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - .:/app
+      - audios:/data/audios
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # --- Base de datos PostgreSQL ---
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=callqa
+      - POSTGRES_PASSWORD=callqa
+      - POSTGRES_DB=callqa
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U callqa"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- Redis (broker de Celery) ---
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
+  audios:

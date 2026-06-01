@@ -1,0 +1,27 @@
+# Variables de entorno (NUNCA subir a GitHub)
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Datos locales / audios
+/data/
+data/
+*.db
+*.sqlite3
+
+# IDE / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

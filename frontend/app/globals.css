@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Sistema de diseño "Aetheric Intelligence" — CallQA AI
+   Estética High-Tech Editorial + Glassmorphism.
+   Canvas Deep Plum / off-white, acento Electric Rose (#ff0054).
+   ============================================================ */
+
+/* Modo claro: canvas off-white, superficies blancas */
+:root {
+  --bg-primary: #f7f4f6;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.72);
+  --bg-accent: #f0e7eb;
+  --accent-primary: #ff0054;
+  --accent-secondary: #ff506d;
+  --text-primary: #2a0a18;
+  --text-secondary: #6e4a58;
+  --text-muted: #9b838d;
+  --border: #e7dce1;
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(72, 14, 42, 0.1);
+  --glow: rgba(255, 0, 84, 0.18);
+  --shadow: rgba(42, 10, 24, 0.1);
+
+  --success: #1f9d6b;
+  --warning: #c87f00;
+  --danger: #e11d48;
+  --info: #3b5bdb;
+}
+
+/* Modo oscuro (por defecto): canvas Deep Plum / casi negro */
+.dark {
+  --bg-primary: #131315;
+  --bg-secondary: #1b1b1d;
+  --bg-card: rgba(31, 31, 33, 0.55);
+  --bg-accent: #2a2a2b;
+  --accent-primary: #ff0054;
+  --accent-secondary: #ff506d;
+  --text-primary: #e4e2e4;
+  --text-secondary: #e8bcbe;
+  --text-muted: #ae8789;
+  --border: #5e3e41;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glow: rgba(255, 0, 84, 0.38);
+  --shadow: rgba(0, 0, 0, 0.5);
+
+  --success: #69dbab;
+  --warning: #ffc24d;
+  --danger: #ff5d73;
+  --info: #8aa6ff;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  min-height: 100vh;
+}
+
+/* Resplandores radiales (AI glow) del fondo, distintos por modo. */
+.dark body {
+  background-image:
+    radial-gradient(900px circle at 12% -8%, rgba(72, 14, 42, 0.65), transparent 60%),
+    radial-gradient(720px circle at 100% 4%, rgba(255, 0, 84, 0.14), transparent 55%);
+  background-attachment: fixed;
+}
+:root body {
+  background-image:
+    radial-gradient(800px circle at 12% -10%, rgba(255, 0, 84, 0.06), transparent 55%);
+  background-attachment: fixed;
+}
+
+/* Panel de cristal (glassmorphism): superficie translúcida con desenfoque. */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+/* Foco accesible visible (color acento). */
+*:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Scrollbar discreta. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 6px;
+}
+
+/* Aparición suave de cards y pantallas. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.28s ease both;
+}
+
+/* Skeleton de carga. */
+@keyframes pulse-bg {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+.skeleton {
+  background: var(--text-muted);
+  opacity: 0.18;
+  border-radius: 10px;
+  animation: pulse-bg 1.5s ease-in-out infinite;
+}

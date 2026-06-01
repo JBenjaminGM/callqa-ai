@@ -1,0 +1,92 @@
+# ============================================================
+# CallQA AI — Stack completo (monorepo)
+# Levanta backend + worker + base de datos + frontend con un solo comando:
+#
+#     docker compose up --build
+#
+# Frontend:  http://localhost:3000
+# API/docs:  http://localhost:8000/docs
+#
+# El frontend y el backend corren en MODO PRODUCCIÓN (sin recarga en
+# caliente ni montaje de código), lo que los hace mucho más rápidos.
+# ============================================================
+
+services:
+  # --- Base de datos PostgreSQL ---
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=callqa
+      - POSTGRES_PASSWORD=callqa
+      - POSTGRES_DB=callqa
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U callqa']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # --- Redis (broker de Celery) ---
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  # --- API FastAPI (modo producción) ---
+  api:
+    build: ./backend
+    command: >
+      sh -c "alembic upgrade head &&
+             python scripts/seed_data.py &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2"
+    ports:
+      - '8000:8000'
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://callqa:callqa@postgres:5432/callqa
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - audios:/data/audios
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  # --- Worker Celery (transcripción + análisis IA) ---
+  worker:
+    build: ./backend
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://callqa:callqa@postgres:5432/callqa
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - audios:/data/audios
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  # --- Frontend Next.js (build de producción) ---
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # El navegador del usuario llama a la API en localhost:8000.
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    ports:
+      - '3000:3000'
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  audios:
