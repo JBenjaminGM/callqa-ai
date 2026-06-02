@@ -24,8 +24,8 @@ services:
     rootDir: backend
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
-    # Aplica migraciones + datos iniciales y arranca el servidor (1 worker).
-    dockerCommand: sh -c "alembic upgrade head && python scripts/seed_data.py && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    # El arranque (migraciones + seed + servidor) lo define el CMD del Dockerfile,
+    # asi se evita que Render parta mal el comando con comillas.
     envVars:
       - key: PROCESS_INLINE        # procesa sin worker Celery
         value: "true"

@@ -40,5 +40,7 @@ USER appuser
 
 EXPOSE 8000
 
-# El puerto lo define Railway con la variable $PORT; 8000 por defecto en local
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 2"]
+# Arranque por defecto (usado por Render): migraciones + datos iniciales + servidor.
+# El puerto lo define el host con $PORT (8000 por defecto en local).
+# En docker-compose local este CMD se sobreescribe con su propio `command`.
+CMD ["sh", "-c", "alembic upgrade head && python scripts/seed_data.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
