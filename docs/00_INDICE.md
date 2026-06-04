@@ -1,143 +1,53 @@
-# 📚 CallQA AI — Paquete de Documentación Completo
+# 📚 Índice de documentación — CallQA AI
 
-> **Versión MVP — Mayo 2026**
+> Toda la documentación del proyecto vive en esta carpeta **`docs/`**. Este es el
+> punto de entrada. En la raíz del repo solo quedan `README.md` y los punteros
+> `AGENTS.md` / `CLAUDE.md` (para que las IAs los descubran y apunten aquí).
 
-Este paquete contiene **toda la documentación y los prompts** que necesitas para construir, desplegar y presentar tu plataforma de QA con IA para call centers bancarios.
+**CallQA AI** es un prototipo de **QA automatizado con IA** para call centers
+bancarios (Minsait / Grupo Indra). Está **desplegado en vivo y gratis**:
 
----
-
-## 📂 Estructura del paquete
-
-| # | Archivo | Para qué sirve | Quién lo lee |
-|---|---|---|---|
-| 0 | **00_INDICE.md** | Este archivo. Punto de entrada. | Tú |
-| 1 | **01_VISION_Y_CASOS_DE_USO.md** | Visión del producto, casos de uso, reglas de negocio | Tú, tu jefe, futuros devs |
-| 2 | **02_REQUERIMIENTOS.md** | Requerimientos funcionales y no funcionales detallados | Tú, devs, Claude Code |
-| 3 | **03_ARQUITECTURA_TECNICA.md** | Stack, modelo de datos, API contracts, diagramas | Devs, Claude Code |
-| 4 | **04_PROMPT_BACKEND.md** | ⭐ Prompt maestro para Claude Code (Backend) | Tú (lo copias y pegas) |
-| 5 | **05_GUIA_DESPLIEGUE.md** | Pasos detallados para desplegar (no-devs) | Tú |
-| 6 | **06_README_EJECUTIVO.md** | Presentación para tu jefe / stakeholders | Tu jefe |
+- 🌐 Frontend: https://callqa-ai.vercel.app · Backend: https://callqa-api.onrender.com
+- 👤 Login demo: `admin@callqa.com` / `Admin123!`
 
 ---
 
-## 🎬 ¿Cómo usar este paquete?
+## ¿Qué leo según lo que quiero hacer?
 
-### Si tu objetivo es **construir la plataforma** (eres tú):
-
-1. **Lee** los documentos 1, 2, 3 para entender qué se va a construir
-2. **Copia el prompt del documento 4** y pégalo en Claude Code (con una carpeta vacía)
-3. **Sigue el documento 5** para desplegar paso a paso
-4. **Cuando tengas el frontend listo**, sigue las instrucciones del documento 5 sección 4
-
-### Si tu objetivo es **presentar a tu jefe**:
-
-1. Comparte con él el documento 6 (presentación ejecutiva)
-2. Opcionalmente, comparte el documento 1 si quiere más detalle del producto
-
-### Si tu objetivo es **explicar el proyecto a otro desarrollador**:
-
-1. Comparte los documentos 1, 2, 3 (visión + requerimientos + arquitectura)
-2. Si va a contribuir al código, comparte el documento 4 (prompt) y el repositorio
+| Quiero… | Lee |
+|---|---|
+| **Entender y modificar el código** (dev o IA) | **`AGENTS.md`** ⭐ |
+| Ver el estado actual y lo pendiente | `ESTADO_DEL_PROYECTO.md` |
+| Ver el historial de cambios | `CHANGELOG.md` |
+| **Publicar / desplegar gratis** | `DEPLOY_GRATIS.md` |
+| Presentar al jefe / stakeholders | `06_README_EJECUTIVO.md` + `CallQA_AI_Presentacion.pptx` |
+| Entender el producto y casos de uso | `01_VISION_Y_CASOS_DE_USO.md` |
+| Requerimientos detallados | `02_REQUERIMIENTOS.md` |
+| Arquitectura y modelo de datos | `03_ARQUITECTURA_TECNICA.md` |
+| Sistema de diseño / colores | `DESIGN.md` |
 
 ---
 
-## 🗺️ Plan de trabajo (de aquí en adelante)
+## Todos los documentos
 
-### ✅ FASE 1: Definición (completada)
-- Levantamiento de requerimientos
-- Definición de stack y arquitectura
-- Documentación completa generada
+### ✅ Vigentes
+- **`AGENTS.md`** — **Guía maestra de desarrollo / orientación para IAs**: estado actual, arquitectura, mapa del repo, cómo correr/testear/desplegar, *gotchas* y cómo hacer cambios. **El más importante.**
+- **`ESTADO_DEL_PROYECTO.md`** — Memoria del proyecto: qué se construyó y qué queda.
+- **`CHANGELOG.md`** — Historial de cambios (con commits).
+- **`DEPLOY_GRATIS.md`** — Despliegue gratis paso a paso (Vercel + Render).
+- **`06_README_EJECUTIVO.md`** — Presentación ejecutiva.
+- **`CallQA_AI_Presentacion.pptx`** — Slides de alto impacto para presentar.
+- **`01_VISION_Y_CASOS_DE_USO.md`** — Visión, casos de uso, reglas de negocio.
+- **`02_REQUERIMIENTOS.md`** — Requerimientos funcionales y no funcionales.
+- **`03_ARQUITECTURA_TECNICA.md`** — Stack, modelo de datos, contratos de API.
+- **`DESIGN.md`** — Sistema de diseño (paleta **Índigo/Slate**). *La implementación canónica de los colores es `frontend/app/globals.css`.*
 
-### 🔄 FASE 2: Backend (siguiente paso para ti)
-**Acción:** Usa el documento 4 con Claude Code
-**Resultado esperado:** Backend funcional dockerizado
-**Tiempo estimado:** 30-60 minutos de generación + tu revisión
-
-### 🎨 FASE 3: Frontend
-**Acción:** Generaremos un prompt similar al del backend (necesito tus templates/diseños)
-**Resultado esperado:** Frontend Next.js conectado al backend
-**Tiempo estimado:** Pendiente de definir templates
-
-### 🚀 FASE 4: Despliegue
-**Acción:** Sigue el documento 5
-**Resultado esperado:** Plataforma online en Railway + Vercel
-**Tiempo estimado:** 1-2 horas la primera vez
-
-### 🎯 FASE 5: Demo
-**Acción:** Presenta con el documento 6
-**Resultado esperado:** Aprobación de stakeholders
-**Tiempo estimado:** 30-60 min de demo
+### ⚠️ Históricos / ❌ obsoletos (no usar como referencia actual)
+- ⚠️ **`04_PROMPT_BACKEND.md`** — El prompt maestro con el que se *generó* el backend. Histórico; el proyecto evolucionó (ver `AGENTS.md`).
+- ⚠️ **`05_GUIA_DESPLIEGUE.md`** — Guía de despliegue antigua (Railway). Para desplegar usa **`DEPLOY_GRATIS.md`**.
+- ❌ **`07_DISEÑO_VISUAL.md`** — **OBSOLETO** (describe una paleta antigua vino/borgoña). La paleta vigente es Índigo/Slate (ver `DESIGN.md`).
 
 ---
 
-## ⚡ Quick start (camino más corto)
-
-Si quieres empezar YA mismo:
-
-1. **Abre el documento 4** (`04_PROMPT_BACKEND.md`)
-2. **Copia todo el prompt** (entre las marcas "INICIO DEL PROMPT" y "FIN DEL PROMPT")
-3. **Crea una carpeta** en tu computadora: `callqa-backend`
-4. **Abre Claude Code** en esa carpeta
-5. **Pega el prompt** y espera
-
-Mientras Claude Code genera el código, lee el documento 5 para entender los pasos de despliegue.
-
----
-
-## 💬 Cosas a tener en cuenta
-
-### Sobre Claude Code
-- A veces se detiene en proyectos grandes. Si pasa, dile: *"Continúa con los archivos restantes"*
-- Si un archivo tiene un error, dile: *"Hay un error en `X`, revísalo y arréglalo"*
-- Puedes pedirle que añada features: *"Añade un endpoint para X"*
-
-### Sobre costos
-- **Inversión inicial:** ~$0 (todo gratis para empezar)
-- **Costo demo:** ~$0 con Groq (capa gratuita); solo algo de hosting si lo despliegas en la nube
-- **Costo producción:** con Groq el análisis es gratis ($0); el grueso es hosting (~$70-160/mes para 500 llamadas/día) — muy por debajo del costo de 1 supervisor. (Con Claude/GPT como opción de pago, el costo sería mayor.)
-
-### Sobre tiempos
-- **Backend:** 30-60 min de generación con Claude Code
-- **Frontend:** 30-60 min de generación con Claude Code
-- **Despliegue completo:** 1-2 horas la primera vez
-- **Total hasta demo a tu jefe:** 1 día de trabajo enfocado
-
----
-
-## 🆘 Si algo sale mal
-
-1. **No te asustes.** Todo es reparable.
-2. **Lee el mensaje de error completo.** Suele tener la pista.
-3. **Pregúntale a Claude Code** con el error pegado completo.
-4. **Vuelve a la sección "Solución de problemas"** del documento 5.
-5. **Como último recurso:** vuelve a generar el proyecto desde cero con el prompt.
-
----
-
-## 📋 Checklist final antes de presentar a tu jefe
-
-Antes de la demo, asegúrate de:
-
-- [ ] Backend desplegado en Railway y respondiendo en `/docs`
-- [ ] Frontend desplegado en Vercel y conectado al backend
-- [ ] Login funciona con `admin@callqa.com` / `Admin123!`
-- [ ] Has subido y procesado al menos 3 audios de prueba reales
-- [ ] El dashboard muestra datos (no está vacío)
-- [ ] Has ensayado el flujo de demo al menos una vez
-- [ ] Tienes el documento 6 listo para compartir
-- [ ] Sabes dónde están los logs en Railway (por si algo falla en vivo)
-- [ ] Tienes audios de prueba listos (diferentes calidades para mostrar el rango)
-
----
-
-## 🎉 ¡Éxito!
-
-Con este paquete tienes:
-
-✅ Documentación profesional completa
-✅ Prompt maestro listo para ejecutar
-✅ Guía paso a paso para desplegar sin saber desarrollo
-✅ Presentación ejecutiva para stakeholders
-✅ Plan de trabajo claro hasta producción
-
-**Cualquier duda durante la ejecución, ahí estaré para ayudarte. ¡Adelante! 🚀**
+> **Nota:** las rutas a código (`backend/...`, `frontend/...`) que aparecen en estos
+> documentos son relativas a la **raíz del repositorio**.

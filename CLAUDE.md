@@ -1,9 +1,10 @@
 # CLAUDE.md
 
-**Lee [`AGENTS.md`](AGENTS.md) — es la guía completa del proyecto (estado actual,
-arquitectura, mapa del repo, cómo correr/testear/desplegar y gotchas).**
+**Lee [`docs/AGENTS.md`](docs/AGENTS.md)** — la guía completa del proyecto (estado
+actual, arquitectura, mapa del repo, cómo correr/testear/desplegar y *gotchas*).
+Toda la documentación está en **[`docs/`](docs/)** (índice: `docs/00_INDICE.md`).
 
-Esenciales que no debes olvidar:
+Esenciales:
 - **IA = Groq por defecto** (`AI_PROVIDER=groq`): Whisper large v3 (transcripción) +
   Llama 3.3 70B (análisis), gratis. Factory portable a Claude/OpenAI/Azure.
 - **Procesamiento:** Celery+Redis en local (`docker compose`); **inline**

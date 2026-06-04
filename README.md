@@ -1,37 +1,35 @@
 # 🎧 CallQA AI
 
 Plataforma de **Quality Assurance automatizado con IA** para call centers
-bancarios. Monorepo con el backend, el frontend y la documentación.
+bancarios (Minsait / Grupo Indra). Monorepo: backend + frontend + documentación.
 
-> ⚠️ **Prototipo / demo interna** de Minsait (Grupo Indra). No usar con datos reales de clientes.
+> ⚠️ **Prototipo / demo interna.** No usar con datos reales de clientes.
 
 - 🌐 **En vivo:** https://callqa-ai.vercel.app · API: https://callqa-api.onrender.com
 - 👤 **Acceso demo:** `admin@callqa.com` / `Admin123!`
-- 🤖 **¿Eres una IA o un dev nuevo?** Lee **[`AGENTS.md`](AGENTS.md)** — la guía completa
-  (arquitectura, mapa del repo, cómo correr/testear/desplegar y decisiones clave).
+- 🤖 **¿Eres una IA o un dev nuevo?** → **[`docs/AGENTS.md`](docs/AGENTS.md)** (guía completa).
+- 📚 **Toda la documentación está en [`docs/`](docs/)** (índice: [`docs/00_INDICE.md`](docs/00_INDICE.md)).
 
 ---
 
 ## 🚀 Arranque rápido (local)
 
-Requisito: **Docker Desktop** abierto, y una **API key de Groq** (gratis) en `backend/.env`.
+Requisito: **Docker Desktop** abierto + una **API key de Groq** (gratis) en `backend/.env`.
 
 ```bash
 cd callqa-ai
 docker compose up --build
 ```
-
-- 🖥️ App: <http://localhost:3000>  ·  📚 API: <http://localhost:8000/docs>
-- Detener: `Ctrl+C` o `docker compose down`.
+- 🖥️ App: <http://localhost:3000>  ·  📚 API: <http://localhost:8000/docs>  ·  Detener: `docker compose down`.
 
 ### Activar la IA (gratis, $0)
-En `backend/.env` basta una clave de **Groq** (transcripción **y** análisis):
+En `backend/.env` basta una clave de **Groq** (hace transcripción **y** análisis):
 ```
 GROQ_API_KEY=gsk_...
 AI_PROVIDER=groq
 WHISPER_PROVIDER=groq
 ```
-> Claude/OpenAI/Azure son opcionales (de pago): cambia `AI_PROVIDER` y pon su API key.
+> Claude / OpenAI / Azure son opcionales (de pago): cambia `AI_PROVIDER` y pon su API key.
 
 ---
 
@@ -41,19 +39,15 @@ WHISPER_PROVIDER=groq
 |---|---|
 | `backend/` | API FastAPI (+ worker Celery en local) — Python |
 | `frontend/` | App web Next.js 14 (TypeScript) |
-| `docs/` | Documentación de origen y sistema de diseño |
-| `docker-compose.yml` | Stack local completo |
-| `render.yaml` · `DEPLOY_GRATIS.md` | Despliegue gratis (Render + Vercel) |
-| **`AGENTS.md`** | **Guía de desarrollo / orientación para IAs** |
-| `CHANGELOG.md` · `ESTADO_DEL_PROYECTO.md` | Cambios y memoria del proyecto |
+| **`docs/`** | **Toda la documentación** (guía `AGENTS.md`, estado, changelog, despliegue, diseño, pitch…) |
+| `docker-compose.yml` · `render.yaml` | Config: stack local / blueprint de Render |
 
 ---
 
 ## 🛠️ Desarrollo y despliegue
 
-- **Tests backend (33):** `cd backend && .venv\Scripts\python -m pytest -q` (o vía Docker).
+- **Tests backend (33):** `cd backend && .venv\Scripts\python -m pytest -q`.
 - **Frontend en local:** `cd frontend && npm install && npm run dev`.
-- **Desplegar:** `git push origin main` → Vercel y Render redepliegan solos.
-- **Guía de publicación gratis:** ver **[`DEPLOY_GRATIS.md`](DEPLOY_GRATIS.md)**.
+- **Desplegar:** `git push origin main` → Vercel y Render redepliegan solos. Guía: **[`docs/DEPLOY_GRATIS.md`](docs/DEPLOY_GRATIS.md)**.
 
-Para el detalle completo del estado y cómo trabajar, lee **[`AGENTS.md`](AGENTS.md)**.
+Para el detalle completo del estado y cómo trabajar, lee **[`docs/AGENTS.md`](docs/AGENTS.md)**.
