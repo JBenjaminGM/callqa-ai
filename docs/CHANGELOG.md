@@ -12,6 +12,10 @@ Cambios relevantes. Formato: descripción (commit). Lo más nuevo arriba.
   PostgreSQL); normaliza `postgres://`→`postgresql://`; `DEPLOY_GRATIS.md`. (`8523b01`)
 
 ## Auditoría de consistencia
+- `Consolidación de docs`: **toda la documentación se movió a `docs/`**; en la raíz solo
+  quedan `README.md` y los punteros `AGENTS.md` / `CLAUDE.md`. (`2d10ab1`)
+- `AGENTS/CHANGELOG/docs`: guía canónica `AGENTS.md`, este changelog y sincronización
+  de la documentación de origen. (`d43940c`)
 - `Docs sync`: toda la documentación a la realidad **"Groq por defecto"** (proveedor IA,
   costos $0, diarización por LLM, colores Índigo/Slate, rúbrica editable, tests). (`59152cf`)
 - `Fixes funcionales/config`: `/config/settings` reporta el **proveedor REAL** (env, no BD);

@@ -154,7 +154,7 @@ CHANGELOG.md           historial de cambios
 - **Diarización (quién habla):** la hace el **LLM por contenido**; la heurística de pausas es solo fallback. Es aproximada en turnos ambiguos. Fiable de verdad = speaker-ID acústico (Azure Speech / pyannote).
 - **Rúbrica DINÁMICA:** editable con subcriterios activables y **categorías que se pueden añadir/eliminar**. `PUT /config/rubric` es **reemplazo completo** (crea/actualiza/borra; genera la clave con slug). El prompt construye `dimension_scores` con las claves reales → las categorías nuevas se puntúan solas. En el frontend, `dimensionLabel()` (lib/utils.ts) humaniza claves desconocidas.
 - **Dashboard:** filtros campaña/ejecutivo/fechas/periodo; endpoint `/dashboard/campaigns`. Las fechas se comparan con `datetime.utcnow()` (naïve) porque la BD guarda timestamps naïve — NO usar `datetime.now(timezone.utc)` ahí (rompía con un `TypeError`).
-- **Colores:** la fuente de verdad es `frontend/app/globals.css` (variables CSS Índigo/Slate). `docs/DESIGN.md` es referencia; **`docs/07_DISEÑO_VISUAL.md` está OBSOLETO**.
+- **Colores:** la fuente de verdad es `frontend/app/globals.css` (variables CSS Índigo/Slate). `DESIGN.md` es referencia; **`07_DISEÑO_VISUAL.md` está OBSOLETO**.
 - **Despliegue:** el arranque (migraciones+seed+uvicorn) vive en el **CMD del Dockerfile** (no en `render.yaml`) para evitar que Render parta mal el comando con comillas (daba exit 127).
 
 ## 10. Cómo hacer cambios comunes

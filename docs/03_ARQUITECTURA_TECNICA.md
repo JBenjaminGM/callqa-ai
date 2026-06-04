@@ -1,7 +1,7 @@
 # 🏗️ Arquitectura Técnica
 
-**Proyecto:** CallQA AI
-**Versión:** 1.0 — MVP
+**Proyecto:** CallQA AI — prototipo
+**Estado:** desplegado en vivo (Vercel + Render, coste $0) · proveedor de IA por defecto: Groq
 
 ---
 
@@ -14,9 +14,9 @@
 | Framework web | FastAPI | Rápido, tipado, OpenAPI automático |
 | ORM | SQLAlchemy 2.0 + Alembic | Estándar de la industria, migraciones |
 | Validación | Pydantic v2 | Integrado con FastAPI |
-| Cola de tareas | Celery + Redis | Procesamiento asíncrono de audios |
+| Cola de tareas | Celery + Redis (modo local) | Procesamiento asíncrono de audios |
 | Base de datos | PostgreSQL 15 | Confiable, escalable, JSON nativo |
-| Storage de audios | Amazon S3 (o Railway Volumes en MVP) | Persistencia de archivos |
+| Storage de audios | Disco local / Amazon S3 | Persistencia de archivos |
 | Auth | JWT (python-jose) + bcrypt | Estándar, sin dependencias externas |
 
 ### Frontend
@@ -37,16 +37,19 @@
 | **OpenAI API** (alternativa) | Análisis (configurable) | ~$0.01-0.03 por llamada |
 | **Resend** (opcional) | Envío de emails | Gratis hasta 100/día |
 
-### Infraestructura
+### Infraestructura (despliegue en vivo)
 | Componente | Plataforma | Costo |
 |---|---|---|
-| Backend hosting | Railway | ~$5-10/mes |
-| Frontend hosting | Vercel | Gratis (Hobby tier) |
-| Base de datos | Railway PostgreSQL | Incluido en plan |
-| Redis | Railway Redis | ~$5/mes |
-| Storage de audios | Railway Volume o AWS S3 | Incluido / ~$1/mes |
+| Backend hosting | Render (tier gratuito) | $0 |
+| Frontend hosting | Vercel (Hobby tier) | $0 |
+| Base de datos | Render PostgreSQL (tier gratuito) | $0 |
+| Storage de audios | Disco local del backend (o AWS S3) | $0 |
 
-**Costo total estimado MVP:** ~$10-20/mes
+**Costo total del despliegue actual:** **$0** (Groq gratis + tiers gratuitos de
+Vercel/Render). El tier gratuito de Render **no ofrece workers**, por lo que el
+backend procesa los audios **inline** (`PROCESS_INLINE=true`), sin Celery ni
+Redis. La cola Celery + Redis sólo se usa en el entorno local con
+`docker-compose` (ver sección 2).
 
 ---
 
@@ -62,14 +65,14 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                       FRONTEND (Vercel)                          │
 │                    Next.js 14 + Tailwind                         │
-│                  https://callqa.vercel.app                       │
+│                 https://callqa-ai.vercel.app                     │
 └────────────────────────────┬────────────────────────────────────┘
                              │ HTTPS / REST API
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                       BACKEND (Railway)                          │
+│                        BACKEND (Render)                          │
 │                    FastAPI + Python 3.11                         │
-│                 https://api-callqa.railway.app                   │
+│                https://callqa-api.onrender.com                   │
 │  ┌─────────────────────────────────────────────────────────┐    │
 │  │  Auth (JWT) │ Llamadas │ Ejecutivos │ Dashboard │ Conf  │    │
 │  └─────────────────────────────────────────────────────────┘    │
@@ -77,9 +80,9 @@
        │                 │                  │
        ▼                 ▼                  ▼
 ┌──────────────┐  ┌────────────┐  ┌──────────────────────────┐
-│ PostgreSQL   │  │   Redis    │  │  Celery Workers          │
-│ (Railway)    │  │  (cola)    │  │  - Transcripción         │
-│              │  │            │  │  - Análisis IA           │
+│ PostgreSQL   │  │   Redis    │  │  Procesamiento           │
+│ (Render)     │  │  (sólo     │  │  - Transcripción         │
+│              │  │  local)    │  │  - Análisis IA           │
 └──────────────┘  └─────┬──────┘  └────┬─────────────────┬───┘
                         │              │                 │
                         └──────────────┘                 │
@@ -94,14 +97,22 @@
 
 ┌─────────────────────────────────────────────────────────────────┐
 │                  STORAGE DE AUDIOS                               │
-│              Railway Volume (MVP) o AWS S3                       │
+│             Disco local del backend o AWS S3                     │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-> **Nota:** por defecto el análisis lo realiza **Groq (Llama 3.3 70B)**, el
-> mismo proveedor usado para la transcripción (Whisper). Anthropic Claude y
-> OpenAI aparecen en el diagrama como **alternativas configurables** del
-> servicio de análisis.
+> **Nota (proveedor de IA):** por defecto el análisis lo realiza **Groq (Llama
+> 3.3 70B)**, el mismo proveedor usado para la transcripción (Whisper large v3).
+> Anthropic Claude y OpenAI aparecen en el diagrama como **alternativas
+> configurables** (patrón factory) del servicio de análisis.
+>
+> **Nota (dos modos de procesamiento):** el diagrama muestra el camino con
+> **Celery + Redis**, que es el que se usa en el **entorno local con
+> `docker-compose`**. En el **despliegue en vivo en Render** (tier gratuito, sin
+> workers) el backend procesa el audio **inline** dentro del propio proceso de
+> la API mediante `BackgroundTasks` (`PROCESS_INLINE=true`); en ese modo no hay
+> Redis ni worker Celery. La lógica de transcripción y análisis es la misma en
+> ambos casos.
 
 ---
 
@@ -113,22 +124,23 @@
         │
         ├─► Backend guarda archivo en storage
         ├─► Crea registro en BD con status="QUEUED"
-        ├─► Encola tarea en Celery
+        ├─► Lanza el procesamiento (worker Celery en local /
+        │     tarea inline en la nube con PROCESS_INLINE=true)
         └─► Responde 202 Accepted con call_id
 
-2. Celery worker toma la tarea
+2. El procesador toma la tarea
         │
         ├─► Marca status="TRANSCRIBING"
         ├─► Descarga audio del storage
-        ├─► Envía a Groq API (Whisper)
+        ├─► Envía a Groq API (Whisper large v3)
         ├─► Guarda transcripción en BD
         └─► Marca status="ANALYZING"
 
-3. Celery worker continúa con análisis
+3. El procesador continúa con el análisis
         │
-        ├─► Enmascara datos sensibles (regex)
+        ├─► Enmascara datos sensibles (best-effort, regex)
         ├─► Construye prompt con la rúbrica + transcripción
-        ├─► Envía al LLM configurado (Groq por defecto)
+        ├─► Envía al LLM configurado (Groq Llama 3.3 70B por defecto)
         ├─► Parsea respuesta JSON (scores + recomendaciones)
         ├─► Guarda análisis en BD
         └─► Marca status="DONE"
@@ -329,7 +341,7 @@ INSERT INTO app_settings (key, value) VALUES
 
 ### Convenciones generales
 
-- Base URL: `https://api-callqa.railway.app/api/v1`
+- Base URL: `https://callqa-api.onrender.com/api/v1`
 - Autenticación: `Authorization: Bearer <JWT>` en todos los endpoints excepto `/auth/*`
 - Formato: JSON
 - Códigos de respuesta estándar HTTP
@@ -633,9 +645,9 @@ backend/
 │   │   ├── auth_service.py
 │   │   ├── agent_service.py
 │   │   ├── call_service.py
-│   │   ├── storage_service.py  # S3 / Railway Volume
-│   │   ├── transcription_service.py  # Groq / Whisper local
-│   │   ├── analysis_service.py       # Claude / OpenAI
+│   │   ├── storage_service.py  # Disco local / S3
+│   │   ├── transcription_service.py  # Groq Whisper / Whisper local
+│   │   ├── analysis_service.py       # Groq (def.) / Claude / OpenAI / Azure
 │   │   ├── pdf_service.py
 │   │   └── masking_service.py        # Enmascarar datos sensibles
 │   │
@@ -760,13 +772,18 @@ JWT_EXPIRE_HOURS=8
 APP_ENV=production
 APP_DEFAULT_LANGUAGE=es
 APP_MAX_AUDIO_SIZE_MB=100
-CORS_ORIGINS=https://callqa.vercel.app,http://localhost:3000
+CORS_ORIGINS=https://callqa-ai.vercel.app,http://localhost:3000
+
+# Procesamiento
+# false = usa worker Celery (local/docker-compose);
+# true  = procesa inline en la propia API, sin worker (Render free)
+PROCESS_INLINE=false
 ```
 
 ### Frontend `.env.local.example`
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api-callqa.railway.app/api/v1
+NEXT_PUBLIC_API_URL=https://callqa-api.onrender.com/api/v1
 ```
 
 ---
@@ -782,7 +799,7 @@ NEXT_PUBLIC_API_URL=https://api-callqa.railway.app/api/v1
 | API Keys | Solo en variables de entorno, nunca en código |
 | Inputs | Validación con Pydantic en backend, Zod en frontend |
 | Rate limiting | slowapi en endpoints de login (5 intentos/15min) |
-| HTTPS | Forzado en producción (Railway/Vercel lo manejan) |
+| HTTPS | Forzado en producción (Render/Vercel lo manejan) |
 | SQL Injection | Mitigado por SQLAlchemy ORM |
 | XSS | Mitigado por React (escape automático) |
 
@@ -803,4 +820,7 @@ alembic upgrade head
 alembic downgrade -1
 ```
 
-Las migraciones se ejecutan automáticamente al desplegar en Railway mediante un comando en el `Dockerfile` o `release_command` en `railway.json`.
+En el despliegue en vivo (Render) las migraciones se ejecutan automáticamente al
+arrancar: el comando de arranque (`alembic upgrade head` + seed + `uvicorn`) vive
+en el **CMD del `Dockerfile`**. El archivo `backend/railway.json` se conserva como
+referencia para un despliegue alternativo en Railway, pero no es el entorno actual.

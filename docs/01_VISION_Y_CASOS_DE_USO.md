@@ -30,7 +30,7 @@ Actualmente, esta evaluación se hace de forma manual por supervisores de QA, qu
 Una plataforma web donde el supervisor de QA sube grabaciones de llamadas y, mediante IA (transcripción + análisis con modelos de lenguaje), obtiene en minutos:
 
 - Transcripción completa con timestamps
-- Evaluación objetiva contra una rúbrica predefinida (7 dimensiones)
+- Evaluación objetiva contra una rúbrica configurable (7 dimensiones por defecto)
 - Score numérico por dimensión + score global tipo NPS
 - Recomendaciones accionables específicas para el ejecutivo
 - Comparativa contra el promedio del equipo
@@ -43,7 +43,7 @@ Una plataforma web donde el supervisor de QA sube grabaciones de llamadas y, med
 | Tiempo por llamada | 20-30 min | 2-3 min |
 | Cobertura del equipo | 1-2% | 100% |
 | Consistencia | Variable | Alta |
-| Costo por evaluación | Alto (hora-supervisor) | Bajo (API) |
+| Costo por evaluación | Alto (hora-supervisor) | Nulo en el prototipo (API Groq gratuita) |
 
 ### 1.4 Alcance del MVP (este proyecto)
 
@@ -51,7 +51,7 @@ Una plataforma web donde el supervisor de QA sube grabaciones de llamadas y, med
 
 - Subida manual de archivos de audio (MP3, WAV, M4A)
 - Transcripción automática en español (configurable a otros idiomas)
-- Análisis IA sobre 7 dimensiones de evaluación
+- Análisis IA sobre una rúbrica editable (7 dimensiones por defecto, con subcategorías)
 - Dashboard de supervisor con métricas y reportes
 - Gestión de ejecutivos (alta, baja, edición)
 - Comparativas individuales vs promedio del equipo
@@ -79,7 +79,7 @@ En esta versión MVP existe un único rol con todos los permisos:
 | Asignar ejecutivo | Indica a qué ejecutivo pertenece cada llamada |
 | Ver análisis | Consulta transcripción, scores y recomendaciones |
 | Gestionar ejecutivos | Crea/edita/elimina ejecutivos del equipo |
-| Configurar rúbrica | Ajusta pesos de cada dimensión de evaluación |
+| Configurar rúbrica | Ajusta pesos, añade/elimina dimensiones y activa/desactiva subcategorías |
 | Ver dashboard | Consulta métricas agregadas del equipo |
 | Exportar reportes | Descarga reportes en PDF/CSV |
 | Configurar idioma | Cambia el idioma de análisis |
@@ -129,7 +129,7 @@ En esta versión MVP existe un único rol con todos los permisos:
 4. El sistema muestra:
    - Datos generales (ejecutivo, fecha, duración)
    - Score global (0-100, tipo NPS)
-   - Score por cada una de las 7 dimensiones
+   - Score por cada dimensión activa de la rúbrica
    - Recomendaciones accionables priorizadas
    - Comparativa contra promedio del equipo
    - Transcripción completa con timestamps (opcional, expandible)
@@ -182,9 +182,9 @@ En esta versión MVP existe un único rol con todos los permisos:
 **Flujo principal:**
 
 1. El supervisor accede a "Configuración → Rúbrica"
-2. El sistema muestra las 7 dimensiones por defecto con sus pesos
+2. El sistema muestra las 7 dimensiones por defecto con sus pesos y subcategorías
 3. El supervisor puede ajustar el peso porcentual de cada dimensión (suma = 100%)
-4. Opcionalmente, ajusta los criterios específicos de cada dimensión (texto libre)
+4. Opcionalmente, añade/elimina dimensiones y activa/desactiva subcategorías (la IA evalúa solo las subcategorías activas)
 5. Guarda los cambios — aplicarán a las próximas llamadas analizadas
 
 **Postcondición:** La rúbrica queda configurada según las prioridades del negocio.
@@ -232,7 +232,7 @@ El score global (tipo NPS, escala 0-100) se calcula como:
 Score Global = Σ (Score_dimensión_i × Peso_dimensión_i) / 100
 ```
 
-Donde los pesos por defecto son iguales (14.28% cada una), pero el supervisor puede ajustarlos.
+Donde los pesos por defecto son prácticamente iguales (~14.28% cada una; ajustados para sumar 100%), pero el supervisor puede modificarlos.
 
 ### RN-03: Clasificación del score
 
@@ -281,7 +281,7 @@ Donde los pesos por defecto son iguales (14.28% cada una), pero el supervisor pu
 
 - Las llamadas deben estar en formato de audio (no video)
 - El audio debe tener calidad mínima audible (no se pueden procesar audios muy ruidosos)
-- Datos sensibles del cliente (números de tarjeta, DNI completo) no deben mostrarse en transcripción visible — se enmascaran automáticamente
+- Datos sensibles del cliente (números de tarjeta, DNI completo) se enmascaran en la transcripción mediante reglas regex *best-effort* (no es garantía de cumplimiento; el audio original se envía íntegro al proveedor de transcripción)
 
 ### Supuestos
 
@@ -319,8 +319,8 @@ Cuando se decida escalar más allá del prototipo, se requiere coordinar con:
 ```
 PROTOTIPO (HOY)               PILOTO (Q3 2026)              PRODUCCIÓN (Q4 2026+)
 ─────────────────             ──────────────────            ────────────────────────
-Railway + Vercel              Azure App Service             Azure App Service
-APIs públicas (Claude/Groq)   Azure OpenAI Service          Azure OpenAI + Whisper on-prem
+Vercel + Render               Azure App Service             Azure App Service
+API pública Groq (gratis)     Azure OpenAI Service          Azure OpenAI + Whisper on-prem
 Datos simulados               Datos anonimizados            Datos reales con consentimiento
 Sin EIPD formal               EIPD inicial                  EIPD completa + auditoría
 1 supervisor demo             5-10 ejecutivos piloto        Todo el call center
@@ -350,7 +350,7 @@ Todas las pantallas del prototipo deben incluir un banner persistente:
 | **NPS** | Net Promoter Score — Escala de 0-100 para medir satisfacción |
 | **Rúbrica** | Conjunto de criterios para evaluar de forma estandarizada |
 | **STT** | Speech-to-Text — Transcripción de voz a texto |
-| **LLM** | Large Language Model — Modelo de lenguaje grande (Claude, GPT) |
+| **LLM** | Large Language Model — Modelo de lenguaje grande (Llama, Claude, GPT) |
 | **Whisper** | Modelo open-source de OpenAI para transcripción de audio |
 | **Groq** | Plataforma de inferencia ultra rápida con Whisper vía API |
 | **MVP** | Minimum Viable Product — Producto mínimo viable |

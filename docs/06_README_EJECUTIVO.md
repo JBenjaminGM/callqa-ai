@@ -73,7 +73,7 @@ Cada dimensión recibe un score de **0-100**, y se calcula un **score global tip
 Si nuestro call center procesa **500 llamadas/día** y queremos auditar el 100%:
 
 - **Manual:** Necesitaríamos ~40 supervisores dedicados → impracticable
-- **CallQA AI:** análisis con Groq en su capa gratuita ($0 en IA) + costos de infraestructura mínimos + 1 supervisor para revisar reportes
+- **CallQA AI:** análisis con Groq en su capa gratuita ($0 en IA) + infraestructura gratuita (Vercel/Render) + 1 supervisor para revisar reportes
 
 **ROI estimado en el primer año:** Reducción del 70-80% en costos de QA + detección temprana de oportunidades de mejora valoradas en cientos de miles de soles.
 
@@ -95,9 +95,10 @@ Considerando que somos una entidad financiera, y siendo honestos sobre el estado
 
 ## 🚀 Demo funcional
 
-La plataforma está desplegada y lista para demo:
+La plataforma está **desplegada en vivo** y lista para demo (coste $0):
 
-🔗 **URL:** [URL DE TU VERCEL AQUÍ]
+🔗 **Frontend:** https://callqa-ai.vercel.app
+🔗 **API (backend):** https://callqa-api.onrender.com (`/docs`, `/health`)
 
 **Credenciales de prueba:**
 - Usuario: `admin@callqa.com`
@@ -141,16 +142,18 @@ La plataforma está desplegada y lista para demo:
 
 ### Costos de infraestructura (operación)
 
-| Concepto | Demo / Piloto | Producción (500 llamadas/día) |
+| Concepto | Despliegue actual (demo en vivo) | Producción estimada (500 llamadas/día) |
 |---|---|---|
-| Hosting backend (Railway) | $10/mes | $50-100/mes |
+| Hosting backend (Render) | Gratis | $25-100/mes (plan con worker) |
 | Hosting frontend (Vercel) | Gratis | Gratis o $20/mes |
-| Base de datos | Incluida | Incluida |
+| Base de datos (Render PostgreSQL) | Gratis | Incluida / plan de pago |
 | API de transcripción (Groq) | Gratis | $20-40/mes |
 | API de análisis IA (Groq, capa gratuita) | Gratis | Gratis ($0) |
-| **TOTAL OPERACIÓN** | **~$10/mes** | **~$70-160/mes** |
+| **TOTAL OPERACIÓN** | **$0** | **~$45-160/mes** |
 
-Comparado con el costo de 1 supervisor (~$1,500-2,500/mes en el mercado peruano), **el ROI es inmediato a partir del segundo mes de uso**.
+El **despliegue actual cuesta literalmente $0** (Groq gratis + tiers gratuitos de
+Vercel y Render). Incluso en una proyección de producción y comparado con el costo
+de 1 supervisor (~$1,500-2,500/mes en el mercado peruano), **el ROI es inmediato**.
 
 ### Costos de desarrollo
 

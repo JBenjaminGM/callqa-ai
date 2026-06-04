@@ -30,8 +30,11 @@ API responde de inmediato y el frontend consulta el estado por *polling*.
 | Herramienta | Para qué | Descarga |
 |---|---|---|
 | Docker Desktop | Ejecutar todo el sistema localmente | https://www.docker.com/products/docker-desktop/ |
-| Cuenta en Groq | API de transcripción | https://console.groq.com |
-| Cuenta en Anthropic | API de análisis IA | https://console.anthropic.com |
+| Cuenta en Groq | Transcripción **y** análisis IA (proveedor por defecto, gratis) | https://console.groq.com |
+| Cuenta en Anthropic / OpenAI | Solo si cambias el proveedor de análisis (opcional, de pago) | https://console.anthropic.com |
+
+Con **Groq por defecto** (`AI_PROVIDER=groq`) una sola clave cubre transcripción
+(Whisper large v3) y análisis (Llama 3.3 70B), y el coste de IA es **$0**.
 
 No necesitas instalar Python ni PostgreSQL: Docker se encarga de todo.
 
@@ -39,21 +42,24 @@ No necesitas instalar Python ni PostgreSQL: Docker se encarga de todo.
 
 ## 3. Cómo obtener las API keys
 
-### Groq (transcripción)
+### Groq (transcripción + análisis) — la única que necesitas
 
 1. Entra a https://console.groq.com/ e inicia sesión.
 2. Menú lateral → **API Keys** → **Create API Key**.
 3. Copia la clave (empieza por `gsk_...`). **No se vuelve a mostrar.**
 
-### Anthropic (análisis IA)
+Con esta clave y `AI_PROVIDER=groq` ya tienes transcripción y análisis funcionando, gratis.
+
+### Anthropic (opcional — solo si usas Claude para el análisis)
 
 1. Entra a https://console.anthropic.com/ y crea una cuenta.
 2. Añade un método de pago (solo se cobra el uso real, ~$0.02 por llamada).
 3. **API Keys** → **Create Key**. Copia la clave (empieza por `sk-ant-...`).
+4. Cambia `AI_PROVIDER=claude` en el `.env`.
 
 ### OpenAI (opcional)
 
-Solo si quieres poder alternar a GPT. https://platform.openai.com/api-keys
+Solo si quieres alternar a GPT (`AI_PROVIDER=openai`). https://platform.openai.com/api-keys
 
 ---
 
@@ -68,9 +74,10 @@ cd callqa-backend
 cp .env.example .env
 
 # 3. Edita .env y rellena al menos estas claves:
-#    GROQ_API_KEY=gsk_...
-#    ANTHROPIC_API_KEY=sk-ant-...
+#    GROQ_API_KEY=gsk_...              # única clave imprescindible
+#    AI_PROVIDER=groq                  # por defecto; gratis (Llama 3.3 70B)
 #    JWT_SECRET=algo-largo-y-aleatorio
+#    # ANTHROPIC_API_KEY=sk-ant-...    # opcional, solo si AI_PROVIDER=claude
 
 # 4. Levanta todo el sistema
 docker-compose up
@@ -89,14 +96,18 @@ El arranque ejecuta automáticamente las migraciones y el *seed* de datos.
 
 ---
 
-## 5. Cómo desplegar en Railway
+## 5. Cómo desplegar (gratis, $0)
 
-1. Sube este repositorio a GitHub (privado recomendado).
-2. En https://railway.app → **New Project → Deploy from GitHub repo**.
-3. Añade los servicios de base de datos:
-   - **+ New → Database → Add PostgreSQL**
-   - **+ New → Database → Add Redis**
-4. En el servicio del backend, pestaña **Variables**, configura:
+El despliegue vigente es **Render** (backend) + **Vercel** (frontend), con coste
+**$0**. La guía completa paso a paso está en **[`../docs/DEPLOY_GRATIS.md`](../docs/DEPLOY_GRATIS.md)**.
+En vivo: API en https://callqa-api.onrender.com · frontend en https://callqa-ai.vercel.app.
+
+Resumen para el backend en Render (a partir del blueprint `render.yaml` de la raíz):
+
+1. Sube este repositorio a GitHub.
+2. En https://render.com → **New → Blueprint** y selecciona el repo (lee `render.yaml`).
+3. Render aprovisiona el servicio web y, si aplica, la base de datos PostgreSQL.
+4. Configura las variables de entorno del servicio:
 
    ```
    GROQ_API_KEY=gsk_...
@@ -108,19 +119,16 @@ El arranque ejecuta automáticamente las migraciones y el *seed* de datos.
    STORAGE_PROVIDER=local
    STORAGE_PATH=/data/audios
    CORS_ORIGINS=https://tu-frontend.vercel.app
-   DATABASE_URL=${{Postgres.DATABASE_URL}}
-   REDIS_URL=${{Redis.REDIS_URL}}
    ```
 
-5. **Settings → Volumes**: añade un volumen montado en `/data` (1 GB).
-6. Crea un segundo servicio (**Empty Service**) para el worker de Celery:
-   - Mismo repositorio.
-   - Start Command: `celery -A app.tasks.celery_app worker --loglevel=info`
-   - Mismas variables de entorno y el mismo volumen `/data`.
-7. **Settings → Networking → Generate Domain** para obtener la URL pública.
-8. Verifica en `https://tu-backend.up.railway.app/docs`.
-9. Carga los datos iniciales ejecutando `python scripts/seed_data.py` desde la
-   shell de Railway (o se ejecuta solo si usas el comando de arranque local).
+5. `DATABASE_URL` (y `REDIS_URL` si lo usas) los inyecta Render desde el blueprint.
+6. La URL pública la asigna Render automáticamente; verifica en `https://tu-backend.onrender.com/docs`.
+7. Carga los datos iniciales (admin, rúbrica, ejecutivos) ejecutando
+   `python scripts/seed_data.py` desde la shell de Render, o deja que el comando de
+   arranque lo haga.
+
+> En el plan gratuito de Render el procesamiento asíncrono corre en el mismo servicio
+> (no hay worker Celery separado). Para los detalles exactos, sigue `../docs/DEPLOY_GRATIS.md`.
 
 ---
 
@@ -178,13 +186,16 @@ Todos los endpoints (excepto `/auth/*`) requieren la cabecera
 
 ## 8. Ejecutar los tests
 
+El proyecto tiene **33 tests** automatizados.
+
 ```bash
 # Dentro del contenedor de la API
-docker-compose run --rm api pytest
+docker compose run --rm api pytest -q
 
 # O en local, con un entorno virtual de Python:
 pip install -r requirements.txt
-pytest
+pytest -q
+#   En Windows con el venv del repo:  .venv\Scripts\python -m pytest -q
 ```
 
 Los tests usan SQLite en memoria y no necesitan PostgreSQL ni claves de API.
@@ -197,7 +208,7 @@ Los tests usan SQLite en memoria y no necesitan PostgreSQL ni claves de API.
 |---|---|
 | `docker-compose up` falla al construir | Verifica que Docker Desktop esté corriendo. |
 | La llamada se queda en `TRANSCRIBING` | Revisa que el servicio `worker` esté activo y que `GROQ_API_KEY` sea válida. |
-| `Invalid API key` de Anthropic | La clave debe empezar por `sk-ant-` y tu cuenta debe tener saldo. |
+| `Invalid API key` de Anthropic | Solo aplica si `AI_PROVIDER=claude`: la clave debe empezar por `sk-ant-` y tu cuenta debe tener saldo. Con el `groq` por defecto no necesitas esta clave. |
 | Error de CORS desde el frontend | Añade la URL exacta del frontend a `CORS_ORIGINS` (sin barra final). |
 | El audio no se sube | Verifica formato (MP3/WAV/M4A/OGG/FLAC) y tamaño (≤ 100 MB). |
 
@@ -208,8 +219,9 @@ Los tests usan SQLite en memoria y no necesitan PostgreSQL ni claves de API.
 El código está preparado para migrar a infraestructura Azure sin reescribirse:
 
 - Los proveedores de IA y transcripción usan **patrón factory**: basta cambiar
-  las variables `AI_PROVIDER` / `WHISPER_PROVIDER` para alternar entre
-  Claude, OpenAI, Azure OpenAI y Azure Speech.
+  las variables `AI_PROVIDER` / `WHISPER_PROVIDER`. El análisis admite
+  **Groq (por defecto)**, Claude, OpenAI y Azure OpenAI; la transcripción admite
+  **Groq (por defecto)** y Azure Speech.
 - Toda la configuración vive en variables de entorno.
 - Cada respuesta incluye el header `X-Prototype-Notice` y los logs llevan el
   campo `environment: prototype` para auditoría.

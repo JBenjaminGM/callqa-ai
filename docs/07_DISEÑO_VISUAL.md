@@ -1,6 +1,11 @@
 # 🎨 Sistema de Diseño — CallQA AI
 
-> ⚠️ **DOCUMENTO OBSOLETO.** Describe la paleta anterior (vino/borgoña con magenta). La paleta vigente es **Índigo/Slate**; la referencia actual es `docs/DESIGN.md` y la implementación canónica `frontend/app/globals.css`.
+> ❌ **DOCUMENTO OBSOLETO — NO USAR.** Todos los colores de abajo (paleta vino/borgoña con acentos magenta/rosa, modo oscuro `#4B0024`, etc.) corresponden a un diseño **antiguo y ya descartado**. La paleta **vigente es Índigo / Slate** (acento Índigo `#4f46e5`/`#6366f1`, canvas Slate-navy `#0b1020` en oscuro y cool-white `#f6f7fb` en claro).
+>
+> - Referencia de diseño actual: **`DESIGN.md`**.
+> - Implementación **canónica** (fuente de verdad): **`frontend/app/globals.css`**.
+>
+> Se conserva esta página solo como registro histórico; **no la tomes como referencia para nada visual.**
 
 > **Paleta de colores y guías visuales para el frontend**
 

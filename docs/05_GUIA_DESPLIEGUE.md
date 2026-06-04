@@ -1,6 +1,8 @@
 # 📘 Guía de Despliegue Paso a Paso (para no-devs)
 
-> 📌 **Documento de referencia.** El proyecto ya está en GitHub (`JBenjaminGM/callqa-ai`) y corre en local con Docker (`docker compose up`). Con Groq por defecto el coste de IA es $0. Las secciones de Railway/Vercel/Anthropic siguen siendo válidas como referencia si quieres desplegar en la nube o cambiar de proveedor.
+> ⚠️ **GUÍA ANTIGUA (Railway) — históricA.** Esta guía despliega el backend en **Railway** (de pago, ~$5-15/mes), que **ya no es el método vigente**. El despliegue actual es **Vercel (frontend) + Render (backend), gratis ($0)** y está documentado en **`DEPLOY_GRATIS.md`** — usa esa guía. En vivo: https://callqa-ai.vercel.app · https://callqa-api.onrender.com.
+>
+> Conserva esta página solo como referencia. Si la lees, ten en cuenta que el **proveedor de IA por defecto es Groq** (`AI_PROVIDER=groq`, Llama 3.3 70B, gratis); Anthropic/Claude es opcional y de pago. El repo es `github.com/JBenjaminGM/callqa-ai` y en local se levanta con `docker compose up`.
 
 > **Esta guía está escrita asumiendo que NO sabes desarrollo.** Cada paso explica exactamente qué hacer y qué deberías ver.
 
@@ -29,8 +31,8 @@ Vamos a poner tu plataforma CallQA AI **en internet** para que tu jefe pueda abr
 | **GitHub** | Guardar el código | https://github.com/signup | Gratis |
 | **Railway** | Hostear el backend | https://railway.app | $5 crédito gratis, después ~$5-10/mes |
 | **Vercel** | Hostear el frontend | https://vercel.com/signup | Gratis para siempre |
-| **Groq** | API de transcripción | https://console.groq.com | Gratis con límites generosos |
-| **Anthropic** | API de Claude (análisis IA) | https://console.anthropic.com | Pay-per-use, muy barato (~$0.02 por llamada) |
+| **Groq** | Transcripción **y** análisis IA (proveedor por defecto) | https://console.groq.com | Gratis con límites generosos |
+| **Anthropic** *(opcional)* | API de Claude, solo si cambias el proveedor de análisis | https://console.anthropic.com | Pay-per-use (~$0.02 por llamada) |
 
 ### Software a instalar en tu computadora
 

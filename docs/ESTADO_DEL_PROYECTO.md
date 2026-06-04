@@ -55,9 +55,10 @@ Navegador ──HTTPS──> Frontend (Next.js 14) ──REST──> Backend (Fa
 
 ```
 callqa-ai/
-├── docker-compose.yml        # Levanta TODO el stack (prod): bd + api + worker + frontend
+├── docker-compose.yml        # Levanta TODO el stack local: bd + redis + api + worker + frontend
+├── render.yaml               # Blueprint de Render (backend Docker + PostgreSQL)
 ├── README.md                 # Guía rápida del monorepo
-├── ESTADO_DEL_PROYECTO.md     # Este archivo (memoria del proyecto)
+├── AGENTS.md / CLAUDE.md      # Punteros que apuntan a docs/AGENTS.md
 │
 ├── backend/                  # API FastAPI + worker Celery
 │   ├── app/
@@ -69,9 +70,9 @@ callqa-ai/
 │   │   ├── services/          # Lógica de negocio (IA, storage, matching, PDF)
 │   │   ├── tasks/             # Tareas Celery
 │   │   └── prompts/           # Prompts para los LLM
-│   ├── alembic/               # Migraciones de BD (0001, 0002)
+│   ├── alembic/               # Migraciones de BD (0001, 0002, 0003)
 │   ├── scripts/seed_data.py   # Datos iniciales
-│   ├── tests/                 # 32 tests automatizados
+│   ├── tests/                 # 33 tests automatizados
 │   └── docker-compose.yml     # Compose SOLO del backend (para devs)
 │
 ├── frontend/                 # Aplicación Next.js
@@ -81,8 +82,12 @@ callqa-ai/
 │   ├── types/                 # Tipos TypeScript
 │   └── Dockerfile             # Imagen de producción (salida standalone)
 │
-└── docs/                     # Documentación de origen del proyecto
-    ├── 00_INDICE.md … 07_DISEÑO_VISUAL.md
+└── docs/                     # TODA la documentación del proyecto
+    ├── AGENTS.md              # Guía canónica de desarrollo (la más importante)
+    ├── 00_INDICE.md           # Índice de la documentación
+    ├── ESTADO_DEL_PROYECTO.md # Este archivo (memoria del proyecto)
+    ├── CHANGELOG.md · DEPLOY_GRATIS.md
+    ├── 01_…_07_DISEÑO_VISUAL.md  # Especificación de origen (algunos históricos)
     └── DESIGN.md              # Sistema de diseño "Aetheric Intelligence"
 ```
 
@@ -140,7 +145,7 @@ callqa-ai/
 
 ## 6. Sistema de diseño
 
-Se aplicó el sistema **"Aetheric Intelligence"** (`docs/DESIGN.md`):
+Se aplicó el sistema **"Aetheric Intelligence"** (`DESIGN.md`):
 
 - Estética *High-Tech Editorial* + **Glassmorphism**.
 - **Modo oscuro** (por defecto): canvas slate-navy `#0b1020` con resplandores
@@ -170,7 +175,8 @@ Se aplicó el sistema **"Aetheric Intelligence"** (`docs/DESIGN.md`):
 | `app_settings` | Configuración global (idioma, proveedor IA) |
 
 Migraciones: **0001** esquema inicial · **0002** detección de ejecutivo
-(`agent_id` nullable + `detected_agent_name` + `responsible`).
+(`agent_id` nullable + `detected_agent_name` + `responsible`) · **0003**
+rúbrica editable (`rubric_config.criteria` JSON con subcategorías).
 
 ---
 
@@ -191,14 +197,20 @@ Para detener: `Ctrl+C` o `docker compose down`.
 
 ### Para que el análisis con IA funcione
 
-Hay que poner las claves de API en `backend/.env`:
+Por defecto basta una **clave de Groq** en `backend/.env` (hace transcripción **y**
+análisis, gratis):
 
 ```
 GROQ_API_KEY=gsk_...
-ANTHROPIC_API_KEY=sk-ant-...
+AI_PROVIDER=groq
+WHISPER_PROVIDER=groq
 ```
 
-Sin ellas, las llamadas subidas quedan en estado `ERROR` al transcribir.
+Sin ella, las llamadas subidas quedan en estado `ERROR` al transcribir.
+Claude / OpenAI / Azure son opcionales: cambia `AI_PROVIDER` y pon su API key.
+
+> 💡 También está **desplegado en vivo y gratis** (Vercel + Render); para publicarlo
+> tú mismo, ver `DEPLOY_GRATIS.md`.
 
 ---
 
@@ -207,8 +219,8 @@ Sin ellas, las llamadas subidas quedan en estado `ERROR` al transcribir.
 | Verificación | Resultado |
 |---|---|
 | Build Docker del backend | ✅ |
-| Tests del backend (`pytest`) | ✅ 32/32 |
-| Migraciones 0001 + 0002 | ✅ aplican sin error |
+| Tests del backend (`pytest`) | ✅ 33/33 |
+| Migraciones 0001 + 0002 + 0003 | ✅ aplican sin error |
 | Build de producción del frontend | ✅ 10 rutas, tipos TS válidos |
 | Endpoints API (login, agents, calls, dashboard, config) | ✅ |
 | CORS frontend ↔ backend | ✅ |
@@ -219,27 +231,36 @@ Sin ellas, las llamadas subidas quedan en estado `ERROR` al transcribir.
 
 ## 10. Pendientes / próximos pasos
 
-- [ ] Configurar `GROQ_API_KEY` y `ANTHROPIC_API_KEY` reales y probar el
-      análisis de extremo a extremo con audios reales.
-- [ ] Despliegue en la nube (backend → Railway, frontend → Vercel, o Azure).
+- [x] **Despliegue en la nube** (frontend → Vercel, backend + PostgreSQL → Render),
+      **gratis** y en vivo. Ver `DEPLOY_GRATIS.md`.
+- [x] **Groq configurado** (`GROQ_API_KEY` real) haciendo transcripción y análisis
+      en producción. Pendiente: validación end-to-end exhaustiva con audios reales.
 - [ ] Reproductor de audio sincronizado con la transcripción (la API aún no
       expone un endpoint para servir el audio).
 - [ ] Endpoint de exportación masiva (CSV) del reporte del equipo.
 - [ ] Antes de producción: validaciones de Compliance, DPO y Seguridad
-      (ver `docs/01_VISION_Y_CASOS_DE_USO.md`, sección 7).
+      (ver `01_VISION_Y_CASOS_DE_USO.md`, sección 7).
 
 ---
 
 ## 11. Historial de iteraciones
 
 1. **Generación inicial** del backend completo (FastAPI + Celery + modelo de
-   datos + tests) a partir del prompt maestro de `docs/04_PROMPT_BACKEND.md`.
+   datos + tests) a partir del prompt maestro de `04_PROMPT_BACKEND.md`.
 2. **Frontend** Next.js con todas las páginas y el sistema de diseño inicial.
-3. **Verificación** con Docker: build, 32 tests, stack levantado.
+3. **Verificación** con Docker: build, tests, stack levantado.
 4. **Rediseño de flujo**: subida en lote, detección del ejecutivo por IA,
    matching difuso, asignación posterior, filtro por fecha (con tests
-   adicionales hasta llegar a los 32 actuales).
+   adicionales hasta llegar a los 33 actuales).
 5. **Reestilo** a la identidad corporativa (púrpura Minsait).
 6. **Reestilo** al sistema "Aetheric Intelligence" (glassmorphism).
 7. **Optimización**: frontend a modo producción (salida standalone) y
    reorganización en este **monorepo** con un único `docker-compose.yml`.
+8. **Migración a Groq** como proveedor por defecto (Whisper large v3 + Llama 3.3
+   70B, coste $0); el patrón factory mantiene Claude/OpenAI/Azure como opciones.
+9. **Rúbrica editable** con subcategorías y categorías que se pueden añadir/eliminar
+   (migración `0003`); el prompt de la IA pasa a ser **dinámico**.
+10. **Diarización por LLM** (por contenido), dejando la heurística de pausas como
+    fallback; filtros del dashboard (campaña/ejecutivo/fechas) y **paleta Índigo/Slate**.
+11. **Despliegue gratis en vivo**: Vercel (frontend) + Render (backend + PostgreSQL),
+    con **procesamiento inline** (`PROCESS_INLINE=true`) para correr sin Celery/Redis.

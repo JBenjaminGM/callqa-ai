@@ -1,6 +1,14 @@
 # 🤖 PROMPT MAESTRO PARA CLAUDE CODE — BACKEND
 
-> 📌 **Documento histórico.** Este es el prompt maestro con el que se generó el backend. El proyecto evolucionó desde entonces (Groq por defecto en vez de Claude, rúbrica con subcategorías, diarización por LLM, paleta Índigo, etc.). Para el estado REAL ver `ESTADO_DEL_PROYECTO.md`.
+> 📌 **DOCUMENTO HISTÓRICO — NO es el estado actual.** Este es el prompt maestro original con el que se *generó* el backend. El proyecto evolucionó bastante desde entonces; el cuerpo de abajo se conserva tal cual (incluidas menciones a Claude, Railway o `docker-compose`) solo como registro. Diferencias clave con la realidad de hoy:
+>
+> - **IA por defecto = Groq** (Whisper large v3 + **Llama 3.3 70B**), `AI_PROVIDER=groq`, **gratis ($0)**. Claude / OpenAI / Azure quedan como opciones del factory.
+> - **Rúbrica editable con subcategorías** (no las 7 dimensiones fijas del prompt).
+> - **Diarización por LLM** (la heurística de pausas es solo *fallback*).
+> - **Paleta Índigo / Slate** (ver `DESIGN.md` y `frontend/app/globals.css`).
+> - **Despliegue real: Vercel (frontend) + Render (backend), $0** — no Railway. Guía vigente: `DEPLOY_GRATIS.md`.
+>
+> Para el estado REAL del proyecto ver **`AGENTS.md`** y **`ESTADO_DEL_PROYECTO.md`**. *(Nota: "Claude Code" en este documento se refiere a la herramienta de desarrollo con la que se generó el código, no al proveedor de análisis.)*
 
 > **Instrucciones de uso:**
 > 1. Abre Claude Code en una carpeta vacía llamada `callqa-backend`

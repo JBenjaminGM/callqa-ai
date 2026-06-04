@@ -39,7 +39,7 @@ Se conecta al backend de CallQA AI mediante su API REST.
 ## 3. Requisitos previos
 
 - **Node.js 18 o superior** — https://nodejs.org
-- El **backend de CallQA AI** corriendo (local o en Railway).
+- El **backend de CallQA AI** corriendo (local con Docker, o desplegado en Render).
 
 ---
 
@@ -74,17 +74,21 @@ Abre **http://localhost:3000**.
 
 ## 5. Desplegar en Vercel
 
-1. Sube este repositorio a GitHub (`callqa-frontend`).
-2. Entra a https://vercel.com/new e importa el repositorio.
+El despliegue vigente es **Vercel** (frontend) + **Render** (backend), gratis ($0).
+Guía completa: [`../docs/DEPLOY_GRATIS.md`](../docs/DEPLOY_GRATIS.md). En vivo:
+https://callqa-ai.vercel.app (API: https://callqa-api.onrender.com).
+
+1. Sube el repositorio a GitHub.
+2. Entra a https://vercel.com/new e importa el repositorio (raíz del proyecto: `frontend/`).
 3. Vercel detecta automáticamente que es un proyecto Next.js.
-4. En **Environment Variables** añade:
+4. En **Environment Variables** añade la URL de tu backend en Render:
 
    ```
-   NEXT_PUBLIC_API_URL=https://tu-backend.up.railway.app/api/v1
+   NEXT_PUBLIC_API_URL=https://tu-backend.onrender.com/api/v1
    ```
 
 5. Pulsa **Deploy**. En ~2 minutos tendrás una URL pública.
-6. **Importante:** en el backend (Railway), añade la URL de Vercel a la
+6. **Importante:** en el backend (Render), añade la URL de Vercel a la
    variable `CORS_ORIGINS` para que la API acepte las peticiones del frontend.
 
 ---
@@ -123,11 +127,12 @@ callqa-frontend/
 ## 7. Sistema de diseño
 
 La paleta de colores (modo claro y oscuro) está definida como variables CSS
-en `app/globals.css` y mapeada a Tailwind en `tailwind.config.ts`, siguiendo el
-documento de diseño visual del proyecto:
+en `app/globals.css` (implementación **canónica**) y mapeada a Tailwind en
+`tailwind.config.ts`. La referencia de diseño es [`../docs/DESIGN.md`](../docs/DESIGN.md).
+Paleta **Índigo / Slate**:
 
-- **Modo claro:** crema y rosa acento.
-- **Modo oscuro:** Slate-navy (#0b1020) con acento Índigo (#6366f1).
+- **Modo claro:** canvas cool-white (#f6f7fb) y acento Índigo (#4f46e5).
+- **Modo oscuro (por defecto):** Slate-navy (#0b1020) con acento Índigo (#6366f1).
 - El toggle del header persiste la elección en `localStorage`.
 - Scores con color semántico: verde (80-100), amarillo (60-79), rojo (0-59).
 

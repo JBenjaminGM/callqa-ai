@@ -142,7 +142,7 @@ Los requerimientos funcionales describen **qué debe hacer** el sistema. Cada un
 **Criterio de aceptación:**
 
 - Usa Groq (Llama 3.3 70B) por defecto; Claude/OpenAI/Azure configurables vía variable de entorno
-- Evalúa las 7 dimensiones definidas en la rúbrica
+- Evalúa las dimensiones activas de la rúbrica (7 por defecto)
 - Genera score 0-100 por dimensión
 - Calcula score global ponderado
 - Genera 3-5 recomendaciones accionables priorizadas
@@ -439,7 +439,7 @@ Los requerimientos no funcionales describen **cómo debe ser** el sistema.
 
 - Logs estructurados (JSON)
 - Niveles: DEBUG, INFO, WARNING, ERROR
-- Logs centralizados en producción (Railway logs o servicio externo)
+- Logs centralizados en producción (Render logs o servicio externo)
 
 ---
 
@@ -461,8 +461,9 @@ Los requerimientos no funcionales describen **cómo debe ser** el sistema.
 
 #### RNF-18: Costo objetivo
 
-- Costo de infraestructura mensual: ≤ $30 USD para volumen demo
-- Costo por análisis (Groq + Claude/GPT): ≤ $0.05 USD por llamada de 10 min
+- Costo de infraestructura mensual: $0 con el stack actual (Vercel + Render en plan gratuito)
+- Costo por análisis con el proveedor por defecto (Groq, gratis): $0 por llamada
+- Si se cambia a un proveedor de pago (Claude/OpenAI): objetivo ≤ $0.05 USD por llamada de 10 min
 
 ---
 
