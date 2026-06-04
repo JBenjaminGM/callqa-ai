@@ -1,11 +1,13 @@
 # 🧠 Estado del Proyecto — CallQA AI
 
-> **Memoria de desarrollo.** Este documento resume todo lo que se ha
-> construido, las decisiones tomadas y lo que queda pendiente. Sirve para
-> tener una visión completa del avance sin revisar el código.
+> **Memoria de desarrollo.** Este documento resume lo construido, las decisiones y lo pendiente.
+>
+> 👉 **Para el estado MÁS ACTUAL y la guía de desarrollo** (cómo correr, testear, desplegar y
+> dónde tocar cada cosa), ver **[`AGENTS.md`](AGENTS.md)** y **[`CHANGELOG.md`](CHANGELOG.md)**.
 
-**Última actualización:** Mayo 2026
-**Estado general:** ✅ MVP funcional (backend + frontend) verificado y corriendo en local.
+**Última actualización:** Junio 2026
+**Estado general:** ✅ MVP funcional **desplegado en producción gratis** (Vercel + Render),
+con transcripción y análisis vía **Groq** (coste $0). 33 tests backend en verde.
 
 ---
 

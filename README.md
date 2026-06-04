@@ -3,26 +3,35 @@
 Plataforma de **Quality Assurance automatizado con IA** para call centers
 bancarios. Monorepo con el backend, el frontend y la documentación.
 
-> ⚠️ **Prototipo / demo interna.** No usar con datos reales de clientes.
+> ⚠️ **Prototipo / demo interna** de Minsait (Grupo Indra). No usar con datos reales de clientes.
+
+- 🌐 **En vivo:** https://callqa-ai.vercel.app · API: https://callqa-api.onrender.com
+- 👤 **Acceso demo:** `admin@callqa.com` / `Admin123!`
+- 🤖 **¿Eres una IA o un dev nuevo?** Lee **[`AGENTS.md`](AGENTS.md)** — la guía completa
+  (arquitectura, mapa del repo, cómo correr/testear/desplegar y decisiones clave).
 
 ---
 
-## 🚀 Arranque rápido
+## 🚀 Arranque rápido (local)
 
-Requisito único: **Docker Desktop** instalado y abierto.
+Requisito: **Docker Desktop** abierto, y una **API key de Groq** (gratis) en `backend/.env`.
 
 ```bash
 cd callqa-ai
 docker compose up --build
 ```
 
-La primera vez tarda unos minutos (construye las imágenes). Cuando termine:
+- 🖥️ App: <http://localhost:3000>  ·  📚 API: <http://localhost:8000/docs>
+- Detener: `Ctrl+C` o `docker compose down`.
 
-- 🖥️ **Aplicación:** <http://localhost:3000>
-- 📚 **API / documentación:** <http://localhost:8000/docs>
-- 👤 **Acceso demo:** `admin@callqa.com` / `Admin123!`
-
-Para detener todo: `Ctrl+C`, o `docker compose down`.
+### Activar la IA (gratis, $0)
+En `backend/.env` basta una clave de **Groq** (transcripción **y** análisis):
+```
+GROQ_API_KEY=gsk_...
+AI_PROVIDER=groq
+WHISPER_PROVIDER=groq
+```
+> Claude/OpenAI/Azure son opcionales (de pago): cambia `AI_PROVIDER` y pon su API key.
 
 ---
 
@@ -30,34 +39,21 @@ Para detener todo: `Ctrl+C`, o `docker compose down`.
 
 | Carpeta / archivo | Contenido |
 |---|---|
-| `backend/` | API FastAPI + worker Celery (Python) |
-| `frontend/` | Aplicación web Next.js 14 (TypeScript) |
-| `docs/` | Documentación de origen del proyecto y sistema de diseño |
-| `docker-compose.yml` | Levanta el stack completo en modo producción |
-| `ESTADO_DEL_PROYECTO.md` | **Memoria del proyecto**: todo lo desarrollado y lo pendiente |
+| `backend/` | API FastAPI (+ worker Celery en local) — Python |
+| `frontend/` | App web Next.js 14 (TypeScript) |
+| `docs/` | Documentación de origen y sistema de diseño |
+| `docker-compose.yml` | Stack local completo |
+| `render.yaml` · `DEPLOY_GRATIS.md` | Despliegue gratis (Render + Vercel) |
+| **`AGENTS.md`** | **Guía de desarrollo / orientación para IAs** |
+| `CHANGELOG.md` · `ESTADO_DEL_PROYECTO.md` | Cambios y memoria del proyecto |
 
 ---
 
-## 🔑 Activar el análisis con IA
+## 🛠️ Desarrollo y despliegue
 
-La navegación funciona sin claves, pero para **transcribir y analizar audios**
-hay que configurar las claves de API en `backend/.env`:
+- **Tests backend (33):** `cd backend && .venv\Scripts\python -m pytest -q` (o vía Docker).
+- **Frontend en local:** `cd frontend && npm install && npm run dev`.
+- **Desplegar:** `git push origin main` → Vercel y Render redepliegan solos.
+- **Guía de publicación gratis:** ver **[`DEPLOY_GRATIS.md`](DEPLOY_GRATIS.md)**.
 
-```
-GROQ_API_KEY=gsk_...
-ANTHROPIC_API_KEY=sk-ant-...
-```
-
-Después, reinicia el stack (`docker compose up --build`).
-Cómo obtener las claves: ver `docs/05_GUIA_DESPLIEGUE.md`.
-
----
-
-## 🛠️ Desarrollo
-
-- **Solo backend** (con recarga en caliente): `cd backend && docker compose up`
-- **Tests del backend:** `cd backend && docker compose run --rm --no-deps api pytest`
-- **Frontend en local** (requiere Node 18+): `cd frontend && npm install && npm run dev`
-
-Para entender el estado completo del desarrollo, lee
-**`ESTADO_DEL_PROYECTO.md`**.
+Para el detalle completo del estado y cómo trabajar, lee **[`AGENTS.md`](AGENTS.md)**.
