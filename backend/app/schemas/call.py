@@ -18,6 +18,15 @@ class AgentRef(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class CampaignRef(BaseModel):
+    """Referencia ligera a la campaña asignada a una llamada."""
+
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
+
+
 class CallCreatedOut(BaseModel):
     """Respuesta tras subir una llamada (202 Accepted)."""
 
@@ -92,6 +101,8 @@ class CallDetailOut(BaseModel):
     language: str
     call_date: date | None = None
     campaign_type: str | None = None
+    campaign_id: int | None = None
+    campaign: CampaignRef | None = None
     call_reason: str | None = None
     error_message: str | None = None
     created_at: datetime

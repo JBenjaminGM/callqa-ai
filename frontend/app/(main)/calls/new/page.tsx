@@ -2,15 +2,17 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { UploadCloud, FileAudio, X } from 'lucide-react';
 import { api, getErrorMessage } from '@/lib/api';
-import { useAgents } from '@/lib/queries';
+import { useCampaignList } from '@/lib/queries';
 import { useAuthStore } from '@/lib/auth';
 import { Header } from '@/components/layout/header';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select } from '@/components/ui/select';
 import { Spinner, ErrorState } from '@/components/ui/feedback';
 
 const ALLOWED = ['.mp3', '.wav', '.m4a', '.ogg', '.flac'];
@@ -25,21 +27,16 @@ const MAX_FILES = 20;
  */
 export default function NewCallPage() {
   const router = useRouter();
-  const { data: agents } = useAgents();
+  const { data: campaigns } = useCampaignList({ active: true });
   const user = useAuthStore((s) => s.user);
 
   const [files, setFiles] = useState<File[]>([]);
-  const [campaign, setCampaign] = useState('');
+  const [campaignId, setCampaignId] = useState('');
   const [comment, setComment] = useState('');
   const [responsible, setResponsible] = useState(user?.name ?? '');
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Campañas existentes (para sugerencias del campo campaña).
-  const campaigns = Array.from(
-    new Set((agents ?? []).map((a) => a.campaign).filter(Boolean)),
-  ) as string[];
 
   function validateFile(f: File): string | null {
     const ext = '.' + (f.name.split('.').pop() ?? '').toLowerCase();
@@ -80,7 +77,7 @@ export default function NewCallPage() {
 
     const form = new FormData();
     files.forEach((f) => form.append('audios', f));
-    if (campaign) form.append('campaign', campaign);
+    if (campaignId) form.append('campaign_id', campaignId);
     if (comment) form.append('comment', comment);
     if (responsible) form.append('responsible', responsible);
 
@@ -177,19 +174,29 @@ export default function NewCallPage() {
             {/* Campaña */}
             <div>
               <Label htmlFor="campaign">Campaña</Label>
-              <Input
+              <Select
                 id="campaign"
-                list="campaign-options"
-                placeholder="Ej. Tarjetas Premium"
-                value={campaign}
-                onChange={(e) => setCampaign(e.target.value)}
+                value={campaignId}
+                onChange={(e) => setCampaignId(e.target.value)}
                 disabled={uploading}
-              />
-              <datalist id="campaign-options">
-                {campaigns.map((c) => (
-                  <option key={c} value={c} />
+              >
+                <option value="">Sin campaña</option>
+                {(campaigns ?? []).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
-              </datalist>
+              </Select>
+              <p className="mt-1 text-small text-text-muted">
+                La IA evaluará la oferta de cada llamada contra la nota de
+                producto de la campaña.{' '}
+                <Link
+                  href="/campaigns/new"
+                  className="text-accent-primary hover:underline"
+                >
+                  Crear campaña
+                </Link>
+              </p>
             </div>
 
             {/* Comentario opcional */}

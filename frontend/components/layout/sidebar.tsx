@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Phone,
   Users,
+  Megaphone,
   Settings,
   UploadCloud,
 } from 'lucide-react';
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { href: '/calls', label: 'Llamadas', icon: Phone },
   { href: '/calls/new', label: 'Nueva llamada', icon: UploadCloud },
   { href: '/agents', label: 'Ejecutivos', icon: Users },
+  { href: '/campaigns', label: 'Campañas', icon: Megaphone },
   { href: '/settings', label: 'Configuración', icon: Settings },
 ];
 

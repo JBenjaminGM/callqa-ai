@@ -33,8 +33,9 @@ from app.schemas.call import (
     CallListItem,
     CallListOut,
     CallStatusOut,
+    CampaignRef,
 )
-from app.services import call_service
+from app.services import call_service, campaign_service
 from app.services.call_service import STATUS_PROGRESS
 from app.services.name_matching import find_matching_agent, normalize_name
 from app.services.pdf_service import generate_call_report
@@ -48,6 +49,27 @@ router = APIRouter(prefix="/calls", tags=["calls"])
 def _agent_ref(call: Call) -> AgentRef | None:
     """Devuelve la referencia al ejecutivo de la llamada, o None si no está asignado."""
     return AgentRef.model_validate(call.agent) if call.agent else None
+
+
+def _resolve_campaign(
+    db: Session, campaign_id: int | None, campaign: str | None
+) -> tuple[int | None, str | None]:
+    """
+    Resuelve la campaña de una subida.
+
+    - Si se indica `campaign_id`, usa la entidad Campaña: enlaza por id y copia su
+      nombre en `campaign_type` (para que el dashboard y los filtros sigan funcionando).
+    - Si no, se usa el texto libre `campaign` por compatibilidad con el flujo anterior.
+    """
+    if campaign_id is not None:
+        entity = campaign_service.get_campaign(db, campaign_id)
+        if entity is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Campaña no encontrada.",
+            )
+        return entity.id, entity.name
+    return None, campaign
 
 
 def _queue_processing(call_id: int, background_tasks: BackgroundTasks) -> None:
@@ -69,7 +91,8 @@ def _save_call(
     *,
     audio: UploadFile,
     uploaded_by: int,
-    campaign: str | None,
+    campaign_id: int | None,
+    campaign_type: str | None,
     comment: str | None,
     responsible: str | None,
     background_tasks: BackgroundTasks,
@@ -95,7 +118,8 @@ def _save_call(
         audio_url=audio_url,
         audio_filename=audio.filename,
         file_size_bytes=len(content),
-        campaign_type=campaign,
+        campaign_id=campaign_id,
+        campaign_type=campaign_type,
         call_reason=comment,
         responsible=responsible,
         status=CallStatus.QUEUED,
@@ -113,17 +137,20 @@ def upload_call(
     background_tasks: BackgroundTasks,
     audio: UploadFile = File(...),
     campaign: str | None = Form(default=None),
+    campaign_id: int | None = Form(default=None),
     comment: str | None = Form(default=None),
     responsible: str | None = Form(default=None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """Sube un audio individual y lo encola para análisis."""
+    resolved_id, campaign_type = _resolve_campaign(db, campaign_id, campaign)
     call = _save_call(
         db,
         audio=audio,
         uploaded_by=current_user.id,
-        campaign=campaign,
+        campaign_id=resolved_id,
+        campaign_type=campaign_type,
         comment=comment,
         responsible=responsible or current_user.name,
         background_tasks=background_tasks,
@@ -136,6 +163,7 @@ def upload_calls_batch(
     background_tasks: BackgroundTasks,
     audios: list[UploadFile] = File(...),
     campaign: str | None = Form(default=None),
+    campaign_id: int | None = Form(default=None),
     comment: str | None = Form(default=None),
     responsible: str | None = Form(default=None),
     db: Session = Depends(get_db),
@@ -159,13 +187,15 @@ def upload_calls_batch(
             detail="Selecciona al menos un archivo de audio.",
         )
 
+    resolved_id, campaign_type = _resolve_campaign(db, campaign_id, campaign)
     created_ids: list[int] = []
     for audio in audios:
         call = _save_call(
             db,
             audio=audio,
             uploaded_by=current_user.id,
-            campaign=campaign,
+            campaign_id=resolved_id,
+            campaign_type=campaign_type,
             comment=comment,
             responsible=responsible or current_user.name,
             background_tasks=background_tasks,
@@ -253,6 +283,8 @@ def get_call(
         language=call.language,
         call_date=call.call_date,
         campaign_type=call.campaign_type,
+        campaign_id=call.campaign_id,
+        campaign=CampaignRef.model_validate(call.campaign) if call.campaign else None,
         call_reason=call.call_reason,
         error_message=call.error_message,
         created_at=call.created_at,

@@ -14,6 +14,10 @@ import type {
   CallDetail,
   CallList,
   CallStatusInfo,
+  Campaign,
+  CampaignAssistResult,
+  CampaignDraft,
+  CampaignExtractResult,
   DashboardSummary,
   RubricDimension,
   RubricDimensionInput,
@@ -269,5 +273,94 @@ export function useUpdateSettings() {
       return data;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['settings'] }),
+  });
+}
+
+/* ------------------------------ Campañas ------------------------------ */
+
+export function useCampaignList(params?: { active?: boolean; search?: string }) {
+  return useQuery({
+    queryKey: ['campaign-list', params],
+    queryFn: async () => {
+      const { data } = await api.get<Campaign[]>('/campaigns', { params });
+      return data;
+    },
+  });
+}
+
+export function useCampaign(id: number) {
+  return useQuery({
+    queryKey: ['campaign', id],
+    queryFn: async () => {
+      const { data } = await api.get<Campaign>(`/campaigns/${id}`);
+      return data;
+    },
+    enabled: Number.isFinite(id),
+  });
+}
+
+export function useCreateCampaign() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<Campaign>) => {
+      const { data } = await api.post<Campaign>('/campaigns', payload);
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['campaign-list'] }),
+  });
+}
+
+export function useUpdateCampaign() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: Partial<Campaign> & { id: number }) => {
+      const { data } = await api.put<Campaign>(`/campaigns/${id}`, payload);
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['campaign-list'] });
+      qc.invalidateQueries({ queryKey: ['campaign', vars.id] });
+    },
+  });
+}
+
+export function useDeactivateCampaign() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await api.delete(`/campaigns/${id}`);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['campaign-list'] }),
+  });
+}
+
+/** Sube un PDF de nota de producto y devuelve la nota estructurada. */
+export function useExtractCampaignPdf() {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData();
+      form.append('file', file);
+      const { data } = await api.post<CampaignExtractResult>(
+        '/campaigns/extract',
+        form,
+      );
+      return data;
+    },
+  });
+}
+
+/** Pide a la IA que complete la nota de producto a partir de una descripción. */
+export function useAssistCampaign() {
+  return useMutation({
+    mutationFn: async (payload: {
+      description: string;
+      current?: CampaignDraft;
+    }) => {
+      const { data } = await api.post<CampaignAssistResult>(
+        '/campaigns/assist',
+        payload,
+      );
+      return data;
+    },
   });
 }

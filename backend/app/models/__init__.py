@@ -8,6 +8,7 @@ a través de Base.metadata.
 from app.models.base import Base
 from app.models.user import User
 from app.models.agent import Agent
+from app.models.campaign import Campaign
 from app.models.call import Call, CallStatus
 from app.models.transcription import Transcription
 from app.models.analysis import Analysis
@@ -17,6 +18,7 @@ __all__ = [
     "Base",
     "User",
     "Agent",
+    "Campaign",
     "Call",
     "CallStatus",
     "Transcription",

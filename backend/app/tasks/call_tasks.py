@@ -26,10 +26,12 @@ from app.database import SessionLocal
 from app.models.agent import Agent
 from app.models.analysis import Analysis
 from app.models.call import Call, CallStatus
+from app.models.campaign import Campaign
 from app.models.settings import RubricConfig
 from app.models.transcription import Transcription
 from app.prompts import get_analysis_prompt
 from app.services.analysis_service import calculate_global_score, get_analysis_provider
+from app.services.campaign_service import build_product_note_text
 from app.services.masking_service import mask_sensitive_data
 from app.services.name_matching import find_matching_agent
 from app.services.storage_service import get_storage_provider
@@ -142,7 +144,17 @@ def _run_pipeline(db, call: Call) -> None:
     ]
     rubric_weights = {r.dimension_key: float(r.weight) for r in rubric_rows}
 
-    prompt = get_analysis_prompt(masked_segments, rubric_list, call.language)
+    # Nota de producto de la campaña asignada (si la hay): la IA evalúa la oferta
+    # del ejecutivo contra esta plantilla de referencia.
+    product_note = None
+    if call.campaign_id is not None:
+        campaign = db.get(Campaign, call.campaign_id)
+        if campaign is not None:
+            product_note = build_product_note_text(campaign) or None
+
+    prompt = get_analysis_prompt(
+        masked_segments, rubric_list, call.language, product_note=product_note
+    )
     provider = get_analysis_provider()
     analysis_result = asyncio.run(provider.analyze(prompt))
 

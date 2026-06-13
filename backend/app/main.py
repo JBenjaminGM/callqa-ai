@@ -18,7 +18,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.limiter import limiter
-from app.routers import agents, auth, calls, config, dashboard
+from app.routers import agents, auth, calls, campaigns, config, dashboard
 
 # Aviso obligatorio del prototipo (contexto Minsait/Indra).
 PROTOTYPE_NOTICE = "This is a prototype - Do not use with real customer data"
@@ -125,6 +125,7 @@ def health() -> dict:
 API_PREFIX = "/api/v1"
 app.include_router(auth.router, prefix=API_PREFIX)
 app.include_router(agents.router, prefix=API_PREFIX)
+app.include_router(campaigns.router, prefix=API_PREFIX)
 app.include_router(calls.router, prefix=API_PREFIX)
 app.include_router(dashboard.router, prefix=API_PREFIX)
 app.include_router(config.router, prefix=API_PREFIX)

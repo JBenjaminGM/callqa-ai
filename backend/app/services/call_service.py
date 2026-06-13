@@ -29,6 +29,7 @@ def get_call(db: Session, call_id: int) -> Call | None:
         .where(Call.id == call_id)
         .options(
             selectinload(Call.agent),
+            selectinload(Call.campaign),
             selectinload(Call.transcription),
             selectinload(Call.analysis),
         )

@@ -56,6 +56,11 @@ class Call(Base):
     responsible: Mapped[str | None] = mapped_column(String(255), nullable=True)
     call_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     campaign_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    # campaign_id enlaza la llamada con la entidad Campaña (y su nota de producto).
+    # Se conserva campaign_type (texto) por compatibilidad y para los filtros del dashboard.
+    campaign_id: Mapped[int | None] = mapped_column(
+        ForeignKey("campaigns.id"), nullable=True, index=True
+    )
     call_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
@@ -64,6 +69,7 @@ class Call(Base):
     processed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     agent: Mapped["Agent | None"] = relationship(back_populates="calls")  # noqa: F821
+    campaign: Mapped["Campaign | None"] = relationship(back_populates="calls")  # noqa: F821
     transcription: Mapped["Transcription | None"] = relationship(  # noqa: F821
         back_populates="call", uselist=False, cascade="all, delete-orphan"
     )

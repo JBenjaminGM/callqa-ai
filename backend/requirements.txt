@@ -29,6 +29,9 @@ httpx==0.28.1
 # --- Generación de PDF ---
 reportlab==4.2.5
 
+# --- Lectura de PDF (notas de producto de campañas) ---
+pypdf==5.1.0
+
 # --- Almacenamiento S3 (opcional) ---
 boto3==1.35.90
 

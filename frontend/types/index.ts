@@ -43,6 +43,56 @@ export interface AgentRef {
   campaign?: string | null;
 }
 
+export interface CampaignRef {
+  id: number;
+  name: string;
+}
+
+export interface Campaign {
+  id: number;
+  name: string;
+  product_service?: string | null;
+  offer_description?: string | null;
+  key_benefits: string[];
+  pricing_conditions?: string | null;
+  customer_requirements?: string | null;
+  mandatory_phrases: string[];
+  prohibited_claims: string[];
+  target_audience?: string | null;
+  additional_notes?: string | null;
+  source: string;
+  source_filename?: string | null;
+  active: boolean;
+  created_at: string;
+  calls_count?: number;
+}
+
+/** Borrador de nota de producto (todos los campos opcionales). */
+export interface CampaignDraft {
+  name?: string | null;
+  product_service?: string | null;
+  offer_description?: string | null;
+  key_benefits?: string[] | null;
+  pricing_conditions?: string | null;
+  customer_requirements?: string | null;
+  mandatory_phrases?: string[] | null;
+  prohibited_claims?: string[] | null;
+  target_audience?: string | null;
+  additional_notes?: string | null;
+}
+
+export interface CampaignExtractResult {
+  draft: CampaignDraft;
+  missing_fields: string[];
+  source_filename?: string | null;
+  warning?: string | null;
+}
+
+export interface CampaignAssistResult {
+  draft: CampaignDraft;
+  warning?: string | null;
+}
+
 export interface Recommendation {
   priority: 'high' | 'medium' | 'low';
   dimension: string;
@@ -105,6 +155,8 @@ export interface CallDetail {
   language: string;
   call_date?: string | null;
   campaign_type?: string | null;
+  campaign_id?: number | null;
+  campaign?: CampaignRef | null;
   call_reason?: string | null;
   error_message?: string | null;
   created_at: string;

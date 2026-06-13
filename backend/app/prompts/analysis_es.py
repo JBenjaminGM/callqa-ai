@@ -1,7 +1,9 @@
 """Prompt de análisis de llamadas en español (rúbrica dinámica con subcriterios)."""
 
 
-def build_analysis_prompt(segments: list[dict], rubric: list[dict]) -> str:
+def build_analysis_prompt(
+    segments: list[dict], rubric: list[dict], product_note: str | None = None
+) -> str:
     """
     Construye el prompt que se envía al LLM para analizar una llamada.
 
@@ -10,6 +12,8 @@ def build_analysis_prompt(segments: list[dict], rubric: list[dict]) -> str:
     `rubric`: lista de dimensiones {dimension_key, dimension_name, description,
     criteria:[{name, enabled}]}. Solo los subcriterios ACTIVOS se incluyen como guía,
     y la estructura de salida `dimension_scores` se genera con las claves reales.
+    `product_note`: texto de la nota de producto de la campaña asignada (la oferta
+    que el ejecutivo debe presentar). Si se proporciona, la IA la usa como referencia.
     """
     rubric_lines = []
     for i, dim in enumerate(rubric, start=1):
@@ -35,6 +39,18 @@ def build_analysis_prompt(segments: list[dict], rubric: list[dict]) -> str:
         f'    "{dim["dimension_key"]}": <int 0-100>' for dim in rubric
     )
 
+    product_note_block = ""
+    if product_note:
+        product_note_block = (
+            "\n\nNOTA DE PRODUCTO DE LA CAMPAÑA (la oferta que el EJECUTIVO DEBE presentar):\n"
+            f"{product_note}\n"
+            "Ten MUY en cuenta esta nota al puntuar las dimensiones relacionadas con la "
+            "oferta/promociones/productos y el cumplimiento normativo: penaliza si el "
+            "ejecutivo NO ofreció lo que la nota indica, dio precios o condiciones "
+            "incorrectos, omitió frases obligatorias o hizo afirmaciones prohibidas. "
+            "Refleja los desajustes con la nota en el resumen y en las recomendaciones."
+        )
+
     return f"""Eres un experto en Quality Assurance de call centers bancarios. Vas a evaluar la siguiente llamada entre un EJECUTIVO del banco y un CLIENTE.
 
 TRANSCRIPCIÓN (cada línea es un segmento numerado [i]):
@@ -42,7 +58,7 @@ TRANSCRIPCIÓN (cada línea es un segmento numerado [i]):
 
 RÚBRICA DE EVALUACIÓN (score 0-100 por dimensión):
 
-{rubric_block}
+{rubric_block}{product_note_block}
 
 INSTRUCCIONES:
 - Evalúa CADA dimensión de la rúbrica de 0 a 100, teniendo en cuenta ÚNICAMENTE los

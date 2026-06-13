@@ -118,9 +118,16 @@ export default function CallDetailPage() {
                   )}
                 </p>
                 <p className="text-small text-text-secondary">
-                  {call.campaign_type ??
-                    call.agent?.campaign ??
-                    'Sin campaña'}
+                  {call.campaign ? (
+                    <Link
+                      href={`/campaigns/${call.campaign.id}`}
+                      className="hover:text-accent-primary"
+                    >
+                      {call.campaign.name}
+                    </Link>
+                  ) : (
+                    call.campaign_type ?? call.agent?.campaign ?? 'Sin campaña'
+                  )}
                   {' · '}
                   Subida {formatDate(call.created_at)}
                   {' · '}

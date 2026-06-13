@@ -1,14 +1,17 @@
 """Call analysis prompt in English (dynamic rubric with subcriteria)."""
 
 
-def build_analysis_prompt(segments: list[dict], rubric: list[dict]) -> str:
+def build_analysis_prompt(
+    segments: list[dict], rubric: list[dict], product_note: str | None = None
+) -> str:
     """Build the prompt sent to the LLM to analyze a call (English version).
 
     `segments`: transcript segments (each with already-masked 'text'), numbered so
     the model attributes the speaker by CONTENT. `rubric`: dimensions with
     {dimension_key, dimension_name, description, criteria:[{name, enabled}]}. Only
     ENABLED subcriteria are included, and `dimension_scores` is generated from the
-    real keys.
+    real keys. `product_note`: the assigned campaign's product note (the offer the
+    agent must present); when provided, the AI uses it as the reference.
     """
     rubric_lines = []
     for i, dim in enumerate(rubric, start=1):
@@ -34,6 +37,18 @@ def build_analysis_prompt(segments: list[dict], rubric: list[dict]) -> str:
         f'    "{dim["dimension_key"]}": <int 0-100>' for dim in rubric
     )
 
+    product_note_block = ""
+    if product_note:
+        product_note_block = (
+            "\n\nCAMPAIGN PRODUCT NOTE (the offer the AGENT MUST present):\n"
+            f"{product_note}\n"
+            "Take this note strongly into account when scoring the dimensions related "
+            "to the offer/promotions/products and regulatory compliance: penalize if "
+            "the agent did NOT offer what the note states, gave wrong prices/terms, "
+            "omitted mandatory phrases or made prohibited claims. Reflect any mismatch "
+            "with the note in the summary and the recommendations."
+        )
+
     return f"""You are an expert in Quality Assurance for banking call centers. You will evaluate the following call between a bank AGENT and a CUSTOMER.
 
 TRANSCRIPT (each line is a numbered segment [i]):
@@ -41,7 +56,7 @@ TRANSCRIPT (each line is a numbered segment [i]):
 
 EVALUATION RUBRIC (score 0-100 per dimension):
 
-{rubric_block}
+{rubric_block}{product_note_block}
 
 INSTRUCTIONS:
 - Score EACH rubric dimension 0-100, considering ONLY the sub-criteria listed in it.
