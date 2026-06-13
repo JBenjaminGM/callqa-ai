@@ -31,19 +31,26 @@ const config: Config = {
         warning: 'var(--warning)',
         danger: 'var(--danger)',
         info: 'var(--info)',
+        // Colores de marca Minsait (acentos / contenedores fijos)
+        fucsia: 'var(--fucsia)',
+        pruno: 'var(--pruno)',
+        'pruno-oscuro': 'var(--pruno-oscuro)',
+        ceramica: 'var(--gris-ceramica)',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        // ForFuture Sans = tipografía corporativa Minsait (woff2 locales).
+        sans: ['ForFuture Sans', 'Arial', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       fontSize: {
-        display: ['36px', { lineHeight: '1.1', fontWeight: '700' }],
-        h1: ['28px', { lineHeight: '1.2', fontWeight: '700' }],
-        h2: ['22px', { lineHeight: '1.3', fontWeight: '600' }],
-        h3: ['18px', { lineHeight: '1.4', fontWeight: '600' }],
+        // Titulares Minsait: peso Regular (400), minúscula (vía globals.css).
+        display: ['40px', { lineHeight: '1', fontWeight: '400' }],
+        h1: ['28px', { lineHeight: '1.1', fontWeight: '400' }],
+        h2: ['22px', { lineHeight: '1.1', fontWeight: '400' }],
+        h3: ['18px', { lineHeight: '1.1', fontWeight: '400' }],
         body: ['14px', { lineHeight: '1.6', fontWeight: '400' }],
         small: ['12px', { lineHeight: '1.5', fontWeight: '400' }],
-        kpi: ['48px', { lineHeight: '1', fontWeight: '800' }],
+        kpi: ['48px', { lineHeight: '1', fontWeight: '900' }],
       },
     },
   },

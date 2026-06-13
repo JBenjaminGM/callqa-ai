@@ -1,8 +1,9 @@
 import { cn } from '@/lib/utils';
 
 /**
- * Tarjeta "panel de cristal" (glassmorphism): superficie translúcida con
- * desenfoque de fondo y un borde fino que capta la luz.
+ * Tarjeta "contenedor" Minsait: superficie sólida con chaflán (chamfer) en las
+ * cuatro esquinas, todas iguales. Plana, sin sombra (el clip-path no recorta
+ * sombras); el chaflán se lee por el contraste de relleno con el lienzo.
  */
 export function Card({
   className,
@@ -11,8 +12,7 @@ export function Card({
   return (
     <div
       className={cn(
-        'glass rounded-2xl p-5',
-        'shadow-[0_8px_32px_-12px_var(--shadow)] animate-fade-in',
+        'chamfer animate-fade-in bg-bg-card p-5 text-text-primary',
         className,
       )}
       {...props}

@@ -21,28 +21,23 @@ const NAV_ITEMS = [
   { href: '/settings', label: 'Configuración', icon: Settings },
 ];
 
-/** Barra lateral de navegación principal. */
+/** Barra lateral de navegación — fondo Pruno con el logo blanco Minsait (negativo). */
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside
-      className="flex w-60 shrink-0 flex-col gap-1 border-r border-border
-                 bg-[var(--glass-bg)] p-3 backdrop-blur-xl"
-    >
-      <div className="mb-4 flex items-center gap-2.5 px-2 py-3">
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-lg
-                     bg-accent-primary text-lg font-extrabold text-white"
-        >
-          Q
-        </div>
-        <div>
-          <p className="text-h3 font-extrabold text-text-primary">CallQA AI</p>
-          <p className="text-small font-semibold lowercase tracking-wide text-accent-primary">
-            minsait
-          </p>
-        </div>
+    <aside className="flex w-60 shrink-0 flex-col bg-[var(--pruno)] p-3 text-white">
+      {/* Lockup de marca: logo blanco Minsait + nombre del producto */}
+      <div className="mb-6 px-2 pt-4">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/minsait-logo-blanco.svg"
+          alt="Minsait"
+          width={150}
+          height={15}
+          className="h-auto w-[150px]"
+        />
+        <p className="destacado mt-3 text-[11px] text-white/55">CallQA AI</p>
       </div>
 
       <nav className="flex flex-col gap-1">
@@ -59,11 +54,10 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-body',
-                'transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-body transition-colors',
                 active
-                  ? 'bg-accent-primary text-white shadow-[0_0_20px_var(--glow)]'
-                  : 'text-text-secondary hover:bg-bg-accent/50',
+                  ? 'bg-[var(--fucsia)] font-bold text-[var(--pruno-oscuro)]'
+                  : 'text-white/75 hover:bg-white/10 hover:text-white',
               )}
             >
               <Icon size={18} />
@@ -72,6 +66,10 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      <p className="mt-auto px-3 pb-2 text-[11px] lowercase tracking-wide text-white/45">
+        tech for <span className="text-[var(--fucsia)]">impact</span>
+      </p>
     </aside>
   );
 }

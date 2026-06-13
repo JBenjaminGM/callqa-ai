@@ -46,38 +46,43 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-bg-primary">
       <PrototypeBanner />
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-md animate-fade-in">
-          {/* Marca */}
-          <div className="mb-8 flex flex-col items-center gap-3 text-center">
-            <div
-              className="flex h-14 w-14 items-center justify-center rounded-2xl
-                         bg-accent-primary text-2xl font-extrabold text-white"
-            >
-              Q
-            </div>
-            <div>
-              <h1 className="text-h1 text-text-primary">CallQA AI</h1>
-              <p className="text-body text-text-secondary">
-                Quality Assurance automatizado con IA
-              </p>
-              <p className="mt-1 text-small font-semibold lowercase tracking-widest text-accent-primary">
-                minsait — tech for impact
-              </p>
-            </div>
-          </div>
+          {/* Contenedor achaflanado con la marca Minsait y el dispositivo de titular */}
+          <div className="chamfer bg-bg-card p-8 sm:p-10">
+            {/* Logo Minsait: positivo (Pruno) en claro, blanco en oscuro */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/minsait-logo-pruno.svg"
+              alt="Minsait"
+              width={160}
+              height={16}
+              className="block h-auto w-[160px] dark:hidden"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brand/minsait-logo-blanco.svg"
+              alt="Minsait"
+              width={160}
+              height={16}
+              className="hidden h-auto w-[160px] dark:block"
+            />
 
-          {/* Formulario */}
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="glass rounded-2xl p-6
-                       shadow-[0_8px_32px_-12px_var(--shadow)]"
-          >
-            <h2 className="mb-5 text-h3 text-text-primary">Iniciar sesión</h2>
+            {/* Titular: minúscula, palabra clave en Fucsia, sin punto final */}
+            <h1 className="mt-7 text-display text-text-primary">
+              calidad con
+              <br />
+              <span className="hl">impacto</span>
+            </h1>
+            <p className="destacado mt-3 text-[11px] text-text-muted">
+              CallQA AI · Quality Assurance con IA
+            </p>
 
-            <div className="mb-4">
+            {/* Formulario */}
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-8">
+              <div className="mb-4">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -129,6 +134,7 @@ export default function LoginPage() {
               Demo: admin@callqa.com / Admin123!
             </p>
           </form>
+          </div>
         </div>
       </div>
     </div>

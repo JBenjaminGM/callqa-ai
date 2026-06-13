@@ -10,31 +10,35 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants: Record<Variant, string> = {
-  // Acción primaria: relleno Índigo con resplandor en hover.
+  // CTA principal Minsait: píldora Fucsia con etiqueta "destacado" (bold mayúsculas).
   primary:
-    'bg-accent-primary text-white hover:shadow-[0_0_24px_var(--glow)] disabled:opacity-50',
-  // Secundaria: estilo cristal con borde fino.
+    'bg-[var(--fucsia)] text-[var(--pruno-oscuro)] font-bold uppercase tracking-wide ' +
+    'hover:-translate-y-px disabled:opacity-50',
+  // Secundaria: contorno Pruno (estilo "ghost on light"), se rellena al hover.
   secondary:
-    'glass text-text-primary hover:border-accent-primary disabled:opacity-50',
+    'bg-transparent text-accent-primary border-2 border-accent-primary ' +
+    'hover:bg-accent-primary hover:text-white disabled:opacity-50',
+  // Terciaria discreta.
   ghost:
-    'bg-transparent text-text-primary hover:bg-bg-accent/50 disabled:opacity-50',
+    'bg-transparent text-text-primary hover:bg-bg-accent disabled:opacity-50',
+  // Acción destructiva.
   danger:
-    'bg-danger text-white hover:shadow-[0_0_24px_rgba(225,29,72,0.4)] disabled:opacity-50',
+    'bg-danger text-white font-bold uppercase tracking-wide hover:opacity-90 disabled:opacity-50',
 };
 
 const sizes: Record<Size, string> = {
-  sm: 'h-8 px-3 text-small',
-  md: 'h-10 px-4 text-body',
-  lg: 'h-12 px-6 text-body',
+  sm: 'h-8 px-3.5 text-small',
+  md: 'h-10 px-5 text-body',
+  lg: 'h-12 px-7 text-body',
 };
 
-/** Botón reutilizable con las variantes del sistema de diseño Aetheric. */
+/** Botón reutilizable con las variantes de la identidad Minsait (CTA = píldora Fucsia). */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', ...props }, ref) => (
     <button
       ref={ref}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-lg font-medium',
+        'inline-flex items-center justify-center gap-2 rounded-full font-medium',
         'transition-all duration-200 disabled:cursor-not-allowed',
         variants[variant],
         sizes[size],

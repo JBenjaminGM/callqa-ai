@@ -3,17 +3,17 @@ import './globals.css';
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
-  title: 'CallQA AI — QA con IA para call centers',
+  title: 'CallQA AI · Minsait',
   description:
-    'Prototipo de Quality Assurance automatizado para call centers bancarios.',
+    'Quality Assurance automatizado con IA para call centers. Minsait — tech for impact.',
 };
 
 // Script que aplica el modo claro/oscuro antes del render para evitar parpadeo.
+// Por defecto = modo CLARO Minsait (Gris Cerámica); oscuro solo si se elige.
 const themeScript = `
 (function () {
   try {
-    var t = localStorage.getItem('callqa-theme');
-    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if (localStorage.getItem('callqa-theme') === 'dark') {
       document.documentElement.classList.add('dark');
     }
   } catch (e) {}
@@ -28,16 +28,6 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body>

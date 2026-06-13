@@ -3,132 +3,157 @@
 @tailwind utilities;
 
 /* ============================================================
-   Sistema de diseño "Aetheric Intelligence" — CallQA AI
-   Estética profesional + Glassmorphism sutil.
-   Paleta Índigo / Slate: acento Indigo, base Slate-navy en oscuro
-   y cool-white en claro. (Implementación: estas variables CSS.)
+   ForFuture Sans — tipografía corporativa Minsait (woff2 locales)
+   ============================================================ */
+@font-face { font-family:'ForFuture Sans'; font-weight:300; font-style:normal; font-display:swap; src:url('/fonts/ForFutureSans-Light.woff2') format('woff2'); }
+@font-face { font-family:'ForFuture Sans'; font-weight:400; font-style:normal; font-display:swap; src:url('/fonts/ForFutureSans-Regular.woff2') format('woff2'); }
+@font-face { font-family:'ForFuture Sans'; font-weight:400; font-style:italic;  font-display:swap; src:url('/fonts/ForFutureSans-RegularItalic.woff2') format('woff2'); }
+@font-face { font-family:'ForFuture Sans'; font-weight:500; font-style:normal; font-display:swap; src:url('/fonts/ForFutureSans-Medium.woff2') format('woff2'); }
+@font-face { font-family:'ForFuture Sans'; font-weight:700; font-style:normal; font-display:swap; src:url('/fonts/ForFutureSans-Bold.woff2') format('woff2'); }
+@font-face { font-family:'ForFuture Sans'; font-weight:900; font-style:normal; font-display:swap; src:url('/fonts/ForFutureSans-Black.woff2') format('woff2'); }
+
+/* ============================================================
+   Identidad de marca MINSAIT — CallQA AI
+   Pruno + Gris Cerámica DOMINAN; Fucsia es ACENTO. "Tech for impact".
+   Estas variables CSS son la fuente de verdad del color de toda la app.
    ============================================================ */
 
-/* Modo claro: canvas cool-white, superficies blancas. */
 :root {
-  --bg-primary: #f6f7fb;
-  --bg-secondary: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.78);
-  --bg-accent: #eceef5;
-  --accent-primary: #4f46e5; /* indigo-600 */
-  --accent-secondary: #6366f1; /* indigo-500 */
-  --text-primary: #0f172a; /* slate-900 */
-  --text-secondary: #475569; /* slate-600 */
-  --text-muted: #94a3b8; /* slate-400 */
-  --border: #e2e8f0; /* slate-200 */
-  --glass-bg: rgba(255, 255, 255, 0.78);
-  --glass-border: rgba(15, 23, 42, 0.08);
-  --glow: rgba(79, 70, 229, 0.16);
-  --shadow: rgba(15, 23, 42, 0.08);
+  /* --- Colores de marca Minsait --- */
+  --pruno: #480e2a;          /* primario: logo, fondos/textos dominantes */
+  --pruno-oscuro: #260717;   /* sobriedad / overlays */
+  --fucsia: #ff0054;         /* ACENTO ONLY (resalte, CTA, foco) */
+  --gris-ceramica: #e3e2da;  /* fondo claro / contenedores */
+  --blanco: #ffffff;
 
-  --success: #059669;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --info: #2563eb;
+  /* --- Modo claro (Minsait light · Gris Cerámica) --- */
+  --bg-primary: #e3e2da;       /* lienzo cerámica */
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;          /* tarjetas blancas achaflanadas sobre cerámica */
+  --bg-accent: #d6d5cc;        /* tonal cerámica para hovers (no opacidad) */
+  --accent-primary: #480e2a;   /* Pruno: nav activo, KPIs, gráficos, enlaces */
+  --accent-secondary: #7e2349; /* Pruno tonal: avatares / acentos secundarios */
+  --text-primary: #480e2a;     /* cuerpo en Pruno sobre cerámica */
+  --text-secondary: #5e4a54;   /* pruno desaturado */
+  --text-muted: #8a7e83;       /* gris cálido tenue */
+  --border: #c9c7bd;           /* tonal cerámica */
+  --glass-bg: #ffffff;         /* superficies sólidas (Minsait es plano) */
+  --glass-border: #c9c7bd;
+  --glow: rgba(255, 0, 84, 0.22); /* foco/realce Fucsia */
+  --shadow: rgba(72, 14, 42, 0.1);
+
+  /* Estado / dataviz — paleta secundaria OFICIAL Minsait (digital) */
+  --success: #246b4e;  /* green-4 */
+  --warning: #e56813;  /* orange-3 */
+  --danger: #d2044a;   /* pink-3 */
+  --info: #534199;     /* violet-4 */
+
+  --chamfer: 14px;     /* chaflán de contenedores — IGUAL en toda la app */
 }
 
-/* Modo oscuro (por defecto): canvas Slate-navy profundo. */
+/* --- Modo oscuro (Minsait dark · Pruno Oscuro / Pruno) --- */
 .dark {
-  --bg-primary: #0b1020;
-  --bg-secondary: #131a2e;
-  --bg-card: rgba(26, 33, 53, 0.55);
-  --bg-accent: #232c45;
-  --accent-primary: #6366f1; /* indigo-500 */
-  --accent-secondary: #818cf8; /* indigo-400 */
-  --text-primary: #e8ecf6;
-  --text-secondary: #aab4cb;
-  --text-muted: #6b7798;
-  --border: #2a3450;
-  --glass-bg: rgba(255, 255, 255, 0.045);
-  --glass-border: rgba(255, 255, 255, 0.09);
-  --glow: rgba(99, 102, 241, 0.32);
-  --shadow: rgba(0, 0, 0, 0.55);
+  --bg-primary: #260717;
+  --bg-secondary: #480e2a;
+  --bg-card: #3a0b22;          /* card Pruno tonal sobre lienzo oscuro */
+  --bg-accent: #5c1536;
+  --accent-primary: #ff0054;   /* Fucsia: resalta sobre el lienzo Pruno */
+  --accent-secondary: #9a3460;
+  --text-primary: #ffffff;
+  --text-secondary: #d9c7d0;
+  --text-muted: #a98b99;
+  --border: #5c1536;
+  --glass-bg: #3a0b22;
+  --glass-border: #5c1536;
+  --glow: rgba(255, 0, 84, 0.35);
+  --shadow: rgba(0, 0, 0, 0.5);
 
-  --success: #34d399;
-  --warning: #fbbf24;
-  --danger: #fb7185;
-  --info: #60a5fa;
+  --success: #65d16f;  /* green-2 */
+  --warning: #fc8535;  /* orange-2 */
+  --danger: #ef659d;   /* pink-2 */
+  --info: #9c85ff;     /* violet-2 */
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: 'ForFuture Sans', Arial, sans-serif;
   min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Resplandores radiales (AI glow) del fondo, distintos por modo. */
-.dark body {
-  background-image:
-    radial-gradient(900px circle at 12% -8%, rgba(99, 102, 241, 0.2), transparent 60%),
-    radial-gradient(760px circle at 100% 4%, rgba(56, 189, 248, 0.1), transparent 55%);
-  background-attachment: fixed;
+/* --- Titulares Minsait: minúscula, sin punto final, leading ajustado --- */
+h1, h2, h3, h4 {
+  text-transform: lowercase;
+  letter-spacing: 0;
+  line-height: 1.1;
 }
-:root body {
-  background-image:
-    radial-gradient(820px circle at 12% -10%, rgba(99, 102, 241, 0.07), transparent 55%),
-    radial-gradient(700px circle at 100% 0%, rgba(56, 189, 248, 0.05), transparent 50%);
-  background-attachment: fixed;
+/* Palabra clave resaltada en Fucsia (dispositivo de titular) */
+.hl { color: var(--fucsia); }
+/* Eyebrow / destacado: Bold MAYÚSCULAS */
+.destacado {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-/* Panel de cristal (glassmorphism): superficie translúcida con desenfoque. */
+/* Superficie "panel": sólida (reemplaza el antiguo glassmorphism) */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
 }
 
-/* Foco accesible visible (color acento). */
+/* Contenedor achaflanado — chaflán Minsait (R igual en todos) */
+.chamfer {
+  clip-path: polygon(
+    var(--chamfer) 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer),
+    100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, var(--chamfer) 100%,
+    0 calc(100% - var(--chamfer)), 0 var(--chamfer)
+  );
+}
+@media (max-width: 640px) {
+  :root { --chamfer: 9px; }
+}
+
+/* Foco accesible: anillo Fucsia (on-brand, WCAG) */
 *:focus-visible {
-  outline: 2px solid var(--accent-primary);
+  outline: 3px solid var(--fucsia);
   outline-offset: 2px;
 }
 
-/* Scrollbar discreta. */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 6px;
+/* Autocompletado del navegador: respeta la superficie/texto del tema (evita el
+   fondo claro que Chrome fuerza, sobre todo en modo oscuro). */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--glass-bg) inset;
+  caret-color: var(--text-primary);
 }
 
-/* Aparición suave de cards y pantallas. */
+/* Scrollbar discreta, esquinas rectas */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 0; }
+
+/* Aparición suave de tarjetas y pantallas */
 @keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-in {
-  animation: fade-in 0.28s ease both;
+.animate-fade-in { animation: fade-in 0.28s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in { animation: none; }
 }
 
-/* Skeleton de carga. */
+/* Skeleton de carga */
 @keyframes pulse-bg {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 .skeleton {
-  background: var(--text-muted);
-  opacity: 0.18;
-  border-radius: 10px;
+  background: var(--border);
+  opacity: 0.5;
+  border-radius: 4px;
   animation: pulse-bg 1.5s ease-in-out infinite;
 }
