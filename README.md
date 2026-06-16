@@ -12,7 +12,7 @@ bancarios (Minsait / Grupo Indra). Monorepo: backend + frontend + documentación
 
 ---
 
-## 🚀 Arranque rápido (local)
+## 🚀 Arranque rápido (Local)
 
 Requisito: **Docker Desktop** abierto + una **API key de Groq** (gratis) en `backend/.env`.
 
