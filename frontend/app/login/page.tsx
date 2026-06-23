@@ -39,7 +39,8 @@ export default function LoginPage() {
     try {
       const { data } = await api.post<TokenResponse>('/auth/login', values);
       setSession(data.access_token, data.user);
-      router.replace('/dashboard');
+      // El asesor va a su panel personal; admin/jefe al dashboard global.
+      router.replace(data.user.role === 'asesor' ? '/mi-panel' : '/dashboard');
     } catch (error) {
       setServerError(getErrorMessage(error));
     }
@@ -129,10 +130,6 @@ export default function LoginPage() {
               {isSubmitting ? <Spinner /> : <LogIn size={18} />}
               Entrar
             </Button>
-
-            <p className="mt-4 text-center text-small text-text-muted">
-              Demo: admin@callqa.com / Admin123!
-            </p>
           </form>
           </div>
         </div>

@@ -52,3 +52,11 @@ class AgentCreatedOut(AgentOut):
     """Ejecutivo recién creado, con el nº de llamadas que se le vincularon."""
 
     linked_calls: int = 0
+
+
+class AgentLoginCreate(BaseModel):
+    """Datos para crear la cuenta de acceso (asesor) de un ejecutivo."""
+
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+    name: str | None = Field(default=None, max_length=255)

@@ -9,10 +9,13 @@ import {
   Megaphone,
   Settings,
   UploadCloud,
+  Gauge,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { isManager, useAuthStore } from '@/lib/auth';
 
-const NAV_ITEMS = [
+// Navegación para roles de gestión (admin / jefe).
+const MANAGER_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/calls', label: 'Llamadas', icon: Phone },
   { href: '/calls/new', label: 'Nueva llamada', icon: UploadCloud },
@@ -21,9 +24,17 @@ const NAV_ITEMS = [
   { href: '/settings', label: 'Configuración', icon: Settings },
 ];
 
+// Navegación del asesor (solo su rendimiento y sus llamadas).
+const ASESOR_NAV = [
+  { href: '/mi-panel', label: 'Mi rendimiento', icon: Gauge },
+  { href: '/calls', label: 'Mis llamadas', icon: Phone },
+];
+
 /** Barra lateral de navegación — fondo Pruno con el logo blanco Minsait (negativo). */
 export function Sidebar() {
   const pathname = usePathname();
+  const user = useAuthStore((s) => s.user);
+  const navItems = isManager(user) ? MANAGER_NAV : ASESOR_NAV;
 
   return (
     <aside className="flex w-60 shrink-0 flex-col bg-[var(--pruno)] p-3 text-white">
@@ -41,7 +52,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex flex-col gap-1">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon }) => {
           const active =
             href === '/calls'
               ? pathname === '/calls'

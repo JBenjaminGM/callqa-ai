@@ -21,7 +21,7 @@ from app.limiter import limiter
 from app.routers import agents, auth, calls, campaigns, config, dashboard
 
 # Aviso obligatorio del prototipo (contexto Minsait/Indra).
-PROTOTYPE_NOTICE = "This is a prototype - Do not use with real customer data"
+PROTOTYPE_NOTICE = "Evaluation environment - Do not use with real customer data"
 
 
 # --- Logging estructurado en JSON ---
@@ -34,7 +34,7 @@ class JsonFormatter(logging.Formatter):
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
-            "environment": "prototype",
+            "environment": "evaluation",
         }
         if record.exc_info:
             log["exception"] = self.formatException(record.exc_info)
@@ -56,8 +56,8 @@ logger = logging.getLogger("callqa")
 app = FastAPI(
     title="CallQA AI - API",
     description=(
-        "Backend del prototipo de Quality Assurance automatizado para "
-        "call centers bancarios. PROTOTIPO — no usar con datos reales de clientes."
+        "Backend de la plataforma de Quality Assurance automatizado con IA para "
+        "call centers. Vista previa para evaluación — no utilizar con datos reales de clientes."
     ),
     version="1.0.0-mvp",
 )

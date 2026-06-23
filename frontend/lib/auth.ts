@@ -32,3 +32,8 @@ export const useAuthStore = create<AuthState>()(
 export function getToken(): string | null {
   return useAuthStore.getState().token;
 }
+
+/** True si el usuario tiene permisos de gestión/analítica global (admin o jefe). */
+export function isManager(user: User | null | undefined): boolean {
+  return !!user && (user.role === 'admin' || user.role === 'jefe');
+}

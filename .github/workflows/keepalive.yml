@@ -1,0 +1,18 @@
+name: Keep backend awake
+
+# Mantiene "despierto" el backend en Render (plan gratis), que se duerme tras
+# ~15 min de inactividad y tarda ~50s en el arranque en frío. Un ping periódico
+# a /health evita ese arranque en frío durante las presentaciones.
+on:
+  schedule:
+    - cron: '*/12 * * * *' # cada 12 minutos
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping al health del backend
+        run: |
+          curl -sS -m 90 -o /dev/null -w "HTTP %{http_code} en %{time_total}s\n" \
+            https://callqa-api.onrender.com/health || true

@@ -61,11 +61,17 @@ class RubricUpdateRequest(BaseModel):
 
 
 class SettingsOut(BaseModel):
-    """Settings globales de la aplicación."""
+    """Settings globales de la aplicación, incluidos los umbrales de QA."""
 
     default_language: str
     ai_provider: str
     whisper_provider: str
+    # --- Umbrales / metas de calidad (configurables por el jefe) ---
+    qa_target_score: int = 90       # meta de score (verde a partir de aquí)
+    qa_low_agent_threshold: int = 80  # asesor "requiere atención" por debajo de esto
+    qa_red_call_threshold: int = 60   # llamada en banda roja por debajo de esto
+    qa_min_calls_ranking: int = 5     # mínimo de llamadas para entrar en rankings
+    qa_trend_drop_alert: int = 5      # caída de score (puntos) que dispara alerta
 
 
 class SettingsUpdate(BaseModel):
@@ -74,3 +80,8 @@ class SettingsUpdate(BaseModel):
     default_language: str | None = None
     ai_provider: str | None = None
     whisper_provider: str | None = None
+    qa_target_score: int | None = Field(default=None, ge=0, le=100)
+    qa_low_agent_threshold: int | None = Field(default=None, ge=0, le=100)
+    qa_red_call_threshold: int | None = Field(default=None, ge=0, le=100)
+    qa_min_calls_ranking: int | None = Field(default=None, ge=1, le=1000)
+    qa_trend_drop_alert: int | None = Field(default=None, ge=0, le=100)

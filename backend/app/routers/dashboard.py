@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, require_manager
 from app.models.agent import Agent
 from app.models.analysis import Analysis
 from app.models.call import Call, CallStatus
@@ -65,7 +65,7 @@ def dashboard_summary(
     date_from: date | None = Query(default=None),
     date_to: date | None = Query(default=None),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_manager),
 ):
     """KPIs agregados del equipo, con filtros de campaña, ejecutivo y rango de fechas."""
     # Ventana temporal: el rango de fechas tiene prioridad sobre el periodo rápido.
@@ -181,7 +181,7 @@ def dashboard_summary(
 @router.get("/campaigns", response_model=list[str])
 def list_campaigns(
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_manager),
 ):
     """Lista las campañas distintas presentes en las llamadas (para los filtros)."""
     rows = db.scalars(
@@ -198,9 +198,11 @@ def agent_dashboard(
     agent_id: int,
     period: str = Query(default="30d", pattern="^(7d|30d|90d)$"),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Performance detallado de un ejecutivo: dimensiones, tendencia y comparativa."""
+    if not current_user.is_manager and current_user.agent_id != agent_id:
+        raise HTTPException(status_code=403, detail="No autorizado para ver este ejecutivo.")
     agent = db.get(Agent, agent_id)
     if agent is None:
         raise HTTPException(status_code=404, detail="Ejecutivo no encontrado.")

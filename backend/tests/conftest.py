@@ -17,7 +17,8 @@ from app.config import settings
 from app.database import get_db
 from app.limiter import limiter
 from app.main import app
-from app.models import Base, RubricConfig, User
+from app.models import Agent, Base, RubricConfig, User
+from app.models.user import ROLE_ASESOR
 from app.utils.security import hash_password
 
 # Almacenamiento de audios en una carpeta temporal durante los tests.
@@ -79,12 +80,49 @@ def admin_user(db_session):
         email="admin@test.com",
         password_hash=hash_password("Admin123!"),
         name="Admin Test",
-        role="supervisor",
+        role="admin",
     )
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
     return user
+
+
+@pytest.fixture
+def sample_agent(db_session):
+    """Crea un ejecutivo de prueba (para vincular a un asesor)."""
+    agent = Agent(name="Asesor Demo", email="asesor.agent@test.com", campaign="Tarjetas")
+    db_session.add(agent)
+    db_session.commit()
+    db_session.refresh(agent)
+    return agent
+
+
+@pytest.fixture
+def asesor_user(db_session, sample_agent):
+    """Crea un usuario con rol asesor vinculado a `sample_agent`."""
+    user = User(
+        email="asesor@test.com",
+        password_hash=hash_password("Asesor123!"),
+        name="Asesor Demo",
+        role=ROLE_ASESOR,
+        agent_id=sample_agent.id,
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+def asesor_headers(client, asesor_user):
+    """Cabeceras Authorization con un token válido del asesor."""
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"email": "asesor@test.com", "password": "Asesor123!"},
+    )
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture

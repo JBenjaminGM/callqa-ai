@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, require_manager
 from app.models.agent import Agent
 from app.models.call import Call, CallStatus
 from app.models.user import User
@@ -49,6 +49,15 @@ router = APIRouter(prefix="/calls", tags=["calls"])
 def _agent_ref(call: Call) -> AgentRef | None:
     """Devuelve la referencia al ejecutivo de la llamada, o None si no está asignado."""
     return AgentRef.model_validate(call.agent) if call.agent else None
+
+
+def _ensure_can_view_call(current_user: User, call: Call) -> None:
+    """Un asesor solo puede ver sus propias llamadas; un manager todas."""
+    if not current_user.is_manager and call.agent_id != current_user.agent_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No autorizado para ver esta llamada.",
+        )
 
 
 def _resolve_campaign(
@@ -141,7 +150,7 @@ def upload_call(
     comment: str | None = Form(default=None),
     responsible: str | None = Form(default=None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_manager),
 ):
     """Sube un audio individual y lo encola para análisis."""
     resolved_id, campaign_type = _resolve_campaign(db, campaign_id, campaign)
@@ -167,7 +176,7 @@ def upload_calls_batch(
     comment: str | None = Form(default=None),
     responsible: str | None = Form(default=None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_manager),
 ):
     """
     Sube un grupo de audios para análisis (hasta 20).
@@ -219,9 +228,13 @@ def list_calls(
     sort_by: str = Query(default="created_at"),
     sort_order: str = Query(default="desc", pattern="^(asc|desc)$"),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Listado paginado de llamadas con filtros (incluye filtro por fecha de subida)."""
+    # El asesor solo ve sus propias llamadas (se ignora cualquier agent_id pedido).
+    if not current_user.is_manager:
+        agent_id = current_user.agent_id
+        unassigned = False
     items, total = call_service.list_calls(
         db,
         agent_id=agent_id,
@@ -264,12 +277,13 @@ def list_calls(
 def get_call(
     call_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Detalle completo de una llamada: metadata + transcripción + análisis."""
     call = call_service.get_call(db, call_id)
     if call is None:
         raise HTTPException(status_code=404, detail="Llamada no encontrada.")
+    _ensure_can_view_call(current_user, call)
 
     detail = CallDetailOut(
         id=call.id,
@@ -309,12 +323,13 @@ def get_call(
 def get_call_status(
     call_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Devuelve solo el estado de procesamiento (endpoint ligero para polling)."""
     call = db.get(Call, call_id)
     if call is None:
         raise HTTPException(status_code=404, detail="Llamada no encontrada.")
+    _ensure_can_view_call(current_user, call)
     return CallStatusOut(
         id=call.id,
         status=call.status,
@@ -328,7 +343,7 @@ def assign_call(
     call_id: int,
     payload: AssignAgentRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_manager),
 ):
     """
     Asigna (o reasigna) una llamada a un ejecutivo registrado.
@@ -364,7 +379,7 @@ def assign_call(
                 other.agent_id = agent.id
 
     db.commit()
-    return get_call(call_id, db=db, _=_)  # reutiliza el armado del detalle
+    return get_call(call_id, db=db, current_user=_)  # reutiliza el armado del detalle
 
 
 @router.post("/{call_id}/retry", status_code=status.HTTP_202_ACCEPTED)
@@ -372,7 +387,7 @@ def retry_call(
     call_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_manager),
 ):
     """Reintenta el procesamiento de una llamada que quedó en estado ERROR."""
     call = db.get(Call, call_id)
@@ -395,12 +410,13 @@ def retry_call(
 def download_report(
     call_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Genera y descarga el reporte PDF de una llamada."""
     call = call_service.get_call(db, call_id)
     if call is None:
         raise HTTPException(status_code=404, detail="Llamada no encontrada.")
+    _ensure_can_view_call(current_user, call)
 
     pdf_bytes = generate_call_report(call)
     return Response(
@@ -416,7 +432,7 @@ def download_report(
 def delete_call(
     call_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_manager),
 ):
     """Elimina una llamada y su audio asociado."""
     call = db.get(Call, call_id)

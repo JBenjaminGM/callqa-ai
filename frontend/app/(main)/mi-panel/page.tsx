@@ -1,0 +1,200 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { Phone, TrendingUp } from 'lucide-react';
+import { useAgent, useAgentDashboard } from '@/lib/queries';
+import { useAuthStore } from '@/lib/auth';
+import { Header } from '@/components/layout/header';
+import { Card, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
+import { EmptyState, Skeleton } from '@/components/ui/feedback';
+import { ScoreRadar } from '@/components/charts/score-radar';
+import { dimensionLabel, scoreColor, scoreLabel } from '@/lib/utils';
+
+/** Panel personal del asesor: su rendimiento, comparativa y puntos de mejora. */
+export default function MyPanelPage() {
+  const user = useAuthStore((s) => s.user);
+  const agentId = user?.agent_id ?? NaN;
+  const [period, setPeriod] = useState('30d');
+
+  const { data: agent } = useAgent(agentId);
+  const { data: dash, isLoading } = useAgentDashboard(agentId, period);
+
+  if (!user?.agent_id) {
+    return (
+      <>
+        <Header title="Mi rendimiento" />
+        <main className="flex-1 overflow-y-auto p-6">
+          <EmptyState
+            title="Cuenta sin ejecutivo vinculado"
+            description="Tu usuario aún no está asociado a una ficha de ejecutivo. Contacta con tu jefe de área para activarlo."
+          />
+        </main>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header title="Mi rendimiento" />
+      <main className="flex-1 overflow-y-auto p-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-h3 text-text-primary">
+              hola, {agent?.name ?? user.name}
+            </p>
+            <p className="text-small text-text-secondary">
+              {agent?.campaign ?? 'Tu desempeño en las llamadas evaluadas'}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-40">
+              <Select value={period} onChange={(e) => setPeriod(e.target.value)}>
+                <option value="7d">Últimos 7 días</option>
+                <option value="30d">Últimos 30 días</option>
+                <option value="90d">Últimos 90 días</option>
+              </Select>
+            </div>
+            <Link href="/calls">
+              <Button variant="secondary" size="sm">
+                <Phone size={16} />
+                Mis llamadas
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {isLoading && <Skeleton className="h-28" />}
+
+        {dash && (
+          <div className="flex flex-col gap-6">
+            {/* KPIs personales */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <Card className="flex flex-col gap-1">
+                <p className="text-small text-text-secondary">Mi score promedio</p>
+                <p
+                  className="text-kpi"
+                  style={{ color: scoreColor(dash.average_score) }}
+                >
+                  {dash.average_score.toFixed(1)}
+                </p>
+                <p className="text-small text-text-muted">
+                  {scoreLabel(dash.average_score)}
+                </p>
+              </Card>
+              <Card className="flex flex-col gap-1">
+                <p className="text-small text-text-secondary">Llamadas evaluadas</p>
+                <p className="text-kpi text-accent-primary">{dash.total_calls}</p>
+              </Card>
+              <Card className="flex flex-col gap-1">
+                <p className="text-small text-text-secondary">Tendencia</p>
+                <p className="flex items-center gap-2 text-kpi text-accent-primary">
+                  <TrendingUp size={22} />
+                  {dash.score_trend}
+                </p>
+              </Card>
+            </div>
+
+            {dash.total_calls > 0 ? (
+              <>
+                {/* Comparativa por dimensión vs equipo */}
+                <Card>
+                  <CardTitle className="mb-2">
+                    Mi desempeño por dimensión vs. el equipo
+                  </CardTitle>
+                  <ScoreRadar
+                    scores={dash.dimension_averages}
+                    teamScores={dash.team_dimension_averages}
+                  />
+                </Card>
+
+                {/* Fortalezas y puntos de mejora */}
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <Card>
+                    <CardTitle className="mb-3">Mis fortalezas</CardTitle>
+                    <ul className="flex flex-col gap-2">
+                      {dash.strengths.map((d) => (
+                        <li
+                          key={d}
+                          className="flex items-center gap-2 text-body text-text-primary"
+                        >
+                          <span className="h-2 w-2 rounded-full bg-success" />
+                          {dimensionLabel(d)}
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+                  <Card>
+                    <CardTitle className="mb-3">Mis puntos de mejora</CardTitle>
+                    <ul className="flex flex-col gap-2">
+                      {dash.improvement_areas.map((d) => (
+                        <li
+                          key={d}
+                          className="flex items-center gap-2 text-body text-text-primary"
+                        >
+                          <span className="h-2 w-2 rounded-full bg-danger" />
+                          {dimensionLabel(d)}
+                        </li>
+                      ))}
+                    </ul>
+                  </Card>
+                </div>
+
+                {/* Evolución temporal */}
+                {dash.timeline.length > 0 && (
+                  <Card>
+                    <CardTitle className="mb-4">Mi evolución</CardTitle>
+                    <ResponsiveContainer width="100%" height={260}>
+                      <LineChart data={dash.timeline}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
+                        />
+                        <YAxis
+                          domain={[0, 100]}
+                          tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--border)',
+                            borderRadius: 8,
+                            color: 'var(--text-primary)',
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="avg_score"
+                          stroke="var(--accent-primary)"
+                          strokeWidth={2}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </Card>
+                )}
+              </>
+            ) : (
+              <Card>
+                <p className="text-body text-text-secondary">
+                  Aún no tienes llamadas evaluadas en este periodo.
+                </p>
+              </Card>
+            )}
+          </div>
+        )}
+      </main>
+    </>
+  );
+}

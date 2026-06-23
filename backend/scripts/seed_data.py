@@ -23,12 +23,20 @@ from app.database import SessionLocal  # noqa: E402
 from app.models.agent import Agent  # noqa: E402
 from app.models.campaign import Campaign  # noqa: E402
 from app.models.settings import AppSettings, RubricConfig  # noqa: E402
-from app.models.user import User  # noqa: E402
+from app.models.user import (  # noqa: E402
+    ROLE_ADMIN,
+    ROLE_ASESOR,
+    ROLE_JEFE,
+    User,
+)
 from app.utils.security import hash_password  # noqa: E402
 
-# Credenciales del usuario admin de demo.
+# Credenciales iniciales de las cuentas de ejemplo (admin, jefe de área y asesores).
 ADMIN_EMAIL = "admin@callqa.com"
 ADMIN_PASSWORD = "Admin123!"
+JEFE_EMAIL = "jefe@callqa.com"
+JEFE_PASSWORD = "Jefe123!"
+ASESOR_PASSWORD = "Asesor123!"  # contraseña inicial de las cuentas de asesor
 
 # Las 7 dimensiones de la rúbrica (regla de negocio RN-01).
 RUBRIC = [
@@ -144,19 +152,31 @@ def seed() -> None:
     """Inserta los datos iniciales si aún no existen."""
     db = SessionLocal()
     try:
-        # --- Usuario admin ---
+        # --- Usuario administrador ---
         if db.scalar(select(User).where(User.email == ADMIN_EMAIL)) is None:
             db.add(
                 User(
                     email=ADMIN_EMAIL,
                     password_hash=hash_password(ADMIN_PASSWORD),
                     name="Administrador",
-                    role="supervisor",
+                    role=ROLE_ADMIN,
                 )
             )
-            print(f"[seed] Usuario admin creado: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
+            print(f"[seed] Usuario administrador creado: {ADMIN_EMAIL}")
         else:
-            print("[seed] El usuario admin ya existía.")
+            print("[seed] El usuario administrador ya existía.")
+
+        # --- Usuario jefe de área ---
+        if db.scalar(select(User).where(User.email == JEFE_EMAIL)) is None:
+            db.add(
+                User(
+                    email=JEFE_EMAIL,
+                    password_hash=hash_password(JEFE_PASSWORD),
+                    name="Jefe de Área QA",
+                    role=ROLE_JEFE,
+                )
+            )
+            print(f"[seed] Usuario jefe de área creado: {JEFE_EMAIL}")
 
         # --- Rúbrica ---
         for key, name, weight, order in RUBRIC:
@@ -191,7 +211,25 @@ def seed() -> None:
                 db.add(
                     Agent(name=name, email=email, campaign=campaign, start_date=start)
                 )
+        db.flush()  # asegura los IDs de los ejecutivos recién creados
         print("[seed] Ejecutivos de ejemplo verificados.")
+
+        # --- Cuentas de acceso de asesor (una por ejecutivo de ejemplo) ---
+        for name, email, campaign, start in AGENTS:
+            agent = db.scalar(select(Agent).where(Agent.email == email))
+            if agent is not None and (
+                db.scalar(select(User).where(User.email == email)) is None
+            ):
+                db.add(
+                    User(
+                        email=email,
+                        password_hash=hash_password(ASESOR_PASSWORD),
+                        name=name,
+                        role=ROLE_ASESOR,
+                        agent_id=agent.id,
+                    )
+                )
+        print("[seed] Cuentas de asesor verificadas.")
 
         # --- Campañas de ejemplo con su nota de producto ---
         for camp in CAMPAIGNS:

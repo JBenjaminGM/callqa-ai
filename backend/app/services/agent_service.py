@@ -8,8 +8,10 @@ from sqlalchemy.orm import Session
 from app.models.agent import Agent
 from app.models.analysis import Analysis
 from app.models.call import Call, CallStatus
+from app.models.user import ROLE_ASESOR, User
 from app.schemas.agent import AgentCreate, AgentUpdate
 from app.services.name_matching import find_matching_agent
+from app.utils.security import hash_password
 
 logger = logging.getLogger("callqa.agents")
 
@@ -103,6 +105,34 @@ def deactivate_agent(db: Session, agent: Agent) -> None:
     agent.active = False
     db.commit()
     logger.info("Ejecutivo desactivado id=%s", agent.id)
+
+
+def create_agent_login(
+    db: Session, agent: Agent, *, email: str, password: str, name: str | None = None
+) -> User:
+    """
+    Crea una cuenta de acceso de ASESOR vinculada a un ejecutivo.
+
+    Valida que el email no exista ya y que el ejecutivo no tenga otra cuenta.
+    """
+    email = email.strip().lower()
+    if db.scalar(select(User).where(User.email == email)) is not None:
+        raise ValueError(f"Ya existe un usuario con el email {email}.")
+    if db.scalar(select(User).where(User.agent_id == agent.id)) is not None:
+        raise ValueError("Este ejecutivo ya tiene una cuenta de acceso.")
+
+    user = User(
+        email=email,
+        password_hash=hash_password(password),
+        name=(name or agent.name),
+        role=ROLE_ASESOR,
+        agent_id=agent.id,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    logger.info("Login de asesor creado id=%s para ejecutivo id=%s", user.id, agent.id)
+    return user
 
 
 def get_agent_stats(db: Session, agent_id: int) -> tuple[int, float | None]:

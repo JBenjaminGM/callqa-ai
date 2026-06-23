@@ -4,18 +4,29 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, require_manager
 from app.models.user import User
 from app.schemas.agent import (
     AgentCreate,
     AgentCreatedOut,
     AgentDetailOut,
+    AgentLoginCreate,
     AgentOut,
     AgentUpdate,
 )
+from app.schemas.auth import UserOut
 from app.services import agent_service
 
 router = APIRouter(prefix="/agents", tags=["agents"])
+
+
+def _ensure_can_view_agent(current_user: User, agent_id: int) -> None:
+    """Un asesor solo puede ver su propia ficha; un manager ve todas."""
+    if not current_user.is_manager and current_user.agent_id != agent_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No autorizado para ver este ejecutivo.",
+        )
 
 
 @router.get("", response_model=list[AgentOut])
@@ -23,17 +34,20 @@ def list_agents(
     active: bool | None = Query(default=None),
     search: str | None = Query(default=None),
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    """Lista los ejecutivos, con filtros opcionales por estado y nombre."""
-    return agent_service.list_agents(db, active=active, search=search)
+    """Lista los ejecutivos. El asesor solo ve su propia ficha."""
+    agents = agent_service.list_agents(db, active=active, search=search)
+    if not current_user.is_manager:
+        agents = [a for a in agents if a.id == current_user.agent_id]
+    return agents
 
 
 @router.post("", response_model=AgentCreatedOut, status_code=status.HTTP_201_CREATED)
 def create_agent(
     payload: AgentCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_manager),
 ):
     """
     Crea un nuevo ejecutivo.
@@ -51,13 +65,36 @@ def create_agent(
     return result
 
 
+@router.post(
+    "/{agent_id}/login", response_model=UserOut, status_code=status.HTTP_201_CREATED
+)
+def create_agent_login(
+    agent_id: int,
+    payload: AgentLoginCreate,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    """Crea una cuenta de acceso de ASESOR vinculada a un ejecutivo."""
+    agent = agent_service.get_agent(db, agent_id)
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Ejecutivo no encontrado.")
+    try:
+        user = agent_service.create_agent_login(
+            db, agent, email=payload.email, password=payload.password, name=payload.name
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    return UserOut.model_validate(user)
+
+
 @router.get("/{agent_id}", response_model=AgentDetailOut)
 def get_agent(
     agent_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Devuelve el detalle de un ejecutivo con sus estadísticas."""
+    _ensure_can_view_agent(current_user, agent_id)
     agent = agent_service.get_agent(db, agent_id)
     if agent is None:
         raise HTTPException(status_code=404, detail="Ejecutivo no encontrado.")
@@ -74,7 +111,7 @@ def update_agent(
     agent_id: int,
     payload: AgentUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_manager),
 ):
     """Actualiza los datos de un ejecutivo."""
     agent = agent_service.get_agent(db, agent_id)
@@ -90,7 +127,7 @@ def update_agent(
 def deactivate_agent(
     agent_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_manager),
 ):
     """Desactiva un ejecutivo (soft delete)."""
     agent = agent_service.get_agent(db, agent_id)

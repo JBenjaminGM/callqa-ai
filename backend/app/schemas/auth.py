@@ -19,6 +19,8 @@ class UserOut(BaseModel):
     name: str
     email: EmailStr
     role: str
+    # Vínculo del asesor a su ficha de ejecutivo (None para admin/jefe).
+    agent_id: int | None = None
     last_login: datetime | None = None
 
     model_config = {"from_attributes": True}

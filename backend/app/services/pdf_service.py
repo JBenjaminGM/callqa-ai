@@ -52,7 +52,8 @@ def generate_call_report(call: Call) -> bytes:
     # --- Encabezado ---
     story.append(Paragraph("CallQA AI — Reporte de Llamada", styles["Title"]))
     story.append(Paragraph(
-        "<i>PROTOTIPO — DEMO INTERNA. No usar con datos reales de clientes.</i>",
+        "<i>Vista previa para evaluación. Documento generado automáticamente; "
+        "no utilizar con datos reales de clientes sin aprobación de Compliance.</i>",
         styles["Normal"],
     ))
     story.append(Spacer(1, 0.5 * cm))

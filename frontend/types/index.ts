@@ -7,11 +7,15 @@ export type CallStatus =
   | 'DONE'
   | 'ERROR';
 
+export type Role = 'admin' | 'jefe' | 'asesor';
+
 export interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: Role | string;
+  /** Vínculo del asesor a su ficha de ejecutivo (null para admin/jefe). */
+  agent_id?: number | null;
   last_login?: string | null;
 }
 
@@ -230,4 +234,10 @@ export interface AppSettings {
   default_language: string;
   ai_provider: string;
   whisper_provider: string;
+  // Umbrales / metas de QA configurables.
+  qa_target_score?: number;
+  qa_low_agent_threshold?: number;
+  qa_red_call_threshold?: number;
+  qa_min_calls_ranking?: number;
+  qa_trend_drop_alert?: number;
 }
