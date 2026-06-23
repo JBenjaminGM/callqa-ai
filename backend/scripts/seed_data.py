@@ -152,8 +152,9 @@ def seed() -> None:
     """Inserta los datos iniciales si aún no existen."""
     db = SessionLocal()
     try:
-        # --- Usuario administrador ---
-        if db.scalar(select(User).where(User.email == ADMIN_EMAIL)) is None:
+        # --- Usuario administrador (se garantiza el rol admin) ---
+        admin = db.scalar(select(User).where(User.email == ADMIN_EMAIL))
+        if admin is None:
             db.add(
                 User(
                     email=ADMIN_EMAIL,
@@ -163,6 +164,10 @@ def seed() -> None:
                 )
             )
             print(f"[seed] Usuario administrador creado: {ADMIN_EMAIL}")
+        elif admin.role != ROLE_ADMIN:
+            # Corrige cuentas legacy que la migración 0005 dejó como 'jefe'.
+            admin.role = ROLE_ADMIN
+            print(f"[seed] Rol de {ADMIN_EMAIL} actualizado a admin.")
         else:
             print("[seed] El usuario administrador ya existía.")
 

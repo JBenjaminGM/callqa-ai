@@ -1,104 +1,90 @@
 ---
-name: Aetheric Intelligence
+name: Minsait — Calidad con impacto
 colors:
-  surface: '#0b1020'
-  surface-dim: '#0b1020'
-  surface-bright: '#232c45'
-  surface-container-lowest: '#070a14'
-  surface-container-low: '#131a2e'
-  surface-container: '#1a2135'
-  surface-container-high: '#232c45'
-  surface-container-highest: '#2a3450'
-  on-surface: '#e8ecf6'
-  on-surface-variant: '#aab4cb'
-  inverse-surface: '#e8ecf6'
-  inverse-on-surface: '#1f2433'
-  outline: '#6b7798'
-  outline-variant: '#2a3450'
-  surface-tint: '#6366f1'
-  primary: '#6366f1'
-  on-primary: '#ffffff'
-  primary-container: '#4f46e5'
-  on-primary-container: '#e0e7ff'
-  inverse-primary: '#4f46e5'
-  secondary: '#818cf8'
-  on-secondary: '#1e1b4b'
-  secondary-container: '#312e81'
-  on-secondary-container: '#c7d2fe'
-  tertiary: '#69dbab'
-  on-tertiary: '#003825'
-  tertiary-container: '#27a377'
-  on-tertiary-container: '#003120'
-  error: '#ffb4ab'
-  on-error: '#690005'
-  error-container: '#93000a'
-  on-error-container: '#ffdad6'
-  primary-fixed: '#e0e7ff'
-  primary-fixed-dim: '#6366f1'
-  on-primary-fixed: '#1e1b4b'
-  on-primary-fixed-variant: '#3730a3'
-  secondary-fixed: '#e0e7ff'
-  secondary-fixed-dim: '#818cf8'
-  on-secondary-fixed: '#1e1b4b'
-  on-secondary-fixed-variant: '#3730a3'
-  tertiary-fixed: '#86f8c5'
-  tertiary-fixed-dim: '#69dbab'
-  on-tertiary-fixed: '#002114'
-  on-tertiary-fixed-variant: '#005138'
-  background: '#0b1020'
-  on-background: '#e8ecf6'
-  surface-variant: '#2a3450'
-  slate-navy: '#0b1020'
-  indigo: '#6366f1'
-  indigo-strong: '#4f46e5'
-  canvas-light: '#f6f7fb'
-  surface-white: '#ffffff'
+  # --- Marca Minsait (fuente de verdad: frontend/app/globals.css) ---
+  pruno: '#480e2a'
+  pruno-oscuro: '#260717'
+  fucsia: '#ff0054'
+  gris-ceramica: '#e3e2da'
+  blanco: '#ffffff'
+  # --- Modo claro (Minsait light · Gris Cerámica) ---
+  bg-primary: '#e3e2da'
+  bg-secondary: '#ffffff'
+  bg-card: '#ffffff'
+  bg-accent: '#d6d5cc'
+  accent-primary: '#480e2a'
+  accent-secondary: '#7e2349'
+  text-primary: '#480e2a'
+  text-secondary: '#5e4a54'
+  text-muted: '#8a7e83'
+  border: '#c9c7bd'
+  glow: 'rgba(255, 0, 84, 0.22)'
+  shadow: 'rgba(72, 14, 42, 0.1)'
+  # --- Modo oscuro (Minsait dark · Pruno Oscuro / Pruno) ---
+  dark-bg-primary: '#260717'
+  dark-bg-secondary: '#480e2a'
+  dark-bg-card: '#3a0b22'
+  dark-bg-accent: '#5c1536'
+  dark-accent-primary: '#ff0054'
+  dark-accent-secondary: '#9a3460'
+  dark-text-primary: '#ffffff'
+  dark-text-secondary: '#d9c7d0'
+  dark-text-muted: '#a98b99'
+  dark-border: '#5c1536'
+  # --- Estado / dataviz (paleta secundaria oficial Minsait digital) ---
+  success: '#246b4e'       # green-4 (claro) / #65d16f green-2 (oscuro)
+  warning: '#e56813'       # orange-3 (claro) / #fc8535 orange-2 (oscuro)
+  danger: '#d2044a'        # pink-3 (claro) / #ef659d pink-2 (oscuro)
+  info: '#534199'          # violet-4 (claro) / #9c85ff violet-2 (oscuro)
 typography:
-  display-lg:
-    fontFamily: Inter
-    fontSize: 72px
-    fontWeight: '700'
-    lineHeight: 80px
-    letterSpacing: -0.02em
-  headline-xl:
-    fontFamily: Inter
-    fontSize: 48px
-    fontWeight: '600'
-    lineHeight: 56px
-    letterSpacing: -0.01em
-  headline-xl-mobile:
-    fontFamily: Inter
-    fontSize: 32px
-    fontWeight: '600'
-    lineHeight: 40px
-  headline-md:
-    fontFamily: Inter
-    fontSize: 24px
-    fontWeight: '500'
-    lineHeight: 32px
-  body-lg:
-    fontFamily: Inter
+  display:
+    fontFamily: ForFuture Sans
+    fontSize: 40px
+    fontWeight: '400'
+    lineHeight: 1
+    textTransform: lowercase
+  h1:
+    fontFamily: ForFuture Sans
+    fontSize: 28px
+    fontWeight: '400'
+    lineHeight: 1.1
+    textTransform: lowercase
+  h2:
+    fontFamily: ForFuture Sans
+    fontSize: 22px
+    fontWeight: '400'
+    lineHeight: 1.1
+    textTransform: lowercase
+  h3:
+    fontFamily: ForFuture Sans
     fontSize: 18px
     fontWeight: '400'
-    lineHeight: 28px
-  body-md:
-    fontFamily: Inter
-    fontSize: 16px
+    lineHeight: 1.1
+    textTransform: lowercase
+  body:
+    fontFamily: ForFuture Sans
+    fontSize: 14px
     fontWeight: '400'
-    lineHeight: 24px
-  label-caps:
-    fontFamily: Inter
+    lineHeight: 1.6
+  small:
+    fontFamily: ForFuture Sans
     fontSize: 12px
-    fontWeight: '600'
-    lineHeight: 16px
-    letterSpacing: 0.1em
-rounded:
-  sm: 0.25rem
-  DEFAULT: 0.5rem
-  md: 0.75rem
-  lg: 1rem
-  xl: 1.5rem
-  full: 9999px
+    fontWeight: '400'
+    lineHeight: 1.5
+  kpi:
+    fontFamily: ForFuture Sans
+    fontSize: 48px
+    fontWeight: '900'
+    lineHeight: 1
+  destacado:
+    fontFamily: ForFuture Sans
+    fontWeight: '700'
+    textTransform: uppercase
+    letterSpacing: 0.08em
+shapes:
+  chamfer: 14px          # chaflán de contenedores (.chamfer); 9px en móvil
+  chamfer-mobile: 9px
+  cta: 9999px            # CTA = píldora Fucsia
 spacing:
   unit: 8px
   container-max: 1280px
@@ -108,49 +94,68 @@ spacing:
   margin-mobile: 20px
 ---
 
-## Brand & Style
-The design system embodies a "High-Tech Editorial" aesthetic, merging the precision of AI-driven analytics with the sophisticated storytelling of premium consulting. The brand personality is authoritative yet visionary, positioning the onboarding process as an immersive journey rather than a bureaucratic task.
+## Marca y estilo
+El sistema de diseño adopta la **identidad oficial Minsait** (Grupo Indra) bajo la firma **"calidad con impacto"** (Tech for impact). La personalidad de marca es sobria, corporativa y de alto contraste: dominan **Pruno** (#480e2a) y **Gris Cerámica** (#e3e2da), y el **Fucsia** (#ff0054) aparece **solo como acento** (resalte, CTA, foco). Es el tono adecuado para un cliente de banca.
 
-The visual style utilizes **Glassmorphism** and **Corporate Modernism**. It relies on translucent layers, soft background blurs, and vibrant accent glows to simulate a digital environment that feels tangible and high-end. Layouts should prioritize whitespace and "breathable" content blocks, echoing the pacing of a prestige magazine.
+> ⚠️ El antiguo sistema **"Aetheric Intelligence" (Índigo / Slate, glassmorphism)** queda **OBSOLETO**. Cualquier referencia a Índigo `#4f46e5`/`#6366f1`, canvas Slate-navy `#0b1020` o tipografía Inter debe ignorarse.
 
-## Colors
-> **Paleta vigente (jun 2026): Índigo / Slate.** La implementación canónica son las variables CSS de `frontend/app/globals.css`; este documento es una referencia, no un dogma.
+El estilo visual es **plano y editorial corporativo**: superficies sólidas (no glassmorphism), contenedores **achaflanados** (clase `.chamfer`) con el mismo chaflán en toda la app, y titulares en **minúscula** con la palabra clave resaltada en Fucsia (dispositivo "calidad con **impacto**"). El **modo claro es el predeterminado** (lienzo Gris Cerámica); el modo oscuro usa Pruno / Pruno Oscuro.
 
-The palette is anchored by **Indigo** (#4f46e5 en claro / #6366f1 en oscuro), used for primary actions, links and data highlights — a professional, trustworthy tone well suited to a banking context. The foundation is a **Slate-navy** canvas in dark mode and a cool off-white in light mode (a calmer, more corporate alternative to the previous Electric Rose / Deep Plum).
+## Colores
+> **Fuente de verdad del color: `frontend/app/globals.css` + `frontend/tailwind.config.ts`.** Este documento es una referencia; las variables CSS mandan.
 
-- **Dark Mode (Default):** Deep slate-navy canvas (#0b1020). Translucency is applied to surfaces to let subtle background gradients peek through.
-- **Light Mode:** Cool off-white canvas (#f6f7fb) with pure white surfaces. Slate tones provide deep-contrast text and structure.
-- **AI Accents:** Soft radial gradients transitioning from Indigo (with a hint of cyan) to transparent for "glow" effects behind key interface elements.
+La paleta se ancla en **Pruno** (#480e2a) como primario (logo, navegación activa, KPIs, gráficos, enlaces, cuerpo de texto sobre cerámica) y **Gris Cerámica** (#e3e2da) como lienzo y base de contenedores. El **Fucsia** (#ff0054) se reserva como acento: realce, CTA y anillo de foco.
 
-## Typography
-The system uses **Inter** exclusively to achieve a clean, geometric, and systematic feel. The hierarchy is heavily weighted toward large "Display" and "Headline" sizes to facilitate editorial storytelling. 
+- **Modo claro (predeterminado):** lienzo Gris Cerámica (#e3e2da) con tarjetas blancas achaflanadas. Texto en Pruno. Hovers tonales en cerámica (`#d6d5cc`), sin opacidad.
+- **Modo oscuro:** lienzo Pruno Oscuro (#260717) y superficies Pruno tonal (#3a0b22). Aquí el acento primario pasa a **Fucsia** para resaltar sobre el lienzo Pruno.
+- **Acento Fucsia:** CTAs en píldora, realces puntuales y anillo de foco accesible. `--glow: rgba(255,0,84,0.22)` (0.35 en oscuro) para foco/realce.
 
-Tight letter-spacing is used for large headlines to maintain a premium, "locked-in" appearance. Body text should maintain generous line heights (1.5x minimum) to ensure readability during dense consulting assessments. Use `label-caps` for section headers and metadata to provide a technical contrast to the fluid display type.
+### Estado / dataviz (paleta secundaria oficial Minsait digital)
+Para estados y gráficas se usa la paleta secundaria digital de Minsait, con variantes por modo:
 
-## Layout & Spacing
-The layout follows an **Editorial Fluid Grid**. It uses a 12-column structure on desktop with wide gutters (32px) to prevent the UI from feeling cluttered. 
+| Estado | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `--success` | `#246b4e` (green-4) | `#65d16f` (green-2) | Scores altos (≥ objetivo), confirmaciones |
+| `--warning` | `#e56813` (orange-3) | `#fc8535` (orange-2) | Scores intermedios, alertas |
+| `--danger`  | `#d2044a` (pink-3)  | `#ef659d` (pink-2)  | Scores bajos / llamadas rojas, errores |
+| `--info`    | `#534199` (violet-4) | `#9c85ff` (violet-2) | Información general, enlaces |
 
-- **Storytelling Sections:** Content should be centered with wide margins (64px+) to mimic the feel of a printed report.
-- **Dynamic Padding:** Components like cards and modals should use consistent increments of the 8px base unit. 
-- **Reflow:** On mobile, margins tighten to 20px, and typography scales aggressively. 12 columns collapse to 4, prioritizing a single-column vertical flow for onboarding forms.
+## Tipografía
+El sistema usa **ForFuture Sans**, la tipografía corporativa de Minsait, servida con archivos **woff2 locales** desde `frontend/public/fonts` (pesos 300/400/400 italic/500/700/900). Fallback: `Arial, sans-serif`.
 
-## Elevation & Depth
-Depth is created through **Glassmorphism** rather than traditional drop shadows. Surfaces are treated as frosted panes with varying levels of backdrop-blur (12px to 40px).
+Los **titulares van en minúscula** (`text-transform: lowercase`, vía `globals.css`), con peso Regular (400) y `line-height` ajustado (1–1.1), reforzando el tono editorial sobrio de Minsait. La **palabra clave del titular se resalta en Fucsia** con la clase `.hl` (dispositivo "calidad con impacto"). El eyebrow/destacado (`.destacado`) va en **Bold MAYÚSCULAS** con `letter-spacing` amplio.
 
-- **Surface Tiers:** Backgrounds use the primary hex; containers use a semi-transparent version (e.g., `rgba(255, 255, 255, 0.05)` in dark mode) with a 1px solid white border at 10% opacity.
-- **AI Glows:** High-importance elements (like the current active step in onboarding) feature a subtle "glow" — a soft, blurred shadow using the Indigo color with high diffusion and low opacity.
-- **Micro-shadows:** Only used for functional clarity on top-level modals to separate them from the glass stack.
+| Token | Tamaño / peso | Uso |
+|---|---|---|
+| `text-display` | 40px / 400 | Hero, títulos de página |
+| `text-h1` | 28px / 400 | Títulos de sección |
+| `text-h2` | 22px / 400 | Subtítulos |
+| `text-h3` | 18px / 400 | Títulos de tarjeta |
+| `text-body` | 14px / 400 | Texto general (line-height 1.6) |
+| `text-small` | 12px / 400 | Captions, labels |
+| `text-kpi` | 48px / 900 | Números grandes en dashboard |
 
-## Shapes
-The shape language is **Rounded**, balancing the tech-heavy aesthetic with human-centric softness. 
+## Layout y espaciado
+El layout mantiene una rejilla corporativa con base de **8px**. Ancho de contenido máximo 1280px, gutters de 32px y márgenes de 64px en escritorio; en móvil los márgenes se estrechan a 20px y el gutter a 16px.
 
-- **Primary Components:** Use 0.5rem (8px) for buttons and inputs.
-- **Cards and Modals:** Use 1rem (16px) or 1.5rem (24px) for large layout containers to emphasize the "glass pane" metaphor.
-- **Progress Indicators:** Use pill-shaped (full rounding) for status chips and progress bars to provide a distinct visual contrast to the structural rectangular grid.
+- **Sidebar siempre Pruno** con el logo Minsait en blanco, en ambos modos.
+- **Tarjetas blancas achaflanadas** sobre el lienzo cerámica en modo claro.
+- **Padding consistente** en múltiplos de la unidad de 8px.
 
-## Components
-- **Smart Buttons:** Use a solid Indigo fill (#4f46e5 / #6366f1) for primary actions. The hover state should include a subtle outer glow. Secondary buttons use the "ghost" style with a glass background and a 1px border.
-- **Glass Cards:** Feature a `backdrop-filter: blur(20px)` and a thin internal stroke to catch the "light." Content within cards should follow the editorial grid.
-- **Immersive Inputs:** Text fields are semi-transparent with a bottom-border only or a very subtle ghost-box. Focus states are indicated by the border color shifting to Indigo and a micro-glow.
-- **Onboarding Chips:** Small, pill-shaped tags used for multi-select categories. Inactive chips are low-opacity slate/gray; active chips are Indigo with white text.
-- **Interactive Lists:** Used for step-by-step consulting modules. Each list item should have a hover state that slightly increases its backdrop-blur and scale.
+## Elevación y profundidad
+Minsait es **plano**: la profundidad se logra con **superficies sólidas, bordes tonales de 1px y sombras sutiles** (`--shadow`), no con glassmorphism ni blur. La clase `.glass` se conserva por compatibilidad pero ahora renderiza una superficie **sólida** (fondo + borde de 1px), no una capa traslúcida con backdrop-blur. El único "glow" admitido es el anillo/realce **Fucsia** de foco (`--glow`).
+
+## Formas
+El lenguaje de forma es el **chaflán Minsait**, no el redondeado.
+
+- **Contenedores (tarjetas, paneles, modales):** clase `.chamfer` con `--chamfer: 14px` (9px en móvil, ≤ 640px), recortando las 8 esquinas mediante `clip-path: polygon(...)`. El mismo chaflán se aplica de forma uniforme en toda la app.
+- **CTA primario:** **píldora Fucsia** (radio completo, `border-radius` full).
+- **Scrollbar:** discreta, esquinas rectas (sin radio).
+
+## Componentes
+- **CTA primario:** píldora con relleno **Fucsia** (#ff0054) y texto blanco; reservado para la acción principal de cada vista. El resto de botones usan estilo sobrio en Pruno / borde tonal.
+- **Tarjetas achaflanadas:** superficie sólida (blanca en claro, Pruno tonal en oscuro), borde tonal de 1px y recorte `.chamfer`. Sin blur.
+- **Inputs:** superficie sólida con borde tonal; el foco muestra el **anillo Fucsia** accesible (`outline: 3px solid var(--fucsia)`, WCAG). El autocompletado del navegador se fuerza a respetar la superficie/texto del tema.
+- **Titulares con realce:** `h1–h4` en minúscula; la palabra clave en `.hl` (Fucsia) materializa "calidad con impacto".
+- **Badges de score:** colores de estado por umbral (danger/warning/success) usando la paleta secundaria Minsait.
+- **Animaciones:** aparición suave `animate-fade-in` (respeta `prefers-reduced-motion`) y `skeleton` de carga con pulso sobre el borde tonal.

@@ -1,11 +1,12 @@
-# 🎨 Sistema de Diseño — CallQA AI
+# 🎨 Sistema de Diseño — CallQA AI · Identidad Minsait
 
-> ❌ **DOCUMENTO OBSOLETO — NO USAR.** Todos los colores de abajo (paleta vino/borgoña con acentos magenta/rosa, modo oscuro `#4B0024`, etc.) corresponden a un diseño **antiguo y ya descartado**. La paleta **vigente es Índigo / Slate** (acento Índigo `#4f46e5`/`#6366f1`, canvas Slate-navy `#0b1020` en oscuro y cool-white `#f6f7fb` en claro).
+> ✅ **Identidad vigente: MINSAIT (Grupo Indra) — "calidad con impacto".**
+> Dominan **Pruno** y **Gris Cerámica**; **Fucsia** es solo acento. Tipografía **ForFuture Sans**, contenedores **achaflanados**, **modo claro por defecto**.
 >
-> - Referencia de diseño actual: **`DESIGN.md`**.
-> - Implementación **canónica** (fuente de verdad): **`frontend/app/globals.css`**.
+> - Referencia ampliada del sistema: **`DESIGN.md`**.
+> - Implementación **canónica** (fuente de verdad): **`frontend/app/globals.css`** + **`frontend/tailwind.config.ts`**.
 >
-> Se conserva esta página solo como registro histórico; **no la tomes como referencia para nada visual.**
+> ⚠️ Quedan **OBSOLETAS** las identidades anteriores: tanto el sistema **"Aetheric Intelligence" (Índigo `#4f46e5`/`#6366f1` · Slate-navy `#0b1020`)** como la antigua paleta **vino/borgoña con acentos magenta/rosa**. Ignora cualquier mención a Índigo, Slate o Inter.
 
 > **Paleta de colores y guías visuales para el frontend**
 
@@ -13,172 +14,188 @@
 
 ## 🎯 Concepto general
 
-**Estilo:** Moderno corporativo con personalidad — paleta vino/borgoña con acentos magenta/rosa.
-**Mood:** Premium, sofisticado, confiable (apropiado para sector bancario).
-**Soporte:** Modo claro + Modo oscuro (toggle obligatorio en el header).
+**Estilo:** Corporativo Minsait, plano y editorial — Pruno + Gris Cerámica dominan, Fucsia como acento.
+**Firma:** "calidad con impacto" (Tech for impact) — titulares en minúscula con la palabra clave en Fucsia.
+**Mood:** Sobrio, premium, confiable (apropiado para sector bancario).
+**Soporte:** Modo claro (predeterminado, Gris Cerámica) + Modo oscuro (Pruno). Toggle en el header.
 
 ---
 
-## 🌙 MODO OSCURO
+## 🎨 Colores de marca Minsait
 
-### Paleta completa
-
-| Token | Hex | Uso | Preview |
-|---|---|---|---|
-| `--bg-primary` | `#4B0024` | Fondo principal de la app | 🟫 Borgoña oscuro |
-| `--bg-secondary` | `#65002F` | Variaciones de fondo, cards secundarios | 🟫 Vino profundo |
-| `--bg-card` | `#D9D4CF` | Fondos de cards (contraste claro sobre vino) | ⬜ Gris cálido claro |
-| `--accent-primary` | `#FF005C` | CTAs, botones principales, títulos resaltados | 🔴 Magenta intenso |
-| `--accent-secondary` | `#E61B72` | Acentos secundarios, hover states | 🔴 Rosa fucsia |
-| `--text-primary` | `#F5F1EE` | Tipografía principal sobre fondos oscuros | ⬜ Blanco cálido |
-| `--text-secondary` | `#A89A9E` | Texto secundario, labels, captions | ⬜ Gris topo |
-| `--shadow` | `#2A0014` | Sombras, contraste profundo, bordes | ⬛ Negro vino |
-
-### Aplicación recomendada
-
-```
-┌────────────────────────────────────────────────┐
-│  HEADER (#65002F)                              │  ← bg-secondary
-│  Logo · Nav · [🌙 Toggle] · Avatar             │
-├────────────────────────────────────────────────┤
-│                                                 │
-│  ┌──── Sidebar ────┐  ┌──── Content ────────┐ │
-│  │ (#65002F)       │  │  (#4B0024)           │ │  ← bg-primary
-│  │                 │  │                      │ │
-│  │ • Dashboard     │  │  ┌─ Card (#D9D4CF)─┐│ │
-│  │ • Llamadas      │  │  │ Texto: #2A0014  ││ │  ← card sobre vino
-│  │ • Ejecutivos    │  │  │ KPI: #FF005C    ││ │
-│  │                 │  │  └─────────────────┘│ │
-│  │                 │  │                      │ │
-│  │                 │  │  [Botón: #FF005C]   │ │  ← accent-primary
-│  └─────────────────┘  └──────────────────────┘ │
-└────────────────────────────────────────────────┘
-```
-
----
-
-## ☀️ MODO CLARO
-
-### Paleta completa
-
-| Token | Hex | Uso | Preview |
-|---|---|---|---|
-| `--bg-primary` | `#F4F0ED` | Fondo general de la app | ⬜ Crema claro |
-| `--bg-card` | `#FCFAF8` | Cards, paneles, modales | ⬜ Blanco cálido |
-| `--bg-accent` | `#F4C9D6` | Fondos de acento light, badges suaves | 🌸 Rosa pastel |
-| `--accent-primary` | `#E84F7A` | Botones primarios, highlights, CTAs | 🌸 Rosa acento |
-| `--accent-secondary` | `#F06A93` | Números destacados, métricas, cards activos | 🌸 Rosa suave |
-| `--text-primary` | `#2A0A16` | Títulos principales, texto fuerte | ⬛ Vino oscuro |
-| `--text-secondary` | `#4A2333` | Texto secundario fuerte, subtítulos | 🟫 Marrón ciruela |
-| `--text-muted` | `#A38D93` | Texto auxiliar, captions, placeholders | ⬜ Gris rosado |
-| `--border` | `#D9D0CC` | Bordes, divisiones, separadores | ⬜ Gris beige |
-
-### Aplicación recomendada
-
-```
-┌────────────────────────────────────────────────┐
-│  HEADER (#FCFAF8)                              │  ← bg-card
-│  Logo · Nav · [☀️ Toggle] · Avatar             │
-├────────────────────────────────────────────────┤
-│                                                 │
-│  ┌──── Sidebar ────┐  ┌──── Content ────────┐ │
-│  │ (#FCFAF8)       │  │  (#F4F0ED)           │ │  ← bg-primary
-│  │ Border #D9D0CC  │  │                      │ │
-│  │                 │  │  ┌─ Card (#FCFAF8)──┐│ │
-│  │ • Dashboard     │  │  │ Título: #2A0A16  ││ │
-│  │ • Llamadas      │  │  │ KPI: #F06A93     ││ │  ← accent-secondary
-│  │ • Ejecutivos    │  │  │ Border: #D9D0CC  ││ │
-│  │                 │  │  └──────────────────┘│ │
-│  │                 │  │                      │ │
-│  │                 │  │  [Botón: #E84F7A]    │ │  ← accent-primary
-│  └─────────────────┘  └──────────────────────┘ │
-└────────────────────────────────────────────────┘
-```
-
----
-
-## 🎨 Colores semánticos (ambos modos)
-
-Para estados (éxito, error, warning, info), añadimos estos colores que funcionan en ambos modos:
-
-| Estado | Hex | Uso |
+| Token | Hex | Uso |
 |---|---|---|
-| `--success` | `#10B981` | Scores 80-100 (Excelente), confirmaciones |
-| `--warning` | `#F59E0B` | Scores 60-79 (Aceptable), alertas |
-| `--danger` | `#EF4444` | Scores 0-59 (Requiere atención), errores |
-| `--info` | `#3B82F6` | Información general, links |
+| `--pruno` | `#480e2a` | Primario: logo, fondos/textos dominantes, nav activo, KPIs, gráficos |
+| `--pruno-oscuro` | `#260717` | Sobriedad / overlays / lienzo del modo oscuro |
+| `--fucsia` | `#ff0054` | **ACENTO ONLY** — resalte, CTA, anillo de foco |
+| `--gris-ceramica` | `#e3e2da` | Fondo claro / contenedores |
+| `--blanco` | `#ffffff` | Tarjetas, texto sobre Pruno |
+
+---
+
+## ☀️ MODO CLARO (predeterminado · Gris Cerámica)
+
+### Paleta completa
+
+| Token | Hex | Uso |
+|---|---|---|
+| `--bg-primary` | `#e3e2da` | Lienzo cerámica (fondo de la app) |
+| `--bg-secondary` | `#ffffff` | Fondos secundarios |
+| `--bg-card` | `#ffffff` | Tarjetas blancas achaflanadas sobre cerámica |
+| `--bg-accent` | `#d6d5cc` | Tonal cerámica para hovers (sin opacidad) |
+| `--accent-primary` | `#480e2a` | Pruno: nav activo, KPIs, gráficos, enlaces |
+| `--accent-secondary` | `#7e2349` | Pruno tonal: avatares / acentos secundarios |
+| `--text-primary` | `#480e2a` | Cuerpo en Pruno sobre cerámica |
+| `--text-secondary` | `#5e4a54` | Pruno desaturado |
+| `--text-muted` | `#8a7e83` | Gris cálido tenue |
+| `--border` | `#c9c7bd` | Tonal cerámica (bordes, separadores) |
+
+### Aplicación recomendada
+
+```
+┌────────────────────────────────────────────────┐
+│  HEADER (#ffffff)                              │  ← bg-card / blanco
+│  Logo Minsait · Nav · [☀️ Toggle] · Avatar     │
+├────────────────────────────────────────────────┤
+│                                                 │
+│  ┌── Sidebar (Pruno) ─┐  ┌── Content ────────┐ │
+│  │ (#480e2a)          │  │  (#e3e2da)         │ │  ← bg-primary cerámica
+│  │ Logo BLANCO        │  │                    │ │
+│  │                    │  │ ╱─ Card (.chamfer)╲│ │
+│  │ • Dashboard        │  │ │ Blanco #ffffff  ││ │
+│  │ • Llamadas         │  │ │ Texto: #480e2a  ││ │
+│  │ • Campañas         │  │ │ KPI: #480e2a    ││ │
+│  │ • Ejecutivos       │  │ ╲────────────────╱│ │
+│  │                    │  │                    │ │
+│  │                    │  │ ( Subir llamada )  │ │  ← CTA píldora Fucsia
+│  └────────────────────┘  └────────────────────┘ │
+└────────────────────────────────────────────────┘
+   ↑ Sidebar SIEMPRE Pruno con logo blanco (ambos modos)
+```
+
+---
+
+## 🌙 MODO OSCURO (Pruno Oscuro / Pruno)
+
+### Paleta completa
+
+| Token | Hex | Uso |
+|---|---|---|
+| `--bg-primary` | `#260717` | Lienzo Pruno Oscuro |
+| `--bg-secondary` | `#480e2a` | Fondos secundarios (Pruno) |
+| `--bg-card` | `#3a0b22` | Card Pruno tonal sobre lienzo oscuro |
+| `--bg-accent` | `#5c1536` | Tonal para hovers |
+| `--accent-primary` | `#ff0054` | **Fucsia**: resalta sobre el lienzo Pruno |
+| `--accent-secondary` | `#9a3460` | Acento secundario |
+| `--text-primary` | `#ffffff` | Tipografía principal sobre Pruno |
+| `--text-secondary` | `#d9c7d0` | Texto secundario |
+| `--text-muted` | `#a98b99` | Texto auxiliar |
+| `--border` | `#5c1536` | Bordes, separadores |
+
+> En modo oscuro el acento primario pasa a **Fucsia** para destacar sobre el lienzo Pruno.
+
+---
+
+## 🎨 Colores de estado / dataviz (paleta secundaria oficial Minsait)
+
+Para estados (éxito, error, warning, info) y gráficas, con variante por modo:
+
+| Estado | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `--success` | `#246b4e` (green-4) | `#65d16f` (green-2) | Scores altos (≥ objetivo QA), confirmaciones |
+| `--warning` | `#e56813` (orange-3) | `#fc8535` (orange-2) | Scores intermedios, alertas |
+| `--danger` | `#d2044a` (pink-3) | `#ef659d` (pink-2) | Scores bajos / llamadas rojas, errores |
+| `--info` | `#534199` (violet-4) | `#9c85ff` (violet-2) | Información general, enlaces |
 
 ---
 
 ## 📝 Tipografía
 
-### Fuentes recomendadas (vía Google Fonts)
+### Fuente corporativa
 
 ```
-Display (títulos grandes):  Inter, weight 700-800
-Body (texto general):       Inter, weight 400-500
-Mono (datos/timestamps):    JetBrains Mono o Fira Code
+ForFuture Sans  ← tipografía oficial Minsait (woff2 LOCALES en frontend/public/fonts)
+                  pesos: 300 · 400 · 400 italic · 500 · 700 · 900
+Fallback:       Arial, sans-serif
+Mono (datos):   JetBrains Mono
 ```
+
+**Titulares Minsait:** en **minúscula** (`text-transform: lowercase`), peso Regular (400), `line-height` 1–1.1.
+La **palabra clave se resalta en Fucsia** con `.hl` (dispositivo "calidad con **impacto**").
+**Eyebrow/destacado** (`.destacado`): Bold MAYÚSCULAS con `letter-spacing` amplio.
 
 ### Escala tipográfica
 
-| Token | Tamaño | Uso |
+| Token | Tamaño / peso | Uso |
 |---|---|---|
-| `text-display` | 36px / 700 | Hero, títulos de página |
-| `text-h1` | 28px / 700 | Títulos de sección |
-| `text-h2` | 22px / 600 | Subtítulos |
-| `text-h3` | 18px / 600 | Títulos de cards |
-| `text-body` | 14px / 400 | Texto general |
+| `text-display` | 40px / 400 | Hero, títulos de página |
+| `text-h1` | 28px / 400 | Títulos de sección |
+| `text-h2` | 22px / 400 | Subtítulos |
+| `text-h3` | 18px / 400 | Títulos de cards |
+| `text-body` | 14px / 400 | Texto general (line-height 1.6) |
 | `text-small` | 12px / 400 | Captions, labels |
-| `text-kpi` | 48px / 800 | Números grandes en dashboard |
+| `text-kpi` | 48px / 900 | Números grandes en dashboard |
+
+---
+
+## 🔷 Formas — chaflán Minsait
+
+El lenguaje de forma es el **chaflán** (no el redondeado).
+
+- **Contenedores** (tarjetas, paneles, modales): clase **`.chamfer`**, `--chamfer: 14px` (9px en móvil ≤ 640px). Recorta las 8 esquinas con `clip-path: polygon(...)`, idéntico en toda la app.
+- **CTA primario:** **píldora Fucsia** (radio completo).
+- **Scrollbar:** esquinas rectas, sin radio.
 
 ---
 
 ## 🎁 Componentes clave (referencia visual)
 
-### Card de KPI (Dashboard)
+### Card de KPI (Dashboard) — achaflanada
 
 ```
-┌──────────────────────────────┐
-│  📞 Llamadas analizadas      │  ← label, text-small, text-secondary
-│                              │
-│    1,247                     │  ← KPI, text-kpi, accent-primary
-│                              │
-│  ↑ 12% vs mes anterior       │  ← delta, text-small, success
-└──────────────────────────────┘
+╱──────────────────────────────╲
+│  📞 llamadas analizadas       │  ← label minúscula, text-small, text-secondary
+│                               │
+│    1,247                      │  ← KPI, text-kpi 48/900, accent-primary (Pruno)
+│                               │
+│  ↑ 12% vs mes anterior        │  ← delta, text-small, success
+╲──────────────────────────────╱
+   ↑ borde achaflanado .chamfer
 ```
 
 ### Card de Llamada (Listado)
 
 ```
-┌──────────────────────────────────────────────────┐
-│ 👤 María González              Score: ●● 78     │
-│ Tarjetas Premium · Hace 2h     ✅ Procesado     │
-└──────────────────────────────────────────────────┘
-   ↑ Avatar     ↑ Texto principal       ↑ Badge de score con color semántico
+╱──────────────────────────────────────────────────╲
+│ 👤 María González              Score: ●● 78      │
+│ Tarjetas Premium · Hace 2h     ✅ Procesado      │
+╲──────────────────────────────────────────────────╱
+   ↑ Avatar     ↑ Texto principal     ↑ Badge de score (color de estado)
 ```
 
-### Botón primario
+### CTA primario
 
 ```
-Light mode:  [🔘 Subir llamada ]  ← bg #E84F7A, text white
-Dark mode:   [🔘 Subir llamada ]  ← bg #FF005C, text #F5F1EE
-Hover:                                        bg ligeramente más oscuro
-Disabled:                                     opacity 50%
+Acción principal:  ( subir llamada )   ← píldora Fucsia #ff0054, texto blanco
+Resto de botones:  estilo sobrio en Pruno / borde tonal
+Foco (WCAG):       anillo Fucsia (outline 3px var(--fucsia))
+Disabled:          opacity 50%
 ```
 
 ### Score visualization (radar chart)
 
-Usar los colores semánticos para las 7 dimensiones según el score:
-- 0-59 → `--danger` (rojo)
-- 60-79 → `--warning` (amarillo)
-- 80-100 → `--success` (verde)
+Usar los colores de estado para las 7 dimensiones según el score:
+- Bajo → `--danger`
+- Intermedio → `--warning`
+- Alto (≥ objetivo QA) → `--success`
 
-El relleno del radar en el accent del modo (rosa) con opacidad 0.3.
+Los umbrales de score son **configurables** en `/config/settings` (`qa_target_score`, `qa_red_call_threshold`, etc.). El relleno del radar usa el acento del modo con opacidad baja.
 
 ---
 
 ## 🌗 Implementación técnica (Tailwind + CSS Variables)
+
+> Fuente de verdad: **`frontend/app/globals.css`** + **`frontend/tailwind.config.ts`**. El fragmento siguiente es ilustrativo.
 
 ### `globals.css`
 
@@ -187,42 +204,70 @@ El relleno del radar en el accent del modo (rosa) con opacidad 0.3.
 @tailwind components;
 @tailwind utilities;
 
-/* Modo claro (default) */
-:root {
-  --bg-primary: #F4F0ED;
-  --bg-card: #FCFAF8;
-  --bg-accent: #F4C9D6;
-  --accent-primary: #E84F7A;
-  --accent-secondary: #F06A93;
-  --text-primary: #2A0A16;
-  --text-secondary: #4A2333;
-  --text-muted: #A38D93;
-  --border: #D9D0CC;
+/* ForFuture Sans — tipografía Minsait (woff2 locales en /public/fonts) */
+@font-face { font-family:'ForFuture Sans'; font-weight:400; font-display:swap;
+  src:url('/fonts/ForFutureSans-Regular.woff2') format('woff2'); }
+/* ... pesos 300/500/700/900 + italic ... */
 
-  --success: #10B981;
-  --warning: #F59E0B;
-  --danger: #EF4444;
-  --info: #3B82F6;
+/* Modo claro (predeterminado · Gris Cerámica) */
+:root {
+  --pruno: #480e2a;
+  --pruno-oscuro: #260717;
+  --fucsia: #ff0054;          /* ACENTO ONLY */
+  --gris-ceramica: #e3e2da;
+
+  --bg-primary: #e3e2da;
+  --bg-card: #ffffff;
+  --bg-accent: #d6d5cc;
+  --accent-primary: #480e2a;
+  --accent-secondary: #7e2349;
+  --text-primary: #480e2a;
+  --text-secondary: #5e4a54;
+  --text-muted: #8a7e83;
+  --border: #c9c7bd;
+
+  --success: #246b4e; --warning: #e56813; --danger: #d2044a; --info: #534199;
+  --chamfer: 14px;           /* chaflán de contenedores */
 }
 
-/* Modo oscuro */
+/* Modo oscuro (Pruno Oscuro / Pruno) */
 .dark {
-  --bg-primary: #4B0024;
-  --bg-secondary: #65002F;
-  --bg-card: #D9D4CF;
-  --accent-primary: #FF005C;
-  --accent-secondary: #E61B72;
-  --text-primary: #F5F1EE;
-  --text-secondary: #A89A9E;
-  --shadow: #2A0014;
+  --bg-primary: #260717;
+  --bg-secondary: #480e2a;
+  --bg-card: #3a0b22;
+  --bg-accent: #5c1536;
+  --accent-primary: #ff0054;  /* Fucsia resalta sobre Pruno */
+  --accent-secondary: #9a3460;
+  --text-primary: #ffffff;
+  --text-secondary: #d9c7d0;
+  --text-muted: #a98b99;
+  --border: #5c1536;
+
+  --success: #65d16f; --warning: #fc8535; --danger: #ef659d; --info: #9c85ff;
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
-  transition: background-color 0.2s, color 0.2s;
+  font-family: 'ForFuture Sans', Arial, sans-serif;
 }
+
+/* Titulares Minsait: minúscula + palabra clave en Fucsia */
+h1, h2, h3, h4 { text-transform: lowercase; line-height: 1.1; }
+.hl { color: var(--fucsia); }
+
+/* Contenedor achaflanado */
+.chamfer {
+  clip-path: polygon(
+    var(--chamfer) 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer),
+    100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, var(--chamfer) 100%,
+    0 calc(100% - var(--chamfer)), 0 var(--chamfer)
+  );
+}
+@media (max-width: 640px) { :root { --chamfer: 9px; } }
+
+/* Foco accesible: anillo Fucsia (WCAG) */
+*:focus-visible { outline: 3px solid var(--fucsia); outline-offset: 2px; }
 ```
 
 ### `tailwind.config.ts`
@@ -236,30 +281,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: {
-          primary: 'var(--bg-primary)',
-          secondary: 'var(--bg-secondary)',
-          card: 'var(--bg-card)',
-          accent: 'var(--bg-accent)',
-        },
-        accent: {
-          primary: 'var(--accent-primary)',
-          secondary: 'var(--accent-secondary)',
-        },
-        text: {
-          primary: 'var(--text-primary)',
-          secondary: 'var(--text-secondary)',
-          muted: 'var(--text-muted)',
-        },
+        bg: { primary: 'var(--bg-primary)', secondary: 'var(--bg-secondary)',
+              card: 'var(--bg-card)', accent: 'var(--bg-accent)' },
+        accent: { primary: 'var(--accent-primary)', secondary: 'var(--accent-secondary)' },
+        text: { primary: 'var(--text-primary)', secondary: 'var(--text-secondary)',
+                muted: 'var(--text-muted)' },
         border: 'var(--border)',
-        success: 'var(--success)',
-        warning: 'var(--warning)',
-        danger: 'var(--danger)',
-        info: 'var(--info)',
+        success: 'var(--success)', warning: 'var(--warning)',
+        danger: 'var(--danger)', info: 'var(--info)',
+        // Colores de marca Minsait
+        fucsia: 'var(--fucsia)', pruno: 'var(--pruno)',
+        'pruno-oscuro': 'var(--pruno-oscuro)', ceramica: 'var(--gris-ceramica)',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['ForFuture Sans', 'Arial', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
     },
   },
@@ -272,15 +308,18 @@ export default config;
 
 ## ✅ Checklist visual para validación
 
-Cuando se genere el frontend, debe cumplir con:
+El frontend debe cumplir con:
 
-- [ ] Toggle modo claro/oscuro funcional en el header
-- [ ] Persistencia del modo en localStorage
-- [ ] Transiciones suaves al cambiar de modo (200ms)
-- [ ] Contraste WCAG AA mínimo en ambos modos
-- [ ] Score badges con colores semánticos (verde/amarillo/rojo)
-- [ ] Cards con sombras sutiles (más pronunciadas en modo oscuro)
-- [ ] Hover states en todos los elementos interactivos
-- [ ] Focus rings visibles para accesibilidad (color accent)
-- [ ] Loading states (skeleton screens) con los colores del modo
+- [ ] **Modo claro por defecto** (Gris Cerámica); toggle claro/oscuro (Pruno) en el header
+- [ ] Persistencia del modo en localStorage y transiciones suaves (200ms)
+- [ ] **Sidebar siempre Pruno** con el logo Minsait en blanco (ambos modos)
+- [ ] **Logo oficial Minsait** (`frontend/public/brand`)
+- [ ] **ForFuture Sans** cargada desde woff2 locales (`frontend/public/fonts`)
+- [ ] **Titulares en minúscula** con la palabra clave en Fucsia (`.hl`)
+- [ ] **Fucsia solo como acento** (CTA píldora, realce, anillo de foco) — nunca dominante
+- [ ] **Contenedores achaflanados** (`.chamfer`) uniformes en toda la app
+- [ ] Superficies **sólidas** (sin glassmorphism/blur); bordes tonales de 1px
+- [ ] Score badges con colores de estado Minsait (success/warning/danger)
+- [ ] Focus rings Fucsia visibles (WCAG AA) y contraste mínimo en ambos modos
+- [ ] Loading states (`skeleton`) y aparición `animate-fade-in` (respeta `prefers-reduced-motion`)
 - [ ] Empty states ilustrados (sin llamadas, sin resultados)

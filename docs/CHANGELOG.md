@@ -2,6 +2,53 @@
 
 Cambios relevantes. Formato: descripción (commit). Lo más nuevo arriba.
 
+## Fix cold-start (producción gratis)
+- `Cold-start mitigado`: el plan gratis de Render duerme el backend tras ~15 min
+  (arranque en frío ~50 s, que se veía como "error de API"). Se añade GitHub Action
+  `.github/workflows/keepalive.yml` (ping a `/health` cada 12 min) + **resiliencia
+  en `frontend/lib/api.ts`** (timeout 90 s, reintentos en cold start, mensaje
+  "activando el servidor").
+
+## Lenguaje "vista previa para evaluación"
+- `Limpieza de lenguaje`: se elimina el de **"demo interna"**. El banner pasa a
+  *"Vista previa — entorno de evaluación. No utilizar con datos reales de clientes
+  sin la aprobación previa de Compliance"*; el header `X-Prototype-Notice` pasa a
+  valer *"Evaluation environment - Do not use with real customer data"*; el log JSON
+  usa `environment="evaluation"`; el PDF dice *"Vista previa para evaluación"*. El
+  login **ya no muestra credenciales demo** y el seed **ya no imprime contraseñas**.
+
+## Roles y umbrales QA
+- `Roles admin/jefe/asesor`: tres roles — `admin` y `jefe` con los **mismos
+  permisos** por ahora (gestión + analítica global, helper `is_manager`); `asesor`
+  solo ve **su propio rendimiento**. `User.role` + `User.agent_id` (FK a agents);
+  dependencia `require_manager`; `POST /agents/{id}/login` crea el login del asesor
+  y vincula User↔Agent. Frontend: navegación/redirección por rol (asesor → `/mi-panel`,
+  admin/jefe → `/dashboard`), guard por rol y página "Mi rendimiento". Migración
+  `0005` (`users.agent_id` FK + backfill `'supervisor'`→`'jefe'`).
+- `Umbrales QA configurables` en `/config/settings` (`qa_target_score=90`,
+  `qa_low_agent_threshold=80`, `qa_red_call_threshold=60`, `qa_min_calls_ranking=5`,
+  `qa_trend_drop_alert=5`), persistidos en `app_settings`, editables solo por manager.
+
+## Rebrand a la identidad Minsait
+- `Rebrand Minsait`: UI rebrandeada a la identidad oficial **Minsait** — paleta
+  **Pruno `#480E2A`** + **Gris Cerámica `#E3E2DA`** dominantes, **Fucsia `#FF0054`**
+  solo como acento; tipografía **ForFuture Sans** (woff2 locales), logo oficial,
+  contenedores **achaflanados** (`.chamfer`), titulares en minúscula con la palabra
+  clave en Fucsia, CTA en píldora, modo claro por defecto + sidebar siempre Pruno.
+  Tokens en `frontend/app/globals.css` + `tailwind.config.ts`. **Sustituye** a
+  "Aetheric Intelligence" / Índigo/Slate (obsoletos).
+
+## Campañas con nota de producto
+- `Campañas`: entidad `Campaign` (tabla `campaigns`) con una **nota de producto de
+  9 campos** (producto/servicio, descripción de la oferta, beneficios, precio/condiciones,
+  requisitos, frases obligatorias, claims prohibidos, público objetivo, notas). Se crea
+  por formulario (con asistente IA) o subiendo un **PDF** que la IA parsea (pypdf + LLM)
+  y autocompleta. La nota se **inyecta en el prompt de análisis** para evaluar si el
+  ejecutivo ofreció la oferta correcta. `calls.campaign_id` (se conserva `campaign_type`
+  por compatibilidad y filtros). Endpoints `/campaigns` CRUD + `/campaigns/extract` (PDF)
+  + `/campaigns/assist` (IA). Dependencia nueva backend: **pypdf**. Módulo frontend
+  `/campaigns`. Migración `0004` (tabla `campaigns` + `calls.campaign_id` + backfill).
+
 ## Despliegue en producción (gratis)
 - **Publicado** en Vercel (frontend) + Render (backend + PostgreSQL), coste **$0**.
   Frontend: https://callqa-ai.vercel.app · Backend: https://callqa-api.onrender.com

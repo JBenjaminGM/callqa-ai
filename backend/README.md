@@ -1,12 +1,12 @@
 # 🎧 CallQA AI — Backend
 
-Backend del **prototipo** de Quality Assurance automatizado para call centers
-bancarios. Permite subir grabaciones de llamadas, transcribirlas con IA y
-evaluarlas automáticamente contra una rúbrica editable (7 dimensiones por
-defecto, con subcategorías activables).
+Backend de la plataforma de Quality Assurance automatizado para call centers
+bancarios (Minsait / Grupo Indra). Permite subir grabaciones de llamadas,
+transcribirlas con IA y evaluarlas automáticamente contra una rúbrica dinámica
+(7 dimensiones por defecto, con subcriterios activables).
 
-> ⚠️ **PROTOTIPO — DEMO INTERNA.** Esta es una prueba de concepto. No utilizar
-> con datos reales de clientes sin aprobación previa de Compliance.
+> ⚠️ **Vista previa — entorno de evaluación.** No utilizar con datos reales de
+> clientes sin la aprobación previa de Compliance.
 
 ---
 
@@ -15,13 +15,20 @@ defecto, con subcategorías activables).
 Es una API REST construida con **Python + FastAPI** que:
 
 1. Recibe archivos de audio (MP3, WAV, M4A, OGG, FLAC).
-2. Los transcribe usando **Groq (Whisper)**.
-3. Analiza la transcripción con **Groq (Llama 3.3 70B) por defecto**, con
-   **Claude (Anthropic)**, **GPT (OpenAI)** o **Azure** como opciones.
-4. Devuelve scores por dimensión, un score global y recomendaciones.
+2. Los transcribe usando **Groq (Whisper large v3)**.
+3. Enmascara la PII de la transcripción (best-effort).
+4. Analiza la transcripción con **Groq (Llama 3.3 70B) por defecto**, con
+   **Claude (Anthropic)**, **GPT (OpenAI)** o **Azure** como opciones, inyectando
+   la **nota de producto** de la campaña en el prompt.
+5. Devuelve scores por dimensión, un score global ponderado y recomendaciones.
 
-El procesamiento pesado se hace en segundo plano con **Celery + Redis**, así la
-API responde de inmediato y el frontend consulta el estado por *polling*.
+El procesamiento pesado se hace en segundo plano con **Celery + Redis** en local;
+en el despliegue gratis de Render corre **inline** (`PROCESS_INLINE=true`, vía
+`BackgroundTasks`, sin worker). En ambos casos el frontend consulta el estado por
+*polling*.
+
+**Roles:** `admin` y `jefe` comparten permisos (gestión + analítica global);
+`asesor` solo ve su propio rendimiento, su ficha y sus llamadas.
 
 ---
 
@@ -67,7 +74,7 @@ Solo si quieres alternar a GPT (`AI_PROVIDER=openai`). https://platform.openai.c
 
 ```bash
 # 1. Sitúate en la carpeta del proyecto
-cd callqa-backend
+cd callqa-ai/backend
 
 # 2. Copia el archivo de ejemplo de variables de entorno
 #    En Windows (PowerShell):  Copy-Item .env.example .env
@@ -79,8 +86,8 @@ cp .env.example .env
 #    JWT_SECRET=algo-largo-y-aleatorio
 #    # ANTHROPIC_API_KEY=sk-ant-...    # opcional, solo si AI_PROVIDER=claude
 
-# 4. Levanta todo el sistema
-docker-compose up
+# 4. Levanta todo el sistema (desde la raíz del repo)
+docker compose up
 ```
 
 Espera ~2 minutos. Cuando veas `Application startup complete`, abre:
@@ -89,10 +96,15 @@ Espera ~2 minutos. Cuando veas `Application startup complete`, abre:
 
 El arranque ejecuta automáticamente las migraciones y el *seed* de datos.
 
-### Credenciales de demo
+### Cuentas sembradas
 
-- Usuario: `admin@callqa.com`
-- Contraseña: `Admin123!`
+| Rol | Email | Contraseña |
+|---|---|---|
+| admin | `admin@callqa.com` | `Admin123!` |
+| jefe | `jefe@callqa.com` | `Jefe123!` |
+| asesor | email del ejecutivo (p. ej. `maria@banco.com`) | `Asesor123!` |
+
+> El *seed* no imprime contraseñas y el login no muestra credenciales: úsalas desde aquí.
 
 ---
 
@@ -113,44 +125,47 @@ Resumen para el backend en Render (a partir del blueprint `render.yaml` de la ra
    GROQ_API_KEY=gsk_...
    AI_PROVIDER=groq
    WHISPER_PROVIDER=groq
-   # ANTHROPIC_API_KEY=sk-ant-...   # solo si usas AI_PROVIDER=claude (de pago)
+   PROCESS_INLINE=true            # procesa sin worker Celery (vía BackgroundTasks)
+   # ANTHROPIC_API_KEY=sk-ant-... # solo si usas AI_PROVIDER=claude (de pago)
    JWT_SECRET=cadena-larga-aleatoria
    APP_ENV=production
    STORAGE_PROVIDER=local
    STORAGE_PATH=/data/audios
-   CORS_ORIGINS=https://tu-frontend.vercel.app
+   CORS_ORIGINS=https://callqa-ai.vercel.app
    ```
 
 5. `DATABASE_URL` (y `REDIS_URL` si lo usas) los inyecta Render desde el blueprint.
-6. La URL pública la asigna Render automáticamente; verifica en `https://tu-backend.onrender.com/docs`.
-7. Carga los datos iniciales (admin, rúbrica, ejecutivos) ejecutando
-   `python scripts/seed_data.py` desde la shell de Render, o deja que el comando de
-   arranque lo haga.
+6. La URL pública la asigna Render automáticamente; verifica en `https://callqa-api.onrender.com/docs`.
+7. Carga los datos iniciales (admin, jefe, asesores, rúbrica, campañas, ejecutivos)
+   ejecutando `python scripts/seed_data.py` desde la shell de Render, o deja que el
+   comando de arranque lo haga.
 
-> En el plan gratuito de Render el procesamiento asíncrono corre en el mismo servicio
-> (no hay worker Celery separado). Para los detalles exactos, sigue `../docs/DEPLOY_GRATIS.md`.
+> En el plan gratuito de Render el procesamiento corre dentro del mismo servicio
+> (`PROCESS_INLINE=true`, sin worker Celery separado), y el backend se duerme tras
+> ~15 min de inactividad (arranque en frío ~50 s). Para los detalles exactos del
+> cold-start y su mitigación, sigue `../docs/DEPLOY_GRATIS.md`.
 
 ---
 
 ## 6. Estructura del proyecto
 
 ```
-callqa-backend/
+backend/
 ├── app/
 │   ├── main.py            # Arranque de FastAPI, CORS, logging, routers
 │   ├── config.py          # Configuración leída de variables de entorno
 │   ├── database.py        # Conexión a PostgreSQL
-│   ├── dependencies.py    # Autenticación JWT
+│   ├── dependencies.py    # Autenticación JWT + require_manager (roles)
 │   ├── limiter.py         # Rate limiting compartido
 │   ├── models/            # Tablas de la base de datos (SQLAlchemy)
 │   ├── schemas/           # Validación de entrada/salida (Pydantic)
 │   ├── routers/           # Endpoints de la API
-│   ├── services/          # Lógica de negocio (IA, storage, PDF, etc.)
+│   ├── services/          # Lógica de negocio (IA, storage, PDF, campañas, etc.)
 │   ├── tasks/             # Tareas Celery (procesamiento asíncrono)
 │   ├── prompts/           # Prompts para los modelos de lenguaje
 │   └── utils/             # Seguridad y validación de audio
-├── alembic/               # Migraciones de la base de datos
-├── scripts/seed_data.py   # Datos iniciales (admin, rúbrica, ejecutivos)
+├── alembic/               # Migraciones de la base de datos (0001 → 0005)
+├── scripts/seed_data.py   # Datos iniciales (usuarios, rúbrica, campañas, ejecutivos)
 ├── tests/                 # Tests automatizados
 ├── Dockerfile
 ├── docker-compose.yml
@@ -161,32 +176,44 @@ callqa-backend/
 
 ## 7. Endpoints principales
 
+Prefijo `/api/v1`. Todos requieren JWT (`Authorization: Bearer <token>`) salvo
+`POST /auth/login`. `[manager]` = solo `admin`/`jefe`; `[scoped]` = el asesor solo
+accede a lo suyo.
+
 | Método | Ruta | Descripción |
 |---|---|---|
-| POST | `/api/v1/auth/login` | Iniciar sesión, obtener token JWT |
-| GET | `/api/v1/auth/me` | Datos del usuario autenticado |
-| GET / POST | `/api/v1/agents` | Listar / crear ejecutivos |
-| PUT / DELETE | `/api/v1/agents/{id}` | Editar / desactivar ejecutivo |
-| POST | `/api/v1/calls` | Subir un audio para análisis |
-| POST | `/api/v1/calls/batch` | Subir varios audios |
-| GET | `/api/v1/calls` | Listado paginado de llamadas |
-| GET | `/api/v1/calls/{id}` | Detalle (transcripción + análisis) |
-| GET | `/api/v1/calls/{id}/status` | Estado del procesamiento (polling) |
-| POST | `/api/v1/calls/{id}/retry` | Reintentar una llamada con error |
-| GET | `/api/v1/calls/{id}/report.pdf` | Descargar reporte PDF |
-| GET | `/api/v1/dashboard/summary` | KPIs agregados del equipo |
-| GET | `/api/v1/dashboard/agents/{id}` | Performance de un ejecutivo |
-| GET / PUT | `/api/v1/config/rubric` | Consultar / ajustar la rúbrica |
-| GET / PUT | `/api/v1/config/settings` | Consultar / cambiar settings |
+| POST | `/auth/login` | Iniciar sesión, obtener token JWT (rate limit 5/15min) |
+| GET | `/auth/me` | Datos del usuario (incluye `role` y `agent_id`) |
+| GET / POST | `/agents` | Listar `[scoped]` / crear `[manager]` ejecutivos |
+| POST | `/agents/{id}/login` | Crear el login del asesor y vincularlo `[manager]` |
+| PUT / DELETE | `/agents/{id}` | Editar / desactivar ejecutivo `[manager]` |
+| GET / POST | `/campaigns` | Listar / crear campañas (nota de producto) |
+| GET / PUT / DELETE | `/campaigns/{id}` | Detalle / editar / borrar campaña |
+| POST | `/campaigns/extract` | Parsear un PDF de oferta y autocompletar la nota |
+| POST | `/campaigns/assist` | Asistente IA para redactar la nota de producto |
+| POST | `/calls` | Subir un audio para análisis |
+| POST | `/calls/batch` | Subir varios audios `[manager]` |
+| GET | `/calls` | Listado paginado `[scoped]` |
+| GET | `/calls/{id}` | Detalle (transcripción + análisis) `[scoped]` |
+| GET | `/calls/{id}/status` | Estado del procesamiento (polling) |
+| PUT | `/calls/{id}/assign` | Asignar la llamada a un ejecutivo `[manager]` |
+| POST | `/calls/{id}/retry` | Reintentar una llamada con error `[manager]` |
+| GET | `/calls/{id}/report.pdf` | Descargar reporte PDF `[scoped]` |
+| DELETE | `/calls/{id}` | Eliminar llamada `[manager]` |
+| GET | `/dashboard/summary` | KPIs agregados (filtros campaña/agente/fechas) `[manager]` |
+| GET | `/dashboard/campaigns` | KPIs por campaña `[manager]` |
+| GET | `/dashboard/agents/{id}` | Performance de un ejecutivo `[scoped]` |
+| GET / PUT | `/config/rubric` | Consultar / ajustar la rúbrica (PUT `[manager]`) |
+| GET / PUT | `/config/settings` | Idioma + umbrales QA (PUT `[manager]`) |
 
-Todos los endpoints (excepto `/auth/*`) requieren la cabecera
-`Authorization: Bearer <token>`.
+El asesor recibe `403` al intentar el dashboard global, subir/asignar/reintentar/
+eliminar llamadas, los settings o la gestión de ejecutivos.
 
 ---
 
 ## 8. Ejecutar los tests
 
-El proyecto tiene **33 tests** automatizados.
+El proyecto tiene **61 tests** automatizados.
 
 ```bash
 # Dentro del contenedor de la API
@@ -198,7 +225,10 @@ pytest -q
 #   En Windows con el venv del repo:  .venv\Scripts\python -m pytest -q
 ```
 
-Los tests usan SQLite en memoria y no necesitan PostgreSQL ni claves de API.
+Los tests usan SQLite en memoria y mockean los servicios externos (no necesitan
+PostgreSQL ni claves de API). Cubren auth, roles y scoping (admin/jefe/asesor),
+ejecutivos, campañas, cálculo de score, enmascarado, matching difuso, idempotencia
+del reintento, modo inline, umbrales QA y creación del login de asesor.
 
 ---
 
@@ -206,8 +236,8 @@ Los tests usan SQLite en memoria y no necesitan PostgreSQL ni claves de API.
 
 | Problema | Solución |
 |---|---|
-| `docker-compose up` falla al construir | Verifica que Docker Desktop esté corriendo. |
-| La llamada se queda en `TRANSCRIBING` | Revisa que el servicio `worker` esté activo y que `GROQ_API_KEY` sea válida. |
+| `docker compose up` falla al construir | Verifica que Docker Desktop esté corriendo. |
+| La llamada se queda en `TRANSCRIBING` | En local revisa que el servicio `worker` esté activo y que `GROQ_API_KEY` sea válida; en Render basta `PROCESS_INLINE=true`. |
 | `Invalid API key` de Anthropic | Solo aplica si `AI_PROVIDER=claude`: la clave debe empezar por `sk-ant-` y tu cuenta debe tener saldo. Con el `groq` por defecto no necesitas esta clave. |
 | Error de CORS desde el frontend | Añade la URL exacta del frontend a `CORS_ORIGINS` (sin barra final). |
 | El audio no se sube | Verifica formato (MP3/WAV/M4A/OGG/FLAC) y tamaño (≤ 100 MB). |
@@ -223,5 +253,6 @@ El código está preparado para migrar a infraestructura Azure sin reescribirse:
   **Groq (por defecto)**, Claude, OpenAI y Azure OpenAI; la transcripción admite
   **Groq (por defecto)** y Azure Speech.
 - Toda la configuración vive en variables de entorno.
-- Cada respuesta incluye el header `X-Prototype-Notice` y los logs llevan el
-  campo `environment: prototype` para auditoría.
+- Cada respuesta incluye el header `X-Prototype-Notice` (valor
+  `"Evaluation environment - Do not use with real customer data"`) y los logs
+  llevan el campo `environment: evaluation` para auditoría.

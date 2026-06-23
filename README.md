@@ -3,10 +3,11 @@
 Plataforma de **Quality Assurance automatizado con IA** para call centers
 bancarios (Minsait / Grupo Indra). Monorepo: backend + frontend + documentación.
 
-> ⚠️ **Prototipo / demo interna.** No usar con datos reales de clientes.
+> ⚠️ **Vista previa — entorno de evaluación.** No utilizar con datos reales de
+> clientes sin la aprobación previa de Compliance.
 
 - 🌐 **En vivo:** https://callqa-ai.vercel.app · API: https://callqa-api.onrender.com
-- 👤 **Acceso demo:** `admin@callqa.com` / `Admin123!`
+- 👤 **Roles:** `admin@callqa.com` / `Admin123!` (admin) · `jefe@callqa.com` / `Jefe123!` (jefe) · asesores con el email del ejecutivo (p. ej. `maria@banco.com` / `Asesor123!`).
 - 🤖 **¿Eres una IA o un dev nuevo?** → **[`docs/AGENTS.md`](docs/AGENTS.md)** (guía completa).
 - 📚 **Toda la documentación está en [`docs/`](docs/)** (índice: [`docs/00_INDICE.md`](docs/00_INDICE.md)).
 
@@ -33,6 +34,24 @@ WHISPER_PROVIDER=groq
 
 ---
 
+## ✨ Qué hace
+
+Sube audios → transcribe (Groq Whisper large v3) → enmascara PII (best-effort) →
+analiza con LLM (Groq Llama 3.3 70B) contra una **rúbrica dinámica** → scores por
+dimensión + score global ponderado + recomendaciones accionables + **reporte PDF**.
+
+- **Roles:** `admin` y `jefe` (mismos permisos: gestión + analítica global) y
+  `asesor` (solo su propio rendimiento, su ficha y sus llamadas).
+- **Campañas con nota de producto:** cada campaña lleva una ficha de oferta (9
+  campos) que la IA usa para evaluar si el ejecutivo ofreció lo correcto. Se crea
+  por formulario, con asistente IA, o subiendo un PDF que la IA parsea.
+- **Umbrales QA configurables:** objetivo, alertas de asesor/llamada y ranking,
+  editables por el jefe.
+- **Identidad Minsait:** paleta Pruno + Gris Cerámica con acento Fucsia,
+  tipografía ForFuture Sans y contenedores achaflanados.
+
+---
+
 ## 📂 Estructura
 
 | Carpeta / archivo | Contenido |
@@ -46,7 +65,7 @@ WHISPER_PROVIDER=groq
 
 ## 🛠️ Desarrollo y despliegue
 
-- **Tests backend (33):** `cd backend && .venv\Scripts\python -m pytest -q`.
+- **Tests backend (61):** `cd backend && .venv\Scripts\python -m pytest -q`.
 - **Frontend en local:** `cd frontend && npm install && npm run dev`.
 - **Desplegar:** `git push origin main` → Vercel y Render redepliegan solos. Guía: **[`docs/DEPLOY_GRATIS.md`](docs/DEPLOY_GRATIS.md)**.
 
