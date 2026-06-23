@@ -111,6 +111,25 @@ export interface TranscriptionSegment {
   text: string;
 }
 
+/** Métricas deterministas de la conversación (derivadas de los segmentos). */
+export interface ConversationMetrics {
+  duration_seconds?: number | null;
+  agent_talk_seconds?: number | null;
+  customer_talk_seconds?: number | null;
+  total_speech_seconds?: number | null;
+  agent_talk_pct?: number | null;
+  customer_talk_pct?: number | null;
+  talk_to_listen_ratio?: number | null;
+  silence_seconds?: number | null;
+  silence_pct?: number | null;
+  longest_agent_monologue_seconds?: number | null;
+  agent_words_per_minute?: number | null;
+  overall_words_per_minute?: number | null;
+  turns?: number | null;
+  turns_per_minute?: number | null;
+  segments_count?: number | null;
+}
+
 export interface Transcription {
   full_text: string;
   segments: TranscriptionSegment[];
@@ -165,6 +184,7 @@ export interface CallDetail {
   error_message?: string | null;
   created_at: string;
   processed_at?: string | null;
+  conversation_metrics?: ConversationMetrics | null;
   transcription?: Transcription | null;
   analysis?: Analysis | null;
 }
@@ -185,6 +205,15 @@ export interface AgentScore {
   registered: boolean;
 }
 
+export interface ConversationSummary {
+  calls_measured: number;
+  avg_agent_talk_pct?: number | null;
+  avg_silence_pct?: number | null;
+  avg_talk_to_listen_ratio?: number | null;
+  avg_agent_words_per_minute?: number | null;
+  avg_longest_monologue_seconds?: number | null;
+}
+
 export interface DashboardSummary {
   total_calls: number;
   average_score: number;
@@ -193,6 +222,81 @@ export interface DashboardSummary {
   score_distribution: { range: string; count: number }[];
   top_performers: AgentScore[];
   improvement_opportunities: AgentScore[];
+  // --- Fase 2 ---
+  team_dimension_averages: Record<string, number>;
+  avg_duration_seconds?: number | null;
+  red_call_count: number;
+  red_call_pct: number;
+  conversation_summary?: ConversationSummary | null;
+}
+
+/** KPIs de una campaña con delta vs el periodo anterior. */
+export interface CampaignKpi {
+  campaign: string;
+  total_calls: number;
+  avg_score: number;
+  score_delta?: number | null;
+  red_calls: number;
+  red_pct: number;
+  sentiment?: number | null;
+  avg_duration_seconds?: number | null;
+}
+
+/** Una alerta accionable del dashboard del jefe. */
+export interface DashboardAlert {
+  type: string;
+  severity: 'high' | 'medium' | 'low' | string;
+  title: string;
+  description: string;
+  campaign?: string | null;
+  agent_id?: number | null;
+  agent_name?: string | null;
+  call_id?: number | null;
+  value?: number | null;
+}
+
+/** Una recomendación recurrente agregada (problema del equipo). */
+export interface RecommendationStat {
+  dimension: string;
+  title: string;
+  count: number;
+  priority: string;
+  sample_description: string;
+}
+
+/** Recomendación agregada del asesor con evidencia de un segmento real. */
+export interface AgentRecommendationStat extends RecommendationStat {
+  evidence?: string | null;
+}
+
+export interface ProductNoteCompliance {
+  calls_measured: number;
+  coverage_pct?: number | null;
+  prohibited_hits: number;
+  mandatory_missing: string[];
+}
+
+export interface AgentCampaignBreakdown {
+  campaign: string;
+  total_calls: number;
+  avg_score: number;
+  compliance?: ProductNoteCompliance | null;
+}
+
+export interface AgentPercentile {
+  available: boolean;
+  campaign?: string | null;
+  peers_count: number;
+  percentile?: number | null;
+  agent_avg?: number | null;
+  campaign_avg?: number | null;
+  rank?: number | null;
+}
+
+export interface AgentRecommendations {
+  total_calls: number;
+  recommendations: AgentRecommendationStat[];
+  by_campaign: AgentCampaignBreakdown[];
 }
 
 export interface AgentDashboard {

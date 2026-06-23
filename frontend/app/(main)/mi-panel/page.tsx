@@ -12,7 +12,12 @@ import {
   YAxis,
 } from 'recharts';
 import { Phone, TrendingUp } from 'lucide-react';
-import { useAgent, useAgentDashboard } from '@/lib/queries';
+import {
+  useAgent,
+  useAgentDashboard,
+  useAgentPercentile,
+  useAgentRecommendations,
+} from '@/lib/queries';
 import { useAuthStore } from '@/lib/auth';
 import { Header } from '@/components/layout/header';
 import { Card, CardTitle } from '@/components/ui/card';
@@ -20,6 +25,11 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { EmptyState, Skeleton } from '@/components/ui/feedback';
 import { ScoreRadar } from '@/components/charts/score-radar';
+import {
+  AgentCampaignBreakdownList,
+  PercentileCard,
+  TopProblems,
+} from '@/components/dashboard/insights';
 import { dimensionLabel, scoreColor, scoreLabel } from '@/lib/utils';
 
 /** Panel personal del asesor: su rendimiento, comparativa y puntos de mejora. */
@@ -30,6 +40,8 @@ export default function MyPanelPage() {
 
   const { data: agent } = useAgent(agentId);
   const { data: dash, isLoading } = useAgentDashboard(agentId, period);
+  const { data: percentile } = useAgentPercentile(agentId, period);
+  const { data: recommendations } = useAgentRecommendations(agentId, period);
 
   if (!user?.agent_id) {
     return (
@@ -105,6 +117,9 @@ export default function MyPanelPage() {
                 </p>
               </Card>
             </div>
+
+            {/* Posición anónima dentro de la campaña */}
+            {percentile && <PercentileCard data={percentile} />}
 
             {dash.total_calls > 0 ? (
               <>
@@ -183,6 +198,19 @@ export default function MyPanelPage() {
                       </LineChart>
                     </ResponsiveContainer>
                   </Card>
+                )}
+
+                {/* Qué cambiar: recomendaciones con evidencia */}
+                {recommendations && recommendations.recommendations.length > 0 && (
+                  <TopProblems
+                    items={recommendations.recommendations}
+                    title="Qué cambiar (con ejemplos de tus llamadas)"
+                  />
+                )}
+
+                {/* Desglose por campaña + cumplimiento de la nota de producto */}
+                {recommendations && (
+                  <AgentCampaignBreakdownList items={recommendations.by_campaign} />
                 )}
               </>
             ) : (

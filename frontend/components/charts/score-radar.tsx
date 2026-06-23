@@ -18,9 +18,11 @@ import { dimensionLabel } from '@/lib/utils';
 export function ScoreRadar({
   scores,
   teamScores,
+  seriesLabel = 'Esta llamada',
 }: {
   scores: Record<string, number>;
   teamScores?: Record<string, number> | null;
+  seriesLabel?: string;
 }) {
   const data = Object.keys(scores).map((key) => ({
     dimension: dimensionLabel(key),
@@ -37,7 +39,7 @@ export function ScoreRadar({
           tick={{ fill: 'var(--text-secondary)', fontSize: 11 }}
         />
         <Radar
-          name="Esta llamada"
+          name={seriesLabel}
           dataKey="score"
           stroke="var(--accent-primary)"
           fill="var(--accent-primary)"

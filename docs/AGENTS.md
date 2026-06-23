@@ -19,11 +19,12 @@ call centers bancarios. Un manager sube audios de llamadas; la IA las
 devuelve scores por dimensión, un **score global ponderado**, recomendaciones
 accionables y un **reporte PDF**. Cliente: **Minsait (Grupo Indra)**, sector banca.
 
-> ⚠️ Es una **vista previa para evaluación** que se presenta oficialmente al
-> cliente (sigue siendo un prototipo). **No utilizar con datos reales de clientes
-> sin la aprobación previa de Compliance.** El banner persistente lo recuerda; el
-> header HTTP `X-Prototype-Notice` lleva el valor `Evaluation environment - Do not
-> use with real customer data` y el log JSON usa `environment="evaluation"`.
+> ⚠️ **No utilizar con datos reales de clientes sin la aprobación previa de
+> Compliance.** Por decisión del responsable, el **banner visible de "vista previa /
+> entorno de evaluación" se RETIRÓ de la UI** (la plataforma se presenta como producto
+> acabado). Como salvaguarda interna **se conservan** el header HTTP `X-Prototype-Notice`
+> (`Evaluation environment - Do not use with real customer data`) y el log JSON
+> `environment="evaluation"`.
 
 ## 2. Estado actual (en vivo)
 
@@ -91,6 +92,10 @@ backend/
                        masking_service.py    → enmascarado best-effort (regex)
                        name_matching.py      → matching difuso de nombres de ejecutivo
                        campaign_service.py   → CRUD + extracción de PDF (pypdf+LLM) + asistente IA
+                       conversation_metrics_service.py → métricas deterministas ($0) de la
+                                               conversación (talk-ratio, silencio, WPM, turnos)
+                       compliance_service.py → cobertura de frases obligatorias / claims prohibidos
+                       dashboard_service.py  → KPIs por campaña, alertas, recomendaciones, percentil
                        call_service.py, agent_service.py, auth_service.py,
                        storage_service.py (local/s3), pdf_service.py
     tasks/
@@ -102,10 +107,10 @@ backend/
                        nota de producto de la campaña y genera "dimension_scores" con las claves reales
     utils/             security.py (JWT/bcrypt), audio.py (validación de archivos)
   alembic/versions/    0001 esquema, 0002 detección ejecutivo, 0003 rubric_config.criteria,
-                       0004 campañas, 0005 roles de usuario
+                       0004 campañas, 0005 roles de usuario, 0006 conversation_metrics
   scripts/seed_data.py admin + jefe + asesores + rúbrica (subcriterios) + settings (umbrales QA) +
                        3 ejecutivos demo + 3 campañas demo (NO imprime contraseñas)
-  tests/               61 tests (conftest = SQLite en memoria, todo lo externo mockeado)
+  tests/               78 tests (conftest = SQLite en memoria, todo lo externo mockeado)
   Dockerfile           multi-stage. CMD = alembic upgrade + seed + uvicorn (lo usa Render)
   .env / .env.example  (.env está gitignorado)
 frontend/
@@ -139,6 +144,7 @@ CHANGELOG.md           historial de cambios
 6. Lee la **rúbrica** (con subcriterios) y la **nota de producto de la campaña**, y construye el **prompt dinámico**.
 7. **LLM** (Groq Llama) → `dimension_scores`, `summary`, `recommendations`, `detected_agent_name` y `diarization`.
 8. **Aplica la diarización del LLM** (por contenido) sobre los segmentos (corrige la heurística).
+8b. **Métricas de conversación** deterministas (`conversation_metrics_service`) sobre los segmentos ya diarizados → `Call.conversation_metrics` (talk-ratio, silencio, WPM, turnos).
 9. **calcula el score global** ponderado; **detecta+empareja** al ejecutivo (matching difuso).
 10. Guarda el **análisis** → estado `DONE`.
 - Si algo falla: `db.rollback()` y marca `ERROR` con el detalle.
@@ -224,14 +230,14 @@ admin/jefe (`require_manager`); `[scoped]` = el asesor solo ve lo suyo.
 - **agents:** `GET` lista [scoped: asesor solo su ficha], `POST` crear [manager], `POST /{id}/login` [manager], `GET /{id}` [scoped], `PUT`/`DELETE` [manager].
 - **campaigns:** `GET`/`POST`/`GET /{id}`/`PUT`/`DELETE` + `POST /extract` (PDF) + `POST /assist` (IA).
 - **calls:** `POST` subir + `POST /batch` [manager], `GET` lista [asesor solo las suyas], `GET /{id}` [scoped], `GET /{id}/status`, `PUT /{id}/assign` [manager], `POST /{id}/retry` [manager], `GET /{id}/report.pdf` [scoped], `DELETE` [manager].
-- **dashboard:** `GET /summary` [manager, filtros campaña/agent_id/fechas/periodo], `GET /campaigns` [manager], `GET /agents/{id}` [scoped].
+- **dashboard:** `GET /summary` [manager, +`team_dimension_averages`/`avg_duration_seconds`/`red_call_count`/`conversation_summary`], `GET /campaigns` [manager], `GET /by-campaign` [manager], `GET /alerts` [manager], `GET /top-recommendations` [manager], `GET /agents/{id}` [scoped], `GET /agents/{id}/percentile` [scoped], `GET /agents/{id}/recommendations` [scoped].
 - **config:** `GET`/`PUT /rubric` (PUT [manager]), `GET /settings`, `PUT /settings` [manager, incluye umbrales QA].
 
 **Modelo de datos:** `users` (id, email, password_hash, name, **role**, **agent_id**,
 created_at, last_login); `agents` (ejecutivos evaluados; name, email, campaign,
 active…); `campaigns` (**nota de producto de 9 campos** + source + active); `calls`
 (agent_id nullable, uploaded_by, **campaign_id**, campaign_type, detected_agent_name,
-responsible, status, audio…); `transcriptions` (full_text, segments con timestamps;
+responsible, status, audio, **conversation_metrics JSON**…); `transcriptions` (full_text, segments con timestamps;
 1:1 con call); `analyses` (global_score, dimension_scores, recommendations, summary;
 1:1 con call); `rubric_config` (dimension_key, dimension_name, weight, **criteria JSON**
 activable); `app_settings` (clave-valor: idioma + **umbrales QA `qa_*`**).
@@ -248,11 +254,12 @@ activable); `app_settings` (clave-valor: idioma + **umbrales QA `qa_*`**).
 
 ## 14. Tests
 
-61 tests en `backend/tests/` (pytest, SQLite en memoria, externos mockeados). Cubren
+78 tests en `backend/tests/` (pytest, SQLite en memoria, externos mockeados). Cubren
 auth, **roles y scoping (admin/jefe/asesor)**, agentes, **campañas**, cálculo de score,
 enmascarado, matching difuso, **idempotencia del reintento**, **modo inline**, **umbrales
-QA** y **creación del login del asesor**. **No** cubren el end-to-end real con APIs (eso se
-valida con audios reales). Correr antes de cada cambio.
+QA**, **creación del login del asesor** y la **analítica de la Fase 2** (métricas de
+conversación, compliance de nota de producto y endpoints de dashboard con scoping). **No**
+cubren el end-to-end real con APIs (eso se valida con audios reales). Correr antes de cada cambio.
 
 ## 15. Mapa de documentación
 

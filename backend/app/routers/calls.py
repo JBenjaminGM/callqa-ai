@@ -34,8 +34,10 @@ from app.schemas.call import (
     CallListOut,
     CallStatusOut,
     CampaignRef,
+    ConversationMetricsOut,
 )
 from app.services import call_service, campaign_service
+from app.services.conversation_metrics_service import compute_conversation_metrics
 from app.services.call_service import STATUS_PROGRESS
 from app.services.name_matching import find_matching_agent, normalize_name
 from app.services.pdf_service import generate_call_report
@@ -285,6 +287,14 @@ def get_call(
         raise HTTPException(status_code=404, detail="Llamada no encontrada.")
     _ensure_can_view_call(current_user, call)
 
+    # Métricas de conversación: usa las persistidas o las recalcula al vuelo
+    # desde la transcripción (llamadas antiguas sin el campo).
+    metrics = call.conversation_metrics
+    if metrics is None and call.transcription and call.transcription.segments:
+        metrics = compute_conversation_metrics(
+            call.transcription.segments, call.duration_seconds
+        )
+
     detail = CallDetailOut(
         id=call.id,
         agent=_agent_ref(call),
@@ -303,6 +313,9 @@ def get_call(
         error_message=call.error_message,
         created_at=call.created_at,
         processed_at=call.processed_at,
+        conversation_metrics=(
+            ConversationMetricsOut.model_validate(metrics) if metrics else None
+        ),
         transcription=(
             TranscriptionOut.model_validate(call.transcription)
             if call.transcription

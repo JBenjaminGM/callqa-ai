@@ -26,6 +26,7 @@ import { Select } from '@/components/ui/select';
 import { PriorityBadge, ScoreBadge, StatusBadge } from '@/components/ui/badge';
 import { Spinner, ErrorState, Skeleton } from '@/components/ui/feedback';
 import { ScoreRadar } from '@/components/charts/score-radar';
+import { ConversationMetricsCard } from '@/components/dashboard/insights';
 import type { CallDetail } from '@/types';
 import {
   callAgentName,
@@ -308,6 +309,11 @@ export default function CallDetailPage() {
                   </Card>
                 )}
               </>
+            )}
+
+            {/* Dinámica de la conversación (métricas deterministas) */}
+            {call.conversation_metrics && (
+              <ConversationMetricsCard metrics={call.conversation_metrics} />
             )}
 
             {/* Transcripción */}

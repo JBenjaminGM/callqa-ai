@@ -52,6 +52,26 @@ class AssignAgentRequest(BaseModel):
     apply_to_same_name: bool = False
 
 
+class ConversationMetricsOut(BaseModel):
+    """Métricas deterministas de la conversación (derivadas de los segmentos)."""
+
+    duration_seconds: float | None = None
+    agent_talk_seconds: float | None = None
+    customer_talk_seconds: float | None = None
+    total_speech_seconds: float | None = None
+    agent_talk_pct: float | None = None
+    customer_talk_pct: float | None = None
+    talk_to_listen_ratio: float | None = None
+    silence_seconds: float | None = None
+    silence_pct: float | None = None
+    longest_agent_monologue_seconds: float | None = None
+    agent_words_per_minute: float | None = None
+    overall_words_per_minute: float | None = None
+    turns: int | None = None
+    turns_per_minute: float | None = None
+    segments_count: int | None = None
+
+
 class CallStatusOut(BaseModel):
     """Estado del procesamiento de una llamada (para polling)."""
 
@@ -107,6 +127,7 @@ class CallDetailOut(BaseModel):
     error_message: str | None = None
     created_at: datetime
     processed_at: datetime | None = None
+    conversation_metrics: ConversationMetricsOut | None = None
     transcription: TranscriptionOut | None = None
     analysis: AnalysisOut | None = None
 

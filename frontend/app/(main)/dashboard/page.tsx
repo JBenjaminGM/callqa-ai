@@ -14,8 +14,15 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Phone, Star, TrendingUp, X } from 'lucide-react';
-import { useAgents, useCampaigns, useDashboardSummary } from '@/lib/queries';
+import { AlertCircle, Phone, Star, TrendingUp, X } from 'lucide-react';
+import {
+  useAgents,
+  useCampaigns,
+  useDashboardAlerts,
+  useDashboardByCampaign,
+  useDashboardSummary,
+  useTopRecommendations,
+} from '@/lib/queries';
 import { getErrorMessage } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Card, CardTitle } from '@/components/ui/card';
@@ -23,6 +30,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import { KpiCard } from '@/components/dashboard/kpi-card';
+import {
+  AlertsPanel,
+  CampaignKpiTable,
+  ConversationStats,
+  TeamRadar,
+  TopProblems,
+} from '@/components/dashboard/insights';
 import { ScoreBadge } from '@/components/ui/badge';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/feedback';
 import type { AgentScore } from '@/types';
@@ -49,6 +63,20 @@ export default function DashboardPage() {
     agent_id: agentId ? Number(agentId) : undefined,
     date_from: dateFrom || undefined,
     date_to: dateTo || undefined,
+  });
+
+  // Alertas, KPIs por campaña y problemas recurrentes (ámbito de todo el equipo;
+  // la campaña/ejecutivo solo filtran el resumen de arriba).
+  const dateFilters = {
+    period,
+    date_from: dateFrom || undefined,
+    date_to: dateTo || undefined,
+  };
+  const { data: alerts } = useDashboardAlerts(dateFilters);
+  const { data: byCampaign } = useDashboardByCampaign(dateFilters);
+  const { data: topProblems } = useTopRecommendations({
+    ...dateFilters,
+    campaign: campaign || undefined,
   });
 
   const hasFilters = Boolean(campaign || agentId || dateFrom || dateTo);
@@ -168,8 +196,11 @@ export default function DashboardPage() {
 
         {data && data.total_calls > 0 && (
           <div className="flex flex-col gap-6">
+            {/* Alertas accionables */}
+            {alerts && <AlertsPanel alerts={alerts} />}
+
             {/* KPIs */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
               <KpiCard
                 label="Llamadas analizadas"
                 value={data.total_calls.toLocaleString('es-PE')}
@@ -186,6 +217,22 @@ export default function DashboardPage() {
                 delta={data.score_trend}
                 icon={<TrendingUp size={18} />}
               />
+              <KpiCard
+                label="Llamadas en banda roja"
+                value={`${data.red_call_count} · ${data.red_call_pct}%`}
+                icon={<AlertCircle size={18} />}
+              />
+            </div>
+
+            {/* Dinámica de conversación */}
+            {data.conversation_summary && (
+              <ConversationStats summary={data.conversation_summary} />
+            )}
+
+            {/* KPIs por campaña + radar del equipo */}
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              {byCampaign && <CampaignKpiTable rows={byCampaign} />}
+              <TeamRadar averages={data.team_dimension_averages} />
             </div>
 
             {/* Gráficos */}
@@ -275,6 +322,9 @@ export default function DashboardPage() {
                 <RankingList items={data.improvement_opportunities} />
               </Card>
             </div>
+
+            {/* Problemas recurrentes del equipo */}
+            {topProblems && <TopProblems items={topProblems} />}
           </div>
         )}
       </main>

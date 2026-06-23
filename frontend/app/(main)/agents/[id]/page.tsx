@@ -11,13 +11,15 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { ArrowLeft, Pencil, UserX } from 'lucide-react';
+import { ArrowLeft, KeyRound, Pencil, UserX } from 'lucide-react';
 import {
   useAgent,
   useAgentDashboard,
+  useCreateAgentLogin,
   useDeactivateAgent,
   useUpdateAgent,
 } from '@/lib/queries';
+import { useAuthStore } from '@/lib/auth';
 import { getErrorMessage } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Card, CardTitle } from '@/components/ui/card';
@@ -25,9 +27,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
-import { ErrorState, Skeleton } from '@/components/ui/feedback';
+import { ErrorState, Skeleton, Spinner } from '@/components/ui/feedback';
 import { ScoreRadar } from '@/components/charts/score-radar';
 import { dimensionLabel } from '@/lib/utils';
+import type { AgentDetail } from '@/types';
 
 /** Perfil de un ejecutivo con su performance y datos editables. */
 export default function AgentDetailPage() {
@@ -40,6 +43,8 @@ export default function AgentDetailPage() {
   const { data: dash } = useAgentDashboard(id, period);
   const updateAgent = useUpdateAgent();
   const deactivate = useDeactivateAgent();
+  const user = useAuthStore((s) => s.user);
+  const isManager = user?.role === 'admin' || user?.role === 'jefe';
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
@@ -163,6 +168,9 @@ export default function AgentDetailPage() {
                 </>
               )}
             </Card>
+
+            {/* Crear acceso de asesor (solo managers) */}
+            {isManager && <AgentLoginCard agent={agent} />}
 
             {/* Periodo */}
             <div className="flex items-center justify-between">
@@ -313,5 +321,93 @@ export default function AgentDetailPage() {
         )}
       </main>
     </>
+  );
+}
+
+/**
+ * Tarjeta para crear la cuenta de acceso (rol asesor) de un ejecutivo, de modo
+ * que pueda entrar a ver su propio rendimiento en /mi-panel.
+ */
+function AgentLoginCard({ agent }: { agent: AgentDetail }) {
+  const createLogin = useCreateAgentLogin();
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState(agent.email ?? '');
+  const [password, setPassword] = useState('');
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg(null);
+    setErr(null);
+    try {
+      await createLogin.mutateAsync({
+        id: agent.id,
+        email: email.trim(),
+        password,
+        name: agent.name,
+      });
+      setMsg(`Acceso creado para ${email.trim()}. Ya puede iniciar sesión.`);
+      setPassword('');
+      setOpen(false);
+    } catch (e2) {
+      setErr(getErrorMessage(e2));
+    }
+  }
+
+  return (
+    <Card>
+      <CardTitle className="mb-1 flex items-center gap-2">
+        <KeyRound size={18} className="text-accent-primary" />
+        Acceso del asesor
+      </CardTitle>
+      <p className="mb-3 text-small text-text-secondary">
+        Crea una cuenta para que {agent.name} entre a ver solo su propio
+        rendimiento.
+      </p>
+
+      {msg && <p className="mb-3 text-small text-success">{msg}</p>}
+
+      {!open ? (
+        <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
+          <KeyRound size={16} />
+          Crear acceso de asesor
+        </Button>
+      ) : (
+        <form onSubmit={submit} className="flex flex-wrap items-end gap-3">
+          <div className="w-60">
+            <Label htmlFor="login-email">Email de acceso</Label>
+            <Input
+              id="login-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="asesor@empresa.com"
+              required
+            />
+          </div>
+          <div className="w-52">
+            <Label htmlFor="login-pass">Contraseña (mín. 8)</Label>
+            <Input
+              id="login-pass"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
+              required
+            />
+          </div>
+          <Button type="submit" disabled={createLogin.isPending}>
+            {createLogin.isPending ? <Spinner /> : <KeyRound size={16} />}
+            Crear acceso
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+            Cancelar
+          </Button>
+        </form>
+      )}
+
+      {err && <p className="mt-3 text-small text-danger">{err}</p>}
+    </Card>
   );
 }

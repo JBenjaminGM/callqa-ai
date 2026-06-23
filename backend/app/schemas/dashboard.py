@@ -3,6 +3,17 @@
 from pydantic import BaseModel
 
 
+class ConversationSummary(BaseModel):
+    """Promedios de las métricas de conversación del periodo."""
+
+    calls_measured: int
+    avg_agent_talk_pct: float | None = None
+    avg_silence_pct: float | None = None
+    avg_talk_to_listen_ratio: float | None = None
+    avg_agent_words_per_minute: float | None = None
+    avg_longest_monologue_seconds: float | None = None
+
+
 class CallsByDay(BaseModel):
     """Conteo y score medio de llamadas en un día."""
 
@@ -43,6 +54,84 @@ class DashboardSummaryOut(BaseModel):
     score_distribution: list[ScoreBucket]
     top_performers: list[AgentScore]
     improvement_opportunities: list[AgentScore]
+    # --- Fase 2: dimensiones del equipo, duración media y conversación ---
+    team_dimension_averages: dict[str, float] = {}
+    avg_duration_seconds: float | None = None
+    red_call_count: int = 0
+    red_call_pct: float = 0.0
+    conversation_summary: ConversationSummary | None = None
+
+
+class CampaignKpiOut(BaseModel):
+    """KPIs de una campaña con su delta vs el periodo anterior."""
+
+    campaign: str
+    total_calls: int
+    avg_score: float
+    score_delta: float | None = None
+    red_calls: int
+    red_pct: float
+    sentiment: float | None = None
+    avg_duration_seconds: float | None = None
+
+
+class AlertOut(BaseModel):
+    """Una alerta accionable del dashboard del jefe."""
+
+    type: str
+    severity: str            # high | medium | low
+    title: str
+    description: str
+    campaign: str | None = None
+    agent_id: int | None = None
+    agent_name: str | None = None
+    call_id: int | None = None
+    value: float | None = None
+
+
+class RecommendationStat(BaseModel):
+    """Una recomendación recurrente agregada (problema del equipo)."""
+
+    dimension: str
+    title: str
+    count: int
+    priority: str
+    sample_description: str = ""
+
+
+class AgentRecommendationStat(RecommendationStat):
+    """Recomendación agregada del asesor, con evidencia de un segmento real."""
+
+    evidence: str | None = None
+
+
+class AgentCampaignBreakdown(BaseModel):
+    """Desempeño del asesor en una campaña + cumplimiento de la nota de producto."""
+
+    campaign: str
+    total_calls: int
+    avg_score: float
+    compliance: dict | None = None
+
+
+class AgentPercentileOut(BaseModel):
+    """Percentil anónimo del asesor dentro de su campaña."""
+
+    available: bool
+    campaign: str | None = None
+    peers_count: int
+    percentile: int | None = None
+    agent_avg: float | None = None
+    campaign_avg: float | None = None
+    rank: int | None = None
+
+
+class AgentRecommendationsOut(BaseModel):
+    """Recomendaciones agregadas del asesor + desglose por campaña."""
+
+    total_calls: int
+    recommendations: list[AgentRecommendationStat]
+    by_campaign: list[AgentCampaignBreakdown]
 
 
 class TimelinePoint(BaseModel):

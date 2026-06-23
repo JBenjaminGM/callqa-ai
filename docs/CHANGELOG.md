@@ -2,6 +2,34 @@
 
 Cambios relevantes. Formato: descripción (commit). Lo más nuevo arriba.
 
+## Fase 2 — Analítica de alto impacto
+- `Dashboard del jefe`: fila de **alertas accionables** (asesor bajo umbral, caída de
+  tendencia, llamadas en banda roja, claim prohibido / frases obligatorias omitidas,
+  anomalía de sentimiento), **KPIs por campaña** con delta vs periodo previo (% rojas,
+  sentimiento, duración, volumen), **radar de dimensiones del equipo** y **top problemas
+  recurrentes** (agregación de `Analysis.recommendations`).
+- `Métricas de conversación` deterministas ($0) desde `Transcription.segments`:
+  talk-to-listen ratio, % de silencio/dead-air, monólogo más largo del agente,
+  palabras/min y turnos/min. Servicio `conversation_metrics_service.py`, columna
+  `Call.conversation_metrics` (**migración 0006**), cálculo en el pipeline y **al vuelo**
+  para llamadas antiguas. Se exponen en el detalle de llamada y agregadas en el dashboard.
+- `Vista asesor (/mi-panel)`: **percentil anónimo** dentro de su campaña (oculto bajo
+  `qa_min_calls_ranking`), **"qué cambiar"** (recomendaciones agregadas por dimensión con
+  evidencia de un segmento real) y **desglose por campaña** con cumplimiento de la nota de
+  producto (cobertura de frases obligatorias, claims prohibidos).
+- `Endpoints nuevos` bajo `/dashboard`: `/by-campaign`, `/alerts`, `/top-recommendations`
+  (todos `[manager]`), `/agents/{id}/percentile` y `/agents/{id}/recommendations` (`[scoped]`).
+  `/summary` extendido con `team_dimension_averages`, `avg_duration_seconds`,
+  `red_call_count`/`red_call_pct` y `conversation_summary`.
+- `Compliance de nota de producto` (`compliance_service.py`): comprobación determinista
+  best-effort de frases obligatorias y claims prohibidos contra lo que dijo el agente.
+- `Frontend`: editor de **umbrales QA** en `/settings`, UI **"crear acceso de asesor"** en
+  `agents/[id]` (`POST /agents/{id}/login`), métricas de conversación en `calls/[id]`.
+  Componentes en `frontend/components/dashboard/insights.tsx`; hooks en `lib/queries.ts`.
+- `Banner de prototipo eliminado`: se retira el banner "Vista previa / entorno de
+  evaluación" de la UI (layout y login). El header HTTP `X-Prototype-Notice` se conserva.
+- `Tests`: +17 (`backend/tests/test_dashboard_phase2.py`), total **78**.
+
 ## Fix cold-start (producción gratis)
 - `Cold-start mitigado`: el plan gratis de Render duerme el backend tras ~15 min
   (arranque en frío ~50 s, que se veía como "error de API"). Se añade GitHub Action

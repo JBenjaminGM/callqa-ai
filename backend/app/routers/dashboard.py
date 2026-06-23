@@ -1,7 +1,7 @@
-"""Endpoints del dashboard: KPIs agregados del equipo y por ejecutivo."""
+"""Endpoints del dashboard: KPIs agregados del equipo, alertas y por ejecutivo."""
 
 from collections import defaultdict
-from datetime import date, datetime, time, timedelta
+from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -10,51 +10,27 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import get_current_user, require_manager
 from app.models.agent import Agent
-from app.models.analysis import Analysis
-from app.models.call import Call, CallStatus
+from app.models.call import Call
 from app.models.user import User
+from app.routers.config import read_qa_thresholds
 from app.schemas.dashboard import (
     AgentDashboardOut,
+    AgentPercentileOut,
+    AgentRecommendationsOut,
     AgentScore,
+    AlertOut,
     CallsByDay,
+    CampaignKpiOut,
+    ConversationSummary,
     DashboardSummaryOut,
+    RecommendationStat,
     ScoreBucket,
     TimelinePoint,
 )
+from app.services import dashboard_service as ds
 from app.services.name_matching import normalize_name
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
-
-# Días asociados a cada valor del parámetro `period`.
-PERIOD_DAYS = {"7d": 7, "30d": 30, "90d": 90}
-
-
-def _period_start(period: str) -> datetime:
-    """Devuelve la fecha de inicio del periodo solicitado."""
-    days = PERIOD_DAYS.get(period, 30)
-    return datetime.utcnow() - timedelta(days=days)
-
-
-def _done_analyses(
-    db: Session,
-    start: datetime,
-    end: datetime | None = None,
-    agent_id: int | None = None,
-    campaign: str | None = None,
-):
-    """Devuelve las filas (Call, Analysis) DONE dentro de la ventana y los filtros."""
-    query = (
-        select(Call, Analysis)
-        .join(Analysis, Analysis.call_id == Call.id)
-        .where(Call.status == CallStatus.DONE, Call.created_at >= start)
-    )
-    if end is not None:
-        query = query.where(Call.created_at <= end)
-    if agent_id is not None:
-        query = query.where(Call.agent_id == agent_id)
-    if campaign:
-        query = query.where(Call.campaign_type == campaign)
-    return db.execute(query).all()
 
 
 @router.get("/summary", response_model=DashboardSummaryOut)
@@ -68,32 +44,14 @@ def dashboard_summary(
     _: User = Depends(require_manager),
 ):
     """KPIs agregados del equipo, con filtros de campaña, ejecutivo y rango de fechas."""
-    # Ventana temporal: el rango de fechas tiene prioridad sobre el periodo rápido.
-    end = datetime.combine(date_to, time.max) if date_to else datetime.utcnow()
-    if date_from:
-        start = datetime.combine(date_from, time.min)
-    elif date_to:
-        start = end - timedelta(days=PERIOD_DAYS.get(period, 30))
-    else:
-        start = _period_start(period)
-
-    rows = _done_analyses(db, start, end=end, agent_id=agent_id, campaign=campaign)
+    start, end = ds.resolve_window(period, date_from, date_to)
+    thresholds = read_qa_thresholds(db)
+    rows = ds.done_analyses(db, start, end=end, agent_id=agent_id, campaign=campaign)
 
     total_calls = len(rows)
     scores = [a.global_score for _, a in rows]
-    average_score = round(sum(scores) / total_calls, 1) if total_calls else 0.0
-
-    # Tendencia: compara la primera mitad de la ventana con la segunda.
-    mid = start + (end - start) / 2
-    first_half = [a.global_score for c, a in rows if c.created_at < mid]
-    second_half = [a.global_score for c, a in rows if c.created_at >= mid]
-    if first_half and second_half:
-        delta = (sum(second_half) / len(second_half)) - (
-            sum(first_half) / len(first_half)
-        )
-        score_trend = f"{'+' if delta >= 0 else ''}{delta:.1f}"
-    else:
-        score_trend = "+0.0"
+    average_score = ds.average_score(rows)
+    score_trend = ds.format_trend(ds.trend_delta(rows, start, end))
 
     # Llamadas por día.
     by_day_count: dict[str, int] = defaultdict(int)
@@ -122,9 +80,37 @@ def dashboard_summary(
             buckets["80-100"] += 1
     score_distribution = [ScoreBucket(range=r, count=c) for r, c in buckets.items()]
 
-    # Ranking de ejecutivos (reporte NPS). Las llamadas asignadas a un
-    # ejecutivo registrado se agrupan por su id; las que solo tienen nombre
-    # detectado por la IA se agrupan por ese nombre (normalizado).
+    agent_avgs = _agent_ranking(db, rows)
+
+    # KPIs de banda roja del equipo.
+    red_threshold = thresholds["qa_red_call_threshold"]
+    red_count = sum(1 for s in scores if s < red_threshold)
+    red_pct = round(red_count / total_calls * 100, 1) if total_calls else 0.0
+
+    conv = ds.conversation_summary(rows)
+
+    return DashboardSummaryOut(
+        total_calls=total_calls,
+        average_score=average_score,
+        score_trend=score_trend,
+        calls_by_day=calls_by_day,
+        score_distribution=score_distribution,
+        top_performers=agent_avgs[:5],
+        improvement_opportunities=list(reversed(agent_avgs[-5:])),
+        team_dimension_averages=ds.dimension_averages(rows),
+        avg_duration_seconds=ds.avg_duration_seconds(rows),
+        red_call_count=red_count,
+        red_call_pct=red_pct,
+        conversation_summary=ConversationSummary(**conv) if conv else None,
+    )
+
+
+def _agent_ranking(db: Session, rows) -> list[AgentScore]:
+    """
+    Ranking de ejecutivos. Las llamadas asignadas a un ejecutivo registrado se
+    agrupan por su id; las que solo tienen nombre detectado por la IA, por ese
+    nombre (normalizado).
+    """
     by_key: dict[str, list[int]] = defaultdict(list)
     key_meta: dict[str, dict] = {}
     for call, analysis in rows:
@@ -166,16 +152,7 @@ def dashboard_summary(
             )
         )
     agent_avgs.sort(key=lambda a: a.avg_score, reverse=True)
-
-    return DashboardSummaryOut(
-        total_calls=total_calls,
-        average_score=average_score,
-        score_trend=score_trend,
-        calls_by_day=calls_by_day,
-        score_distribution=score_distribution,
-        top_performers=agent_avgs[:5],
-        improvement_opportunities=list(reversed(agent_avgs[-5:])),
-    )
+    return agent_avgs
 
 
 @router.get("/campaigns", response_model=list[str])
@@ -193,6 +170,91 @@ def list_campaigns(
     return list(rows)
 
 
+@router.get("/by-campaign", response_model=list[CampaignKpiOut])
+def dashboard_by_campaign(
+    period: str = Query(default="30d", pattern="^(7d|30d|90d)$"),
+    date_from: date | None = Query(default=None),
+    date_to: date | None = Query(default=None),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    """KPIs por campaña: score + delta vs periodo previo, % rojas, sentimiento, duración."""
+    start, end = ds.resolve_window(period, date_from, date_to)
+    thresholds = read_qa_thresholds(db)
+    data = ds.by_campaign(db, start, end, thresholds["qa_red_call_threshold"])
+    return [CampaignKpiOut(**row) for row in data]
+
+
+@router.get("/alerts", response_model=list[AlertOut])
+def dashboard_alerts(
+    period: str = Query(default="30d", pattern="^(7d|30d|90d)$"),
+    date_from: date | None = Query(default=None),
+    date_to: date | None = Query(default=None),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    """Alertas accionables: bajo umbral, caída de tendencia, banda roja, compliance, sentimiento."""
+    start, end = ds.resolve_window(period, date_from, date_to)
+    thresholds = read_qa_thresholds(db)
+    return [AlertOut(**a) for a in ds.build_alerts(db, start, end, thresholds)]
+
+
+@router.get("/top-recommendations", response_model=list[RecommendationStat])
+def dashboard_top_recommendations(
+    period: str = Query(default="30d", pattern="^(7d|30d|90d)$"),
+    campaign: str | None = Query(default=None),
+    date_from: date | None = Query(default=None),
+    date_to: date | None = Query(default=None),
+    limit: int = Query(default=10, ge=1, le=50),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    """Problemas recurrentes: agrega las recomendaciones por dimensión/título."""
+    start, end = ds.resolve_window(period, date_from, date_to)
+    rows = ds.done_analyses(db, start, end=end, campaign=campaign)
+    return [RecommendationStat(**r) for r in ds.aggregate_recommendations(rows, limit)]
+
+
+@router.get("/agents/{agent_id}/percentile", response_model=AgentPercentileOut)
+def agent_percentile(
+    agent_id: int,
+    period: str = Query(default="30d", pattern="^(7d|30d|90d)$"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Percentil ANÓNIMO del asesor dentro de su campaña (oculto bajo el mínimo)."""
+    agent = _scoped_agent(db, current_user, agent_id)
+    start, end = ds.resolve_window(period, None, None)
+    thresholds = read_qa_thresholds(db)
+    result = ds.agent_percentile(
+        db, agent, start, end, thresholds["qa_min_calls_ranking"]
+    )
+    return AgentPercentileOut(**result)
+
+
+@router.get("/agents/{agent_id}/recommendations", response_model=AgentRecommendationsOut)
+def agent_recommendations(
+    agent_id: int,
+    period: str = Query(default="30d", pattern="^(7d|30d|90d)$"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Qué cambiar: recomendaciones agregadas con evidencia + desglose por campaña."""
+    agent = _scoped_agent(db, current_user, agent_id)
+    start, end = ds.resolve_window(period, None, None)
+    return AgentRecommendationsOut(**ds.agent_recommendations(db, agent, start, end))
+
+
+def _scoped_agent(db: Session, current_user: User, agent_id: int) -> Agent:
+    """Valida el scoping (asesor solo lo suyo) y devuelve el ejecutivo o 403/404."""
+    if not current_user.is_manager and current_user.agent_id != agent_id:
+        raise HTTPException(status_code=403, detail="No autorizado para ver este ejecutivo.")
+    agent = db.get(Agent, agent_id)
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Ejecutivo no encontrado.")
+    return agent
+
+
 @router.get("/agents/{agent_id}", response_model=AgentDashboardOut)
 def agent_dashboard(
     agent_id: int,
@@ -201,32 +263,17 @@ def agent_dashboard(
     current_user: User = Depends(get_current_user),
 ):
     """Performance detallado de un ejecutivo: dimensiones, tendencia y comparativa."""
-    if not current_user.is_manager and current_user.agent_id != agent_id:
-        raise HTTPException(status_code=403, detail="No autorizado para ver este ejecutivo.")
-    agent = db.get(Agent, agent_id)
-    if agent is None:
-        raise HTTPException(status_code=404, detail="Ejecutivo no encontrado.")
+    agent = _scoped_agent(db, current_user, agent_id)
 
-    since = _period_start(period)
-    agent_rows = _done_analyses(db, since, agent_id=agent_id)
-    team_rows = _done_analyses(db, since)
+    start, end = ds.resolve_window(period, None, None)
+    agent_rows = ds.done_analyses(db, start, end=end, agent_id=agent_id)
+    team_rows = ds.done_analyses(db, start, end=end)
 
     total_calls = len(agent_rows)
-    scores = [a.global_score for _, a in agent_rows]
-    average_score = round(sum(scores) / total_calls, 1) if total_calls else 0.0
+    average_score = ds.average_score(agent_rows)
 
-    def _dimension_averages(rows) -> dict[str, float]:
-        """Promedia cada dimensión a partir de una lista de (Call, Analysis)."""
-        sums: dict[str, float] = defaultdict(float)
-        counts: dict[str, int] = defaultdict(int)
-        for _, analysis in rows:
-            for key, score in (analysis.dimension_scores or {}).items():
-                sums[key] += score
-                counts[key] += 1
-        return {k: round(sums[k] / counts[k], 1) for k in sums}
-
-    dimension_averages = _dimension_averages(agent_rows)
-    team_dimension_averages = _dimension_averages(team_rows)
+    dimension_averages = ds.dimension_averages(agent_rows)
+    team_dimension_averages = ds.dimension_averages(team_rows)
 
     # Fortalezas y áreas de mejora: top 3 y bottom 3 dimensiones.
     ordered = sorted(dimension_averages.items(), key=lambda kv: kv[1], reverse=True)
@@ -242,15 +289,7 @@ def agent_dashboard(
         for day, v in sorted(by_day.items())
     ]
 
-    # Tendencia (mismo cálculo que el resumen del equipo).
-    mid = since + (datetime.utcnow() - since) / 2
-    first = [a.global_score for c, a in agent_rows if c.created_at < mid]
-    second = [a.global_score for c, a in agent_rows if c.created_at >= mid]
-    if first and second:
-        delta = (sum(second) / len(second)) - (sum(first) / len(first))
-        score_trend = f"{'+' if delta >= 0 else ''}{delta:.1f}"
-    else:
-        score_trend = "+0.0"
+    score_trend = ds.format_trend(ds.trend_delta(agent_rows, start, end))
 
     return AgentDashboardOut(
         agent={"id": agent.id, "name": agent.name, "campaign": agent.campaign},

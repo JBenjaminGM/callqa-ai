@@ -32,6 +32,7 @@ from app.models.transcription import Transcription
 from app.prompts import get_analysis_prompt
 from app.services.analysis_service import calculate_global_score, get_analysis_provider
 from app.services.campaign_service import build_product_note_text
+from app.services.conversation_metrics_service import compute_conversation_metrics
 from app.services.masking_service import mask_sensitive_data
 from app.services.name_matching import find_matching_agent
 from app.services.storage_service import get_storage_provider
@@ -169,6 +170,11 @@ def _run_pipeline(db, call: Call) -> None:
                 role = str(diarization[i]).strip().lower()
                 seg["speaker"] = "agent" if role.startswith("a") else "customer"
         transcription.segments = list(segments)  # reasignar para detectar el cambio
+
+    # Métricas de conversación deterministas (sobre los segmentos ya diarizados).
+    call.conversation_metrics = compute_conversation_metrics(
+        segments, call.duration_seconds
+    )
 
     dimension_scores = {
         k: int(v) for k, v in analysis_result.get("dimension_scores", {}).items()

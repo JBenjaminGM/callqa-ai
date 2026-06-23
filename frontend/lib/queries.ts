@@ -10,6 +10,8 @@ import type {
   Agent,
   AgentDashboard,
   AgentDetail,
+  AgentPercentile,
+  AgentRecommendations,
   AppSettings,
   CallDetail,
   CallList,
@@ -18,9 +20,13 @@ import type {
   CampaignAssistResult,
   CampaignDraft,
   CampaignExtractResult,
+  CampaignKpi,
+  DashboardAlert,
   DashboardSummary,
+  RecommendationStat,
   RubricDimension,
   RubricDimensionInput,
+  User,
 } from '@/types';
 
 /* ----------------------------- Ejecutivos ----------------------------- */
@@ -78,6 +84,34 @@ export function useDeactivateAgent() {
       await api.delete(`/agents/${id}`);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['agents'] }),
+  });
+}
+
+/** Crea la cuenta de acceso (rol asesor) vinculada a un ejecutivo. */
+export function useCreateAgentLogin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      email,
+      password,
+      name,
+    }: {
+      id: number;
+      email: string;
+      password: string;
+      name?: string;
+    }) => {
+      const { data } = await api.post<User>(`/agents/${id}/login`, {
+        email,
+        password,
+        name,
+      });
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['agent', vars.id] });
+    },
   });
 }
 
@@ -224,6 +258,71 @@ export function useAgentDashboard(id: number, period: string) {
     queryFn: async () => {
       const { data } = await api.get<AgentDashboard>(
         `/dashboard/agents/${id}`,
+        { params: { period } },
+      );
+      return data;
+    },
+    enabled: Number.isFinite(id),
+  });
+}
+
+export function useDashboardByCampaign(filters: DashboardFilters) {
+  return useQuery({
+    queryKey: ['dashboard-by-campaign', filters],
+    queryFn: async () => {
+      const { data } = await api.get<CampaignKpi[]>('/dashboard/by-campaign', {
+        params: filters,
+      });
+      return data;
+    },
+  });
+}
+
+export function useDashboardAlerts(filters: DashboardFilters) {
+  return useQuery({
+    queryKey: ['dashboard-alerts', filters],
+    queryFn: async () => {
+      const { data } = await api.get<DashboardAlert[]>('/dashboard/alerts', {
+        params: filters,
+      });
+      return data;
+    },
+  });
+}
+
+export function useTopRecommendations(filters: DashboardFilters) {
+  return useQuery({
+    queryKey: ['dashboard-top-recommendations', filters],
+    queryFn: async () => {
+      const { data } = await api.get<RecommendationStat[]>(
+        '/dashboard/top-recommendations',
+        { params: filters },
+      );
+      return data;
+    },
+  });
+}
+
+export function useAgentPercentile(id: number, period: string) {
+  return useQuery({
+    queryKey: ['agent-percentile', id, period],
+    queryFn: async () => {
+      const { data } = await api.get<AgentPercentile>(
+        `/dashboard/agents/${id}/percentile`,
+        { params: { period } },
+      );
+      return data;
+    },
+    enabled: Number.isFinite(id),
+  });
+}
+
+export function useAgentRecommendations(id: number, period: string) {
+  return useQuery({
+    queryKey: ['agent-recommendations', id, period],
+    queryFn: async () => {
+      const { data } = await api.get<AgentRecommendations>(
+        `/dashboard/agents/${id}/recommendations`,
         { params: { period } },
       );
       return data;

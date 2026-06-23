@@ -17,6 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+from app.models.settings import JSONType
 
 
 class CallStatus(str, enum.Enum):
@@ -67,6 +68,10 @@ class Call(Base):
         DateTime, server_default=func.now(), index=True
     )
     processed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Métricas de conversación deterministas (talk-ratio, silencio, WPM, turnos…)
+    # calculadas desde los segmentos de la transcripción. Null para llamadas
+    # antiguas: se recalculan al vuelo desde la transcripción al consultarlas.
+    conversation_metrics: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
 
     agent: Mapped["Agent | None"] = relationship(back_populates="calls")  # noqa: F821
     campaign: Mapped["Campaign | None"] = relationship(back_populates="calls")  # noqa: F821

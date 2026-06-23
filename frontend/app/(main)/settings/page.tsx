@@ -25,6 +25,45 @@ const LANGUAGES = [
   { code: 'fr', label: 'Francés' },
 ];
 
+/** Umbrales de QA configurables (coinciden con app_settings del backend). */
+const QA_FIELDS = [
+  {
+    key: 'qa_target_score',
+    label: 'Meta de score (verde)',
+    hint: 'A partir de aquí se considera excelente.',
+    min: 0,
+    max: 100,
+  },
+  {
+    key: 'qa_low_agent_threshold',
+    label: 'Asesor «requiere atención» por debajo de',
+    hint: 'Dispara alertas de bajo rendimiento.',
+    min: 0,
+    max: 100,
+  },
+  {
+    key: 'qa_red_call_threshold',
+    label: 'Llamada en banda roja por debajo de',
+    hint: 'Marca las llamadas críticas.',
+    min: 0,
+    max: 100,
+  },
+  {
+    key: 'qa_min_calls_ranking',
+    label: 'Mínimo de llamadas para rankings',
+    hint: 'Evita rankings con muestras muy pequeñas.',
+    min: 1,
+    max: 1000,
+  },
+  {
+    key: 'qa_trend_drop_alert',
+    label: 'Caída de score que dispara alerta (puntos)',
+    hint: 'Detecta tendencias negativas.',
+    min: 0,
+    max: 100,
+  },
+] as const;
+
 /** Página de configuración: rúbrica de evaluación (con subcategorías) e idioma. */
 export default function SettingsPage() {
   const { data: rubric, isLoading: rubricLoading, error: rubricError } =
@@ -39,6 +78,10 @@ export default function SettingsPage() {
   const [rubricMsg, setRubricMsg] = useState<string | null>(null);
   const [rubricErr, setRubricErr] = useState<string | null>(null);
   const [settingsMsg, setSettingsMsg] = useState<string | null>(null);
+
+  // Umbrales / metas de QA configurables.
+  const [qa, setQa] = useState<Record<string, number>>({});
+  const [qaMsg, setQaMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (rubric) {
@@ -58,7 +101,16 @@ export default function SettingsPage() {
   }, [rubric]);
 
   useEffect(() => {
-    if (settings) setLanguage(settings.default_language);
+    if (settings) {
+      setLanguage(settings.default_language);
+      setQa({
+        qa_target_score: settings.qa_target_score ?? 90,
+        qa_low_agent_threshold: settings.qa_low_agent_threshold ?? 80,
+        qa_red_call_threshold: settings.qa_red_call_threshold ?? 60,
+        qa_min_calls_ranking: settings.qa_min_calls_ranking ?? 5,
+        qa_trend_drop_alert: settings.qa_trend_drop_alert ?? 5,
+      });
+    }
   }, [settings]);
 
   const total = dims.reduce((a, d) => a + (Number(d.weight) || 0), 0);
@@ -150,6 +202,16 @@ export default function SettingsPage() {
       setSettingsMsg('Idioma de análisis actualizado.');
     } catch (err) {
       setSettingsMsg(getErrorMessage(err));
+    }
+  }
+
+  async function saveThresholds() {
+    setQaMsg(null);
+    try {
+      await updateSettings.mutateAsync(qa);
+      setQaMsg('Umbrales de QA actualizados.');
+    } catch (err) {
+      setQaMsg(getErrorMessage(err));
     }
   }
 
@@ -324,6 +386,40 @@ export default function SettingsPage() {
             {settingsMsg && (
               <p className="mt-3 text-small text-success">{settingsMsg}</p>
             )}
+          </Card>
+
+          {/* Umbrales / metas de QA */}
+          <Card>
+            <CardTitle className="mb-1">Umbrales de calidad (QA)</CardTitle>
+            <p className="mb-4 text-small text-text-secondary">
+              Definen los colores, las alertas y los rankings del dashboard. Se
+              aplican de inmediato a toda la analítica.
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {QA_FIELDS.map((f) => (
+                <div key={f.key}>
+                  <Label htmlFor={f.key}>{f.label}</Label>
+                  <Input
+                    id={f.key}
+                    type="number"
+                    min={f.min}
+                    max={f.max}
+                    value={qa[f.key] ?? ''}
+                    onChange={(e) =>
+                      setQa((q) => ({ ...q, [f.key]: Number(e.target.value) }))
+                    }
+                  />
+                  <p className="mt-1 text-small text-text-muted">{f.hint}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <Button onClick={saveThresholds} disabled={updateSettings.isPending}>
+                {updateSettings.isPending ? <Spinner /> : <Save size={18} />}
+                Guardar umbrales
+              </Button>
+            </div>
+            {qaMsg && <p className="mt-3 text-small text-success">{qaMsg}</p>}
           </Card>
 
           {/* Información del sistema */}

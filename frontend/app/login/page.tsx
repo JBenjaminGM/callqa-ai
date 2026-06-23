@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/feedback';
-import { PrototypeBanner } from '@/components/layout/prototype-banner';
 import type { TokenResponse } from '@/types';
 
 const loginSchema = z.object({
@@ -48,7 +47,6 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-bg-primary">
-      <PrototypeBanner />
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-md animate-fade-in">
           {/* Contenedor achaflanado con la marca Minsait y el dispositivo de titular */}
