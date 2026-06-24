@@ -14,7 +14,7 @@ Esenciales:
 - **Campañas con nota de producto:** entidad `Campaign` (ficha de oferta de 9 campos);
   se inyecta en el prompt de análisis. Se crea por formulario, asistente IA o PDF (`pypdf`).
 - **Trabajar en `C:\Users\Benja\Documents\callqa-ai`** (NO la copia de OneDrive).
-- **Tests:** desde `backend/`, `.\.venv\Scripts\python.exe -m pytest -q` (61 tests).
+- **Tests:** desde `backend/`, `.\.venv\Scripts\python.exe -m pytest -q` (78 tests).
 - **Desplegar:** `git push origin main` → Vercel + Render redepliegan solos.
 - **Diseño = identidad Minsait** (Pruno + Gris Cerámica, acento Fucsia, ForFuture Sans,
   chaflanes). Color canónico: `frontend/app/globals.css` + `tailwind.config.ts`.

@@ -40,7 +40,7 @@ está **desplegada en vivo y gratis**:
 - **`CallQA_AI_Presentacion.pptx`** — Slides de alto impacto para presentar.
 - **`01_VISION_Y_CASOS_DE_USO.md`** — Visión, casos de uso, reglas de negocio.
 - **`02_REQUERIMIENTOS.md`** — Requerimientos funcionales y no funcionales.
-- **`03_ARQUITECTURA_TECNICA.md`** — Stack, modelo de datos, contratos de API. Incluye roles (admin/jefe/asesor), campañas, migraciones hasta 0005 y 61 tests.
+- **`03_ARQUITECTURA_TECNICA.md`** — Stack, modelo de datos, contratos de API. Incluye roles (admin/jefe/asesor), campañas, migraciones hasta 0006 y 78 tests (analítica Fase 2 + rediseño premium).
 - **`DESIGN.md`** — Sistema de diseño con la **identidad oficial Minsait** (Pruno `#480E2A` + Gris Cerámica `#E3E2DA` dominan, Fucsia `#FF0054` de acento; tipografía ForFuture Sans; contenedores achaflanados). *La implementación canónica de los colores es `frontend/app/globals.css` + `tailwind.config.ts`.*
 
 ### ⚠️ Históricos / ❌ obsoletos (no usar como referencia actual)

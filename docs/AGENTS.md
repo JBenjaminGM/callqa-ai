@@ -28,8 +28,14 @@ accionables y un **reporte PDF**. Cliente: **Minsait (Grupo Indra)**, sector ban
 
 ## 2. Estado actual (en vivo)
 
+> 🔑 **PENDIENTE PROD (IA):** la `GROQ_API_KEY` de **Render** está caducada/inválida →
+> las llamadas nuevas en prod dan `ERROR` (`Groq HTTP 401 Invalid API Key`). Arreglo
+> (30 s, no es código): Render → `callqa-api` → **Environment** → `GROQ_API_KEY` = la
+> key válida de `backend/.env` → **Save**. Es `sync: false` (solo en Render, nunca en el
+> repo); `git push` NO la actualiza. Ver §10.
+
 - **Repo:** `github.com/JBenjaminGM/callqa-ai` (rama `main`). **Push a `main` ⇒ redeploy automático** en Vercel y Render.
-- **Frontend (Vercel):** https://callqa-ai.vercel.app
+- **Frontend (Vercel):** https://callqa-ai.vercel.app — dashboard con **rediseño premium de indicadores** (Fase 2).
 - **Backend (Render):** https://callqa-api.onrender.com (`/health`, `/docs`)
 - **Cuentas sembradas:** `admin@callqa.com`/`Admin123!` (admin), `jefe@callqa.com`/`Jefe123!` (jefe), y un **asesor por cada ejecutivo demo** (email del ejecutivo, p. ej. `maria@banco.com`/`Asesor123!`). El login YA NO muestra credenciales y el seed YA NO imprime contraseñas.
 - **Coste de operación: $0** (Groq gratis + tiers gratis de Vercel/Render).
@@ -195,6 +201,7 @@ analítica global; helper `is_manager`); **asesor** solo ve **su propio rendimie
 ## 10. Decisiones clave y *gotchas* (LÉELO antes de tocar)
 
 - **IA = Groq por defecto.** Para usar Claude/OpenAI/Azure: cambiar `AI_PROVIDER` + poner su API key. El código YA lo soporta (factory en `analysis_service.py`). Portar a **Azure OpenAI + Azure AI Speech** (producción Indra) = solo configuración.
+- **🔑 `GROQ_API_KEY` en producción (Render) es `sync: false`** → vive SOLO en el dashboard de Render, **nunca en el repo**, y `git push` NO la cambia. Si Groq devuelve `401 Invalid API Key`, la key de Render caducó (p. ej. tras rotarla por la filtración del commit `aeda304`): actualízala en Render → `callqa-api` → Environment con la key válida de `backend/.env`. Síntoma: llamadas nuevas en prod en `ERROR` al transcribir. Diagnóstico rápido: `curl -s https://api.groq.com/openai/v1/models -H "Authorization: Bearer <key>"` (200 = válida).
 - **`/config/settings` reporta el proveedor REAL** (de la env var), no el de la BD — para que la UI no mienta. Incluye además los **umbrales QA** configurables.
 - **Umbrales QA configurables** (en `app_settings`, editables solo por manager): `qa_target_score=90`, `qa_low_agent_threshold=80`, `qa_red_call_threshold=60`, `qa_min_calls_ranking=5`, `qa_trend_drop_alert=5`.
 - **Campañas con nota de producto:** la entidad `Campaign` lleva una **nota de producto de 9 campos** (producto/servicio, descripción de la oferta, beneficios clave, precio/condiciones, requisitos del cliente, frases obligatorias, claims prohibidos, público objetivo, notas). Se crea por formulario (con asistente IA), o **subiendo un PDF** que la IA parsea (`pypdf`+LLM) y autocompleta; lo que no encuentre se pide en el formulario. La nota **se INYECTA en el prompt de análisis** para evaluar si el ejecutivo ofreció la oferta correcta (integrado en los criterios existentes promotions/compliance). `Call.campaign_id` (FK; se conserva `campaign_type` texto por compatibilidad y para filtros del dashboard).
@@ -220,6 +227,15 @@ Intelligence" Índigo/Slate quedó **obsoleto**).
 - **Modo claro por defecto** (Gris Cerámica) + **modo oscuro Pruno**.
 - **Sidebar** siempre Pruno con el logo blanco.
 - **Fuente de verdad del color:** `frontend/app/globals.css` + `tailwind.config.ts`.
+- **Sistema de dataviz premium (Fase 2):** `frontend/components/dashboard/viz.tsx`
+  centraliza las primitivas de visualización fieles a la marca — `ScoreGauge` (anillo
+  de score), `Sparkline`, `Donut`, `MiniProgress`, `DeltaPill`, `BrandTooltip` —; más
+  `StatCard` (KPI con delta + sparkline), `SectionHeader`/`Eyebrow`
+  (`components/ui/section.tsx`), `CallsTrendChart` (`trend-chart.tsx`) y los compuestos
+  de `insights.tsx` (alertas, tabla por campaña, percentil, etc.). **Reutilízalos** en
+  vez de crear gráficos sueltos; todos usan las variables CSS para tema claro/oscuro.
+- **Banner de prototipo RETIRADO** de la UI (decisión del responsable); el header HTTP
+  `X-Prototype-Notice` y el log `environment="evaluation"` se conservan como salvaguarda interna.
 
 ## 12. Endpoints y modelo de datos
 

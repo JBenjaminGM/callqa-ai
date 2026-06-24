@@ -809,8 +809,8 @@ backend/
 │       ├── security.py         # JWT, hashing
 │       └── audio.py            # Validación de archivos
 │
-├── alembic/                    # Migraciones DB (0001–0005)
-├── tests/                      # 61 tests (pytest, SQLite en memoria, externos mockeados)
+├── alembic/                    # Migraciones DB (0001–0006)
+├── tests/                      # 78 tests (pytest, SQLite en memoria, externos mockeados)
 │   ├── conftest.py
 │   ├── test_auth.py            # auth + roles/scoping (admin/jefe/asesor)
 │   ├── test_agents.py          # incluye creación de login de asesor
@@ -975,7 +975,7 @@ alembic upgrade head
 alembic downgrade -1
 ```
 
-### Historial de migraciones (hasta `0005`)
+### Historial de migraciones (hasta `0006`)
 
 | Rev | Descripción |
 |---|---|
@@ -984,6 +984,7 @@ alembic downgrade -1
 | **0003** | Rúbrica con subcriterios: añade `rubric_config.criteria` (JSON). |
 | **0004** | Campañas: nueva tabla `campaigns` + `calls.campaign_id` (FK) + backfill de las campañas existentes. |
 | **0005** | Roles de usuario: añade `users.agent_id` (FK) + backfill de rol `'supervisor'` → `'jefe'`. |
+| **0006** | Métricas de conversación: añade `calls.conversation_metrics` (JSON) — Fase 2. |
 
 En el despliegue en vivo (Render) las migraciones se ejecutan automáticamente al
 arrancar: el comando de arranque (`alembic upgrade head` + seed + `uvicorn`) vive

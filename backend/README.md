@@ -5,8 +5,8 @@ bancarios (Minsait / Grupo Indra). Permite subir grabaciones de llamadas,
 transcribirlas con IA y evaluarlas automáticamente contra una rúbrica dinámica
 (7 dimensiones por defecto, con subcriterios activables).
 
-> ⚠️ **Vista previa — entorno de evaluación.** No utilizar con datos reales de
-> clientes sin la aprobación previa de Compliance.
+> ⚠️ **No utilizar con datos reales de clientes sin la aprobación previa de
+> Compliance.** (El header `X-Prototype-Notice` se conserva como salvaguarda interna.)
 
 ---
 
@@ -164,7 +164,7 @@ backend/
 │   ├── tasks/             # Tareas Celery (procesamiento asíncrono)
 │   ├── prompts/           # Prompts para los modelos de lenguaje
 │   └── utils/             # Seguridad y validación de audio
-├── alembic/               # Migraciones de la base de datos (0001 → 0005)
+├── alembic/               # Migraciones de la base de datos (0001 → 0006)
 ├── scripts/seed_data.py   # Datos iniciales (usuarios, rúbrica, campañas, ejecutivos)
 ├── tests/                 # Tests automatizados
 ├── Dockerfile
@@ -213,7 +213,8 @@ eliminar llamadas, los settings o la gestión de ejecutivos.
 
 ## 8. Ejecutar los tests
 
-El proyecto tiene **61 tests** automatizados.
+El proyecto tiene **78 tests** automatizados (incluye la analítica de Fase 2:
+métricas de conversación, compliance de nota de producto y endpoints de dashboard con scoping).
 
 ```bash
 # Dentro del contenedor de la API

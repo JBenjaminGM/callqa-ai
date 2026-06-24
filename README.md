@@ -3,8 +3,9 @@
 Plataforma de **Quality Assurance automatizado con IA** para call centers
 bancarios (Minsait / Grupo Indra). Monorepo: backend + frontend + documentación.
 
-> ⚠️ **Vista previa — entorno de evaluación.** No utilizar con datos reales de
-> clientes sin la aprobación previa de Compliance.
+> ⚠️ **No utilizar con datos reales de clientes sin la aprobación previa de
+> Compliance.** (El banner visible de "vista previa" se retiró de la UI; se conserva
+> la salvaguarda interna `X-Prototype-Notice`.)
 
 - 🌐 **En vivo:** https://callqa-ai.vercel.app · API: https://callqa-api.onrender.com
 - 👤 **Roles:** `admin@callqa.com` / `Admin123!` (admin) · `jefe@callqa.com` / `Jefe123!` (jefe) · asesores con el email del ejecutivo (p. ej. `maria@banco.com` / `Asesor123!`).
@@ -65,7 +66,7 @@ dimensión + score global ponderado + recomendaciones accionables + **reporte PD
 
 ## 🛠️ Desarrollo y despliegue
 
-- **Tests backend (61):** `cd backend && .venv\Scripts\python -m pytest -q`.
+- **Tests backend (78):** `cd backend && .venv\Scripts\python -m pytest -q`.
 - **Frontend en local:** `cd frontend && npm install && npm run dev`.
 - **Desplegar:** `git push origin main` → Vercel y Render redepliegan solos. Guía: **[`docs/DEPLOY_GRATIS.md`](docs/DEPLOY_GRATIS.md)**.
 

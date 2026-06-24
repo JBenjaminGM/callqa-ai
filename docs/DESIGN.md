@@ -159,3 +159,38 @@ El lenguaje de forma es el **chaflán Minsait**, no el redondeado.
 - **Titulares con realce:** `h1–h4` en minúscula; la palabra clave en `.hl` (Fucsia) materializa "calidad con impacto".
 - **Badges de score:** colores de estado por umbral (danger/warning/success) usando la paleta secundaria Minsait.
 - **Animaciones:** aparición suave `animate-fade-in` (respeta `prefers-reduced-motion`) y `skeleton` de carga con pulso sobre el borde tonal.
+
+## Visualización de datos (dataviz · Fase 2)
+El sistema de indicadores (`frontend/components/dashboard/viz.tsx`) eleva la analítica a un
+nivel **enterprise/“vendible”** sin romper la sobriedad plana de Minsait: la riqueza viene de
+**tipografía, dataviz y uso medido del acento**, no de sombras pesadas (el `clip-path` del
+chaflán recorta las sombras, así que las tarjetas se leen por contraste de relleno).
+
+Principios aplicados (mejores prácticas de dashboards B2B):
+- **Lo importante primero, jerarquía clara**: un **gauge de score** como elemento héroe,
+  números grandes con `tabular-nums`, eyebrow en mayúsculas + titular en minúscula por sección.
+- **Contexto, no solo cifras**: cada KPI lleva su **delta vs periodo anterior** (`DeltaPill`,
+  flecha + color semántico) y, cuando aplica, **sparkline** o progreso a meta.
+- **Gráfico correcto por dato**: score 0-100 → **anillo** (`ScoreGauge`); distribución →
+  **donut** con etiqueta central (`Donut`); evolución → **área con gradiente** + línea de meta
+  (`CallsTrendChart`, `ReferenceLine`); comparación entre campañas → **tabla con barras inline**
+  (`MiniProgress`) + delta chips; dimensiones del equipo → **radar**.
+- **Color accesible y semántico**: `success/warning/danger` por umbral (`scoreVar()`); el
+  **Fucsia** se reserva para el dato/serie más importante y el modo oscuro.
+- **Alertas legibles**: franja de severidad a la izquierda + icono por tipo + jerarquía título/desc.
+- **Tooltips de marca** (`BrandTooltip`) achaflanados y consistentes con el tema.
+
+| Primitiva | Para qué |
+|---|---|
+| `ScoreGauge` | Score 0-100 como anillo héroe (centro con el número, color por umbral) |
+| `Sparkline` | Mini-tendencia (área) dentro de un KPI |
+| `Donut` | Distribución con valor/etiqueta central |
+| `MiniProgress` | Barra horizontal compacta (tablas, compliance) |
+| `DeltaPill` | Variación vs periodo anterior (flecha + color) |
+| `BrandTooltip` | Tooltip de Recharts con estilo Minsait |
+| `StatCard` | KPI premium: label + valor + delta + sparkline/meta (`stat-card.tsx`) |
+| `SectionHeader`/`Eyebrow` | Ritmo y jerarquía de secciones (`ui/section.tsx`) |
+| `CallsTrendChart` | Volumen (área) + score medio (línea) + meta (`trend-chart.tsx`) |
+
+> **Reutiliza estas primitivas** en vez de crear gráficos sueltos; todas leen las variables CSS
+> (tema claro/oscuro automático) y respetan la paleta. Fuente de verdad del color: `globals.css`.

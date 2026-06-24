@@ -2,6 +2,24 @@
 
 Cambios relevantes. Formato: descripción (commit). Lo más nuevo arriba.
 
+## Rediseño premium de indicadores y UX
+- `Sistema de dataviz de marca` (`frontend/components/dashboard/viz.tsx`): **ScoreGauge**
+  (anillo de score), **Sparkline**, **Donut**, **MiniProgress**, **DeltaPill** y
+  **BrandTooltip**; **StatCard** (KPI con delta + sparkline + progreso a meta),
+  **SectionHeader/Eyebrow** y **CallsTrendChart** (área con gradiente + línea de meta).
+- `Dashboard del jefe rediseñado`: toolbar compacto con **control segmentado** de
+  periodo, banda de resumen con **gauge héroe** + StatCards, tendencias (área + **donut**
+  de distribución), **tabla de campañas** con barras inline y delta chips, **alertas con
+  franja de severidad** e iconos por tipo, rankings y dinámica de conversación.
+  `/mi-panel` (percentil con barra de posición) y `calls/[id]` (gauge de score) alineados.
+  Todo fiel a la identidad Minsait (paleta, chaflanes, titulares en minúscula, ForFuture Sans).
+- `Banner de prototipo eliminado` de la UI (layout + login). El header HTTP
+  `X-Prototype-Notice` se conserva.
+
+> 🔑 **Nota de operación:** la IA en producción depende de `GROQ_API_KEY` en **Render**
+> (`sync: false`, se pone a mano en el dashboard). Si Groq devuelve `401`, actualízala con
+> la key válida; `git push` no la cambia.
+
 ## Fase 2 — Analítica de alto impacto
 - `Dashboard del jefe`: fila de **alertas accionables** (asesor bajo umbral, caída de
   tendencia, llamadas en banda roja, claim prohibido / frases obligatorias omitidas,

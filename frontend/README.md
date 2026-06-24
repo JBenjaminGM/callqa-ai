@@ -4,8 +4,8 @@ Interfaz web de la plataforma de Quality Assurance automatizado para call center
 bancarios (Minsait / Grupo Indra). Construida con **Next.js 14**, TypeScript y
 Tailwind CSS.
 
-> ⚠️ **Vista previa — entorno de evaluación.** No utilizar con datos reales de
-> clientes sin la aprobación previa de Compliance.
+> ⚠️ **No utilizar con datos reales de clientes sin la aprobación previa de
+> Compliance.** (El banner visible de "vista previa" se retiró de la UI.)
 
 ---
 
@@ -124,9 +124,9 @@ frontend/
 │       ├── campaigns/      # Campañas: lista, crear (PDF/IA/formulario), editar
 │       └── settings/       # Rúbrica, idioma y umbrales QA
 ├── components/
-│   ├── ui/                 # Primitivos (Button, Card, Input, Badge…)
-│   ├── layout/             # Sidebar, Header, banner, toggle de tema
-│   ├── dashboard/          # KpiCard
+│   ├── ui/                 # Primitivos (Button, Card, Input, Badge, Section…)
+│   ├── layout/             # Sidebar, Header, toggle de tema
+│   ├── dashboard/          # viz (gauge/sparkline/donut), StatCard, insights, trend-chart
 │   └── charts/             # ScoreRadar
 ├── lib/
 │   ├── api.ts              # Cliente Axios + interceptores + resiliencia cold-start

@@ -488,8 +488,8 @@ Los requerimientos no funcionales describen **cómo debe ser** el sistema.
 
 #### RNF-15: Tests
 
-- **61 tests** de backend (pytest, SQLite en memoria, externos mockeados)
-- Cubren: auth, roles y scoping (admin/jefe/asesor), agents, campañas, cálculo de score, enmascarado, matching difuso, idempotencia del reintento, modo inline, umbrales QA, creación de login de asesor
+- **78 tests** de backend (pytest, SQLite en memoria, externos mockeados)
+- Cubren: auth, roles y scoping (admin/jefe/asesor), agents, campañas, cálculo de score, enmascarado, matching difuso, idempotencia del reintento, modo inline, umbrales QA, creación de login de asesor, **y la analítica de Fase 2** (métricas de conversación, compliance de nota de producto y endpoints de dashboard con scoping)
 
 #### RNF-16: Logging
 

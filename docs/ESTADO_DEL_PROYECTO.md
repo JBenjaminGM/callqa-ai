@@ -6,8 +6,16 @@
 > dónde tocar cada cosa), ver **[`AGENTS.md`](AGENTS.md)** y **[`CHANGELOG.md`](CHANGELOG.md)**.
 
 **Última actualización:** Junio 2026
-**Estado general:** ✅ MVP funcional **desplegado en producción gratis** (Vercel + Render),
-con transcripción y análisis vía **Groq** (coste $0). 61 tests backend en verde.
+**Estado general:** ✅ Plataforma funcional **desplegada en producción** (Vercel + Render),
+con transcripción y análisis vía **Groq** (coste $0). **78 tests** backend en verde,
+**Fase 2 (analítica de alto impacto)** y **rediseño premium de indicadores** ya en vivo.
+
+> ⚠️ **ACCIÓN PENDIENTE EN PRODUCCIÓN (IA):** la `GROQ_API_KEY` de **Render** está
+> caducada/inválida (la key filtrada que se revocó) → las llamadas nuevas en prod dan
+> `ERROR` con `Groq HTTP 401 Invalid API Key`. **Arreglo (30 s):** Render → servicio
+> `callqa-api` → **Environment** → `GROQ_API_KEY` = la key válida de `backend/.env`
+> (empieza por `gsk_`) → **Save** (redeploy automático). La key vive solo en Render
+> (`sync: false`), **nunca en el repo**.
 
 ---
 
@@ -21,11 +29,11 @@ dinámica, produciendo scores por dimensión, un score global ponderado,
 recomendaciones accionables y un reporte PDF. Cliente: Minsait (Grupo Indra),
 sector banca.
 
-> ⚠️ Es una **vista previa para evaluación** que se presenta oficialmente al
-> cliente; sigue siendo un prototipo. No debe usarse con datos reales de clientes
-> sin la aprobación previa de Compliance. Todas las pantallas muestran un banner:
-> *"Vista previa — entorno de evaluación. No utilizar con datos reales de clientes
-> sin la aprobación previa de Compliance"*.
+> ⚠️ **No debe usarse con datos reales de clientes sin la aprobación previa de
+> Compliance.** Por decisión del responsable, el **banner visible de "vista previa"
+> se RETIRÓ de la UI** (la plataforma se presenta como producto acabado). Como
+> salvaguarda interna se conservan el header HTTP `X-Prototype-Notice` y el log JSON
+> `environment="evaluation"`.
 
 ---
 
@@ -84,9 +92,9 @@ callqa-ai/
 │   │   ├── services/          # Lógica de negocio (IA, storage, matching, PDF, PDF de campañas)
 │   │   ├── tasks/             # Tareas Celery
 │   │   └── prompts/           # Prompts para los LLM
-│   ├── alembic/               # Migraciones de BD (0001 … 0005)
+│   ├── alembic/               # Migraciones de BD (0001 … 0006)
 │   ├── scripts/seed_data.py   # Datos iniciales (no imprime contraseñas)
-│   ├── tests/                 # 61 tests automatizados
+│   ├── tests/                 # 78 tests automatizados
 │   └── docker-compose.yml     # Compose SOLO del backend (para devs)
 │
 ├── frontend/                 # Aplicación Next.js
@@ -142,6 +150,21 @@ callqa-ai/
 - **Patrón factory** para proveedores de IA y transcripción → portable a
   Claude / OpenAI / Azure (solo configuración).
 
+### Fase 2 — Analítica de alto impacto
+
+- **Métricas de conversación** deterministas ($0) desde los segmentos de la
+  transcripción (`conversation_metrics_service`): talk-to-listen ratio, % de
+  silencio/dead-air, monólogo más largo del agente, palabras/min y turnos/min.
+  Columna `calls.conversation_metrics` (migración 0006), cálculo en el pipeline y
+  **al vuelo** para llamadas antiguas.
+- **Compliance de nota de producto** (`compliance_service`): cobertura de frases
+  obligatorias y detección de claims prohibidos (best-effort por palabras clave).
+- **Endpoints de analítica** (`dashboard_service`): `/dashboard/by-campaign`,
+  `/alerts`, `/top-recommendations` (manager) y `/agents/{id}/percentile`,
+  `/agents/{id}/recommendations` (scoped). `/summary` extendido con
+  `team_dimension_averages`, `avg_duration_seconds`, `red_call_count` y
+  `conversation_summary`.
+
 ### Frontend
 
 - Login (sin credenciales demo a la vista), dashboard, listado/subida/detalle de
@@ -150,11 +173,19 @@ callqa-ai/
 - **Navegación y redirección por rol**: asesor → `/mi-panel`; admin/jefe →
   `/dashboard`; guard por rol que devuelve 403 a quien no corresponde.
 - Identidad visual **Minsait** (modo claro por defecto, sidebar Pruno).
-- Banner de **vista previa para evaluación** en todas las pantallas.
+- **Dashboard del jefe (Fase 2)**: toolbar compacto con control segmentado, banda
+  de resumen con **gauge de score** + KPI cards con delta/sparkline, tendencias
+  (área con gradiente + donut de distribución), **tabla de campañas** con barras y
+  deltas, **alertas accionables** por severidad, rankings y dinámica de conversación.
+- **Vista asesor (`/mi-panel`)**: percentil anónimo, "qué cambiar" con evidencia,
+  desglose por campaña + cumplimiento de la nota de producto.
+- **Editor de umbrales QA** en `/settings` y **"crear acceso de asesor"** en `agents/[id]`.
 - Polling automático del estado de las llamadas en proceso.
 - **Resiliencia de cold-start** en `lib/api.ts` (timeout 90 s, reintentos,
   mensaje "activando el servidor").
-- Gráficos: distribución de scores, radar por dimensión, evolución temporal.
+- **Sistema de dataviz premium** (`components/dashboard/viz.tsx`): `ScoreGauge`,
+  `Sparkline`, `Donut`, `MiniProgress`, `DeltaPill`, `BrandTooltip`, `StatCard`,
+  `CallsTrendChart` — fiel a la identidad Minsait. Banner de prototipo retirado de la UI.
 
 ---
 
@@ -223,6 +254,7 @@ Migraciones (Alembic):
 - **0003** rúbrica con subcriterios (`rubric_config.criteria` JSON).
 - **0004** campañas (tabla `campaigns` + `calls.campaign_id` + backfill de campañas existentes).
 - **0005** roles de usuario (`users.agent_id` FK + backfill `'supervisor'` → `'jefe'`).
+- **0006** métricas de conversación (`calls.conversation_metrics` JSON, Fase 2).
 
 ---
 
@@ -276,6 +308,12 @@ Claude / OpenAI / Azure son opcionales: cambia `AI_PROVIDER` y pon su API key.
   `PROCESS_INLINE=true`, `JWT_SECRET`).
 - Despliegue: `git push origin main` → Vercel y Render redepliegan solos.
 
+> 🔑 **La IA en prod depende de `GROQ_API_KEY` en Render** (variable `sync: false`,
+> se pone a mano en el dashboard, **no en el repo**). Si Groq devuelve `401 Invalid
+> API Key`, la key de Render está caducada → actualízala con la key válida de
+> `backend/.env`. Síntoma: llamadas nuevas en prod quedan en `ERROR` al transcribir.
+> El `git push` **NO** actualiza esta key (es secreta y vive solo en Render).
+
 **Cold-start.** El plan gratis de Render duerme el backend tras ~15 min de
 inactividad; el arranque en frío (~50 s) puede verse como "error de API".
 Mitigado con: GitHub Action `.github/workflows/keepalive.yml` (ping a `/health`
@@ -290,8 +328,11 @@ caduca a los **90 días**.
 | Verificación | Resultado |
 |---|---|
 | Build Docker del backend | ✅ |
-| Tests del backend (`pytest`) | ✅ 61/61 |
-| Migraciones 0001 … 0005 | ✅ aplican sin error |
+| Tests del backend (`pytest`) | ✅ 78/78 |
+| Migraciones 0001 … 0006 | ✅ aplican sin error |
+| Fase 2: métricas de conversación, compliance, endpoints de dashboard | ✅ (tests + E2E) |
+| E2E en vivo por rol con Groq real (login, scoping, pipeline) | ✅ local · ⚠️ prod requiere key válida |
+| Rediseño premium (build + lint) | ✅ 0 errores |
 | Build de producción del frontend | ✅ tipos TS válidos |
 | Endpoints API (auth, agents, campaigns, calls, dashboard, config) | ✅ |
 | Roles y scoping (admin / jefe / asesor) | ✅ (tests) |
@@ -312,12 +353,16 @@ caduca a los **90 días**.
 - [x] **Roles** admin/jefe/asesor con scoping y panel "Mi rendimiento".
 - [x] **Campañas con nota de producto** (formulario / asistente IA / extracción de PDF).
 - [x] **Umbrales QA** configurables y **cold-start** mitigado (keepalive + resiliencia).
-- [ ] Analítica de jefe de alto impacto (alertas accionables, KPIs por campaña,
-      top asesores y problemas recurrentes).
-- [ ] Métricas de conversación (talk/listen ratio, % silencio, monólogos,
-      velocidad de habla) derivadas de la transcripción.
-- [ ] Vista de asesor enriquecida (percentil anónimo en la campaña, "qué cambiar"
-      con evidencia, cumplimiento por campaña).
+- [x] **Analítica de jefe de alto impacto** (alertas accionables, KPIs por campaña,
+      top asesores y problemas recurrentes) — Fase 2.
+- [x] **Métricas de conversación** (talk/listen ratio, % silencio, monólogos,
+      velocidad de habla) derivadas de la transcripción — Fase 2 (migración 0006).
+- [x] **Vista de asesor enriquecida** (percentil anónimo en la campaña, "qué cambiar"
+      con evidencia, cumplimiento por campaña) — Fase 2.
+- [x] **Rediseño premium de indicadores y UX** (gauge, sparklines, donut, delta chips,
+      tabla de campañas, alertas por severidad) fiel a la identidad Minsait.
+- [ ] **⚠️ Actualizar `GROQ_API_KEY` en Render** (dashboard, `sync: false`) con la key
+      válida para que la IA procese en producción. Es lo único que bloquea la IA en prod.
 - [ ] Reproductor de audio sincronizado con la transcripción.
 - [ ] Exportación masiva (CSV) del reporte del equipo.
 - [ ] Antes de producción real: validaciones de Compliance, DPO y Seguridad.
@@ -355,3 +400,14 @@ caduca a los **90 días**.
 15. **Limpieza de lenguaje a "vista previa para evaluación"** (se elimina el de
     "demo interna"; sin credenciales demo en login ni contraseñas en el seed) y
     **fix de cold-start** (keepalive + resiliencia en el frontend).
+16. **Fase 2 — Analítica de alto impacto** (migración `0006`): métricas de
+    conversación deterministas, compliance de nota de producto, endpoints de
+    dashboard (by-campaign, alerts, top-recommendations, percentil, recomendaciones)
+    y vistas enriquecidas de jefe y asesor. +17 tests (total **78**).
+17. **Rediseño premium de indicadores y UX**: sistema de dataviz de marca
+    (`components/dashboard/viz.tsx`) — gauge de score, sparklines, donut, delta
+    chips, tabla de campañas, alertas por severidad, toolbar segmentado — fiel a la
+    identidad Minsait. Banner de prototipo **retirado** de la UI.
+18. **Despliegue de Fase 2 + rediseño a producción** (Vercel + Render) y verificación
+    (78 tests + suite E2E 13/13 local y prod). Pendiente: actualizar la
+    `GROQ_API_KEY` de Render para reactivar la IA en producción.
