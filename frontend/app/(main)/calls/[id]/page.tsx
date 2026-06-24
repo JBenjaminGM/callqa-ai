@@ -27,6 +27,7 @@ import { PriorityBadge, ScoreBadge, StatusBadge } from '@/components/ui/badge';
 import { Spinner, ErrorState, Skeleton } from '@/components/ui/feedback';
 import { ScoreRadar } from '@/components/charts/score-radar';
 import { ConversationMetricsCard } from '@/components/dashboard/insights';
+import { ScoreGauge } from '@/components/dashboard/viz';
 import type { CallDetail } from '@/types';
 import {
   callAgentName,
@@ -213,18 +214,15 @@ export default function CallDetailPage() {
             {call.analysis && (
               <>
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                  <Card className="flex flex-col items-center justify-center gap-2">
-                    <p className="text-small text-text-secondary">
-                      Score global
-                    </p>
-                    <p
-                      className="text-kpi"
-                      style={{
-                        color: scoreColor(call.analysis.global_score),
-                      }}
-                    >
-                      {call.analysis.global_score}
-                    </p>
+                  <Card className="flex flex-col items-center justify-center gap-3">
+                    <span className="destacado text-[11px] text-text-muted">
+                      score global
+                    </span>
+                    <ScoreGauge
+                      value={call.analysis.global_score}
+                      decimals={0}
+                      label="sobre 100"
+                    />
                     <ScoreBadge score={call.analysis.global_score} showLabel />
                   </Card>
 

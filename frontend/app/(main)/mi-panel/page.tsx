@@ -30,7 +30,9 @@ import {
   PercentileCard,
   TopProblems,
 } from '@/components/dashboard/insights';
-import { dimensionLabel, scoreColor, scoreLabel } from '@/lib/utils';
+import { ScoreGauge, DeltaPill } from '@/components/dashboard/viz';
+import { StatCard } from '@/components/dashboard/stat-card';
+import { dimensionLabel, scoreLabel } from '@/lib/utils';
 
 /** Panel personal del asesor: su rendimiento, comparativa y puntos de mejora. */
 export default function MyPanelPage() {
@@ -93,29 +95,31 @@ export default function MyPanelPage() {
           <div className="flex flex-col gap-6">
             {/* KPIs personales */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <Card className="flex flex-col gap-1">
-                <p className="text-small text-text-secondary">Mi score promedio</p>
-                <p
-                  className="text-kpi"
-                  style={{ color: scoreColor(dash.average_score) }}
-                >
-                  {dash.average_score.toFixed(1)}
-                </p>
-                <p className="text-small text-text-muted">
-                  {scoreLabel(dash.average_score)}
-                </p>
+              <Card className="flex flex-col items-center justify-center gap-2 text-center">
+                <span className="destacado text-[11px] text-text-muted">
+                  mi score promedio
+                </span>
+                <ScoreGauge
+                  value={dash.average_score}
+                  label={scoreLabel(dash.average_score)}
+                />
+                <div className="flex items-center gap-2">
+                  <DeltaPill delta={Number(dash.score_trend)} />
+                  <span className="text-small text-text-muted">vs. periodo anterior</span>
+                </div>
               </Card>
-              <Card className="flex flex-col gap-1">
-                <p className="text-small text-text-secondary">Llamadas evaluadas</p>
-                <p className="text-kpi text-accent-primary">{dash.total_calls}</p>
-              </Card>
-              <Card className="flex flex-col gap-1">
-                <p className="text-small text-text-secondary">Tendencia</p>
-                <p className="flex items-center gap-2 text-kpi text-accent-primary">
-                  <TrendingUp size={22} />
-                  {dash.score_trend}
-                </p>
-              </Card>
+              <StatCard
+                label="Llamadas evaluadas"
+                value={dash.total_calls}
+                icon={<Phone size={16} />}
+                caption="en el periodo"
+              />
+              <StatCard
+                label="Tendencia"
+                value={dash.score_trend}
+                icon={<TrendingUp size={16} />}
+                caption="evolución de tu score"
+              />
             </div>
 
             {/* Posición anónima dentro de la campaña */}
