@@ -34,7 +34,8 @@ accionables y un **reporte PDF**. Cliente: **Minsait (Grupo Indra)**, sector ban
 > key válida de `backend/.env` → **Save**. Es `sync: false` (solo en Render, nunca en el
 > repo); `git push` NO la actualiza. Ver §10.
 
-- **Repo:** `github.com/JBenjaminGM/callqa-ai` (rama `main`). **Push a `main` ⇒ redeploy automático** en Vercel y Render.
+- **Repo COMPLETO (privado):** `github.com/JBenjaminGM/callqa-ai` (rama `main`, fuente de verdad: código + `docs/` + `ops/`). **Push a `main` ⇒ redeploy automático** en Vercel y Render.
+- **Repo LIMPIO (público):** `github.com/JBenjaminGM/callqa` — copia derivada solo con código funcional + un `README.md` curado (sin `docs/`, `AGENTS.md`, `CLAUDE.md`, `ops/`; historial propio, sin rastro de autoría). Se genera con **`ops/publish-clean.ps1`** (ver §16). NO se trabaja ahí a mano.
 - **Frontend (Vercel):** https://callqa-ai.vercel.app — dashboard con **rediseño premium de indicadores** (Fase 2).
 - **Backend (Render):** https://callqa-api.onrender.com (`/health`, `/docs`)
 - **Cuentas sembradas:** `admin@callqa.com`/`Admin123!` (admin), `jefe@callqa.com`/`Jefe123!` (jefe), y un **asesor por cada ejecutivo demo** (email del ejecutivo, p. ej. `maria@banco.com`/`Asesor123!`). El login YA NO muestra credenciales y el seed YA NO imprime contraseñas.
@@ -295,3 +296,25 @@ punteros `AGENTS.md` / `CLAUDE.md`. Índice completo: `docs/00_INDICE.md`.
 | `04_PROMPT_BACKEND.md`, `05_GUIA_DESPLIEGUE.md` | Prompt de generación / guía vieja | ⚠️ históricos |
 | `07_DISEÑO_VISUAL.md` | Paleta antigua (Índigo/Slate, "Aetheric Intelligence") | ❌ OBSOLETO |
 | `../README.md` (raíz) | Landing del repo | ✅ |
+
+## 16. Dos repos: privado (completo) y público (limpio)
+
+Hay **dos repositorios**:
+
+- **`callqa-ai` (privado, completo)** — este repo, la **fuente de verdad**: código +
+  `docs/` + `ops/` + prompts. Ponlo en **privado** en GitHub (Settings → Change visibility).
+- **`callqa` (público, limpio)** — copia **derivada** que parece hecha a mano: solo código
+  funcional (incluidos los prompts) + un `README.md` curado. **Sin** `docs/`, `AGENTS.md`,
+  `CLAUDE.md`, READMEs de backend/frontend ni `ops/`; **historial propio** (autor
+  `JBenjaminGM`, sin `Co-Authored-By`). Vive en `C:\Users\Benja\Documents\callqa` en local.
+
+**Publicar (regenerar el repo limpio):**
+
+1. Commitea y `git push origin main` en el repo privado (como siempre).
+2. Ejecuta `powershell C:\Users\Benja\Documents\callqa-ai\ops\publish-clean.ps1 -Message "<msg>"`
+   (la 1ª vez además `-RemoteUrl "https://github.com/JBenjaminGM/callqa.git"`).
+
+El script (`ops/publish-clean.ps1`, en **ASCII** — PS 5.1 rompe con UTF-8 sin BOM) espeja el
+`main` commiteado, quita docs/`*.md`/`AGENTS`/`CLAUDE`/`ops`, escribe el README desde
+`ops/clean-README.md`, commitea con historial limpio y hace push a `callqa`. No se edita el
+repo limpio a mano; todo cambio nace en el privado y se republica.
