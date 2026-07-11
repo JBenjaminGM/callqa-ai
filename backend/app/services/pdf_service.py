@@ -105,7 +105,7 @@ def generate_call_report(call: Call) -> bytes:
         dim_table = Table(dim_rows, colWidths=[8 * cm, 3 * cm, 5 * cm])
         dim_table.setStyle(TableStyle([
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E84F7A")),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#480e2a")),  # Pruno (marca Minsait)
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
             ("FONTSIZE", (0, 0), (-1, -1), 9),
         ]))

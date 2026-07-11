@@ -31,7 +31,8 @@ class ScoreBucket(BaseModel):
 
 class AgentScore(BaseModel):
     """
-    Score promedio de un ejecutivo en el ranking del reporte NPS.
+    Score promedio de un ejecutivo en el ranking del dashboard
+    (top performers y oportunidades de mejora).
 
     agent_id es None cuando el ejecutivo fue detectado por la IA pero aún
     no está registrado en el sistema.

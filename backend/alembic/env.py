@@ -3,7 +3,7 @@ Entorno de migraciones de Alembic.
 
 La URL de la base de datos se toma de la variable de entorno DATABASE_URL
 (vía app.config) en lugar del archivo alembic.ini, para que funcione tanto
-en local como en Railway sin editar archivos.
+en local como en el despliegue remoto (Render) sin editar archivos.
 """
 
 from logging.config import fileConfig

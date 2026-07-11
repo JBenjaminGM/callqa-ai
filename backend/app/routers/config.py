@@ -21,11 +21,11 @@ from app.schemas.config import (
 
 router = APIRouter(prefix="/config", tags=["config"])
 
-# Claves de settings gestionadas y sus valores por defecto.
+# Claves de settings gestionadas por BD y sus valores por defecto.
+# El proveedor de IA/transcripción NO se guarda aquí: lo fija la variable de
+# entorno (AI_PROVIDER/WHISPER_PROVIDER) y se reporta desde ella en /settings.
 SETTINGS_DEFAULTS = {
     "default_language": "es",
-    "ai_provider": "groq",
-    "whisper_provider": "groq",
 }
 
 # Umbrales / metas de QA configurables (persistidos en app_settings, leídos de BD).

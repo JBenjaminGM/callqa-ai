@@ -26,7 +26,7 @@ PROTOTYPE_NOTICE = "Evaluation environment - Do not use with real customer data"
 
 # --- Logging estructurado en JSON ---
 class JsonFormatter(logging.Formatter):
-    """Formatea cada log como una línea JSON con el campo environment=prototype."""
+    """Formatea cada log como una línea JSON con el campo environment="evaluation"."""
 
     def format(self, record: logging.LogRecord) -> str:
         log = {
@@ -117,7 +117,7 @@ def root() -> dict:
 
 @app.get("/health", tags=["health"])
 def health() -> dict:
-    """Health check simple para Railway / monitorización."""
+    """Health check para Render (render.yaml healthCheckPath) y el keepalive de GitHub Actions."""
     return {"status": "healthy"}
 
 

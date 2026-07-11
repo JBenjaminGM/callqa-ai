@@ -2,10 +2,11 @@
 Script de datos iniciales (seed).
 
 Crea, de forma idempotente (no duplica si ya existen):
-- Un usuario administrador.
-- Las 7 dimensiones de la rúbrica de evaluación.
-- Los settings globales por defecto.
-- 3 ejecutivos de ejemplo.
+- Usuarios: un administrador y un jefe de área.
+- Las 7 dimensiones de la rúbrica de evaluación (con subcriterios).
+- Los settings globales por defecto (idioma + umbrales QA).
+- 3 ejecutivos de ejemplo y una cuenta de asesor por cada uno.
+- 3 campañas de ejemplo con su nota de producto.
 
 Uso:  python scripts/seed_data.py
 """
@@ -61,10 +62,9 @@ CRITERIA = {
     "sentiment": ["Satisfacción percibida", "Tono emocional del cliente", "Cierre en positivo"],
 }
 
+# El proveedor de IA/transcripción lo fija la variable de entorno, no la BD.
 SETTINGS = {
     "default_language": "es",
-    "ai_provider": "groq",
-    "whisper_provider": "groq",
 }
 
 AGENTS = [

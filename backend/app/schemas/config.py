@@ -78,8 +78,6 @@ class SettingsUpdate(BaseModel):
     """Campos de settings que se pueden actualizar."""
 
     default_language: str | None = None
-    ai_provider: str | None = None
-    whisper_provider: str | None = None
     qa_target_score: int | None = Field(default=None, ge=0, le=100)
     qa_low_agent_threshold: int | None = Field(default=None, ge=0, le=100)
     qa_red_call_threshold: int | None = Field(default=None, ge=0, le=100)

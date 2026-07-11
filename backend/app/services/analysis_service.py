@@ -1,9 +1,10 @@
 """
 Servicio de análisis IA de transcripciones.
 
-Patrón factory con 3 proveedores, seleccionables por AI_PROVIDER:
-- claude: Anthropic Claude API — el usado en el MVP.
-- openai: OpenAI GPT-4o — alternativa.
+Patrón factory con 4 proveedores, seleccionables por AI_PROVIDER:
+- groq:   Llama 3.3 70B (API compatible con OpenAI) — el usado por defecto (coste $0).
+- claude: Anthropic Claude API.
+- openai: OpenAI GPT-4o.
 - azure:  Azure OpenAI — stub preparado para la migración a Indra.
 
 Cada proveedor recibe un prompt y devuelve un dict ya parseado con
@@ -175,7 +176,7 @@ class GroqLLMProvider(OpenAIProvider):
 
     Reutiliza la lógica de OpenAIProvider cambiando solo el endpoint, de modo
     que una única GROQ_API_KEY sirve tanto para transcribir (Whisper) como
-    para analizar. Útil para operar a coste $0 en el prototipo.
+    para analizar. Es el proveedor por defecto (coste $0).
     """
 
     URL = "https://api.groq.com/openai/v1/chat/completions"

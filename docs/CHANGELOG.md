@@ -2,6 +2,23 @@
 
 Cambios relevantes. Formato: descripción (commit). Lo más nuevo arriba.
 
+## Auditoría de coherencia y limpieza
+- `Código muerto eliminado`: componente `kpi-card.tsx` (sustituido por `StatCard`),
+  factory `require_role` sin uso, fixture `seed_rubric`, campo `estimated_completion_seconds`,
+  y los settings `ai_provider`/`whisper_provider` que se persistían en BD pero **nunca se
+  leían** (el proveedor lo fija la env var). Artefactos legacy de Railway (`railway.json`,
+  `Procfile`).
+- `Comentarios/docstrings alineados al estado real`: Railway→Render, "MVP"→"por defecto",
+  3→4 proveedores de IA, Celery→dual (inline), NPS→ranking, `environment="evaluation"`,
+  y limpieza de estética obsoleta en el frontend (Aetheric/Índigo/"immersive"/`backdrop-blur`
+  muerto sobre superficies sólidas). Color del PDF `#E84F7A`→Pruno `#480e2a`.
+- `Docs consolidados`: se eliminaron los specs de origen numerados (01–07); su contenido
+  útil (casos de uso, reglas de negocio, gobernanza/compliance) se consolidó en
+  `ESTADO_DEL_PROYECTO.md`. `docs/` queda mínimo y coherente.
+- `Migración 0007`: `server_default` de `users.role` corregido de `'supervisor'` (legacy) a `'jefe'`.
+- `.env.example` completado (`PROCESS_INLINE`, CORS, id de modelo Claude) y `.env.local.example`
+  apuntando a Render.
+
 ## Rediseño premium de indicadores y UX
 - `Sistema de dataviz de marca` (`frontend/components/dashboard/viz.tsx`): **ScoreGauge**
   (anillo de score), **Sparkline**, **Donut**, **MiniProgress**, **DeltaPill** y

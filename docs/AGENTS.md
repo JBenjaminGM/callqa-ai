@@ -98,7 +98,8 @@ backend/
                                                add_speaker_diarization (heurística de FALLBACK)
                        masking_service.py    → enmascarado best-effort (regex)
                        name_matching.py      → matching difuso de nombres de ejecutivo
-                       campaign_service.py   → CRUD + extracción de PDF (pypdf+LLM) + asistente IA
+                       campaign_service.py   → CRUD de campañas + nota de producto (build_product_note_text)
+                       campaign_ai.py        → extracción de la oferta desde PDF (pypdf+LLM) + asistente IA
                        conversation_metrics_service.py → métricas deterministas ($0) de la
                                                conversación (talk-ratio, silencio, WPM, turnos)
                        compliance_service.py → cobertura de frases obligatorias / claims prohibidos
@@ -114,7 +115,8 @@ backend/
                        nota de producto de la campaña y genera "dimension_scores" con las claves reales
     utils/             security.py (JWT/bcrypt), audio.py (validación de archivos)
   alembic/versions/    0001 esquema, 0002 detección ejecutivo, 0003 rubric_config.criteria,
-                       0004 campañas, 0005 roles de usuario, 0006 conversation_metrics
+                       0004 campañas, 0005 roles de usuario, 0006 conversation_metrics,
+                       0007 server_default de users.role → 'jefe'
   scripts/seed_data.py admin + jefe + asesores + rúbrica (subcriterios) + settings (umbrales QA) +
                        3 ejecutivos demo + 3 campañas demo (NO imprime contraseñas)
   tests/               78 tests (conftest = SQLite en memoria, todo lo externo mockeado)
@@ -203,7 +205,7 @@ analítica global; helper `is_manager`); **asesor** solo ve **su propio rendimie
 
 - **IA = Groq por defecto.** Para usar Claude/OpenAI/Azure: cambiar `AI_PROVIDER` + poner su API key. El código YA lo soporta (factory en `analysis_service.py`). Portar a **Azure OpenAI + Azure AI Speech** (producción Indra) = solo configuración.
 - **🔑 `GROQ_API_KEY` en producción (Render) es `sync: false`** → vive SOLO en el dashboard de Render, **nunca en el repo**, y `git push` NO la cambia. Si Groq devuelve `401 Invalid API Key`, la key de Render caducó (p. ej. tras rotarla por la filtración del commit `aeda304`): actualízala en Render → `callqa-api` → Environment con la key válida de `backend/.env`. Síntoma: llamadas nuevas en prod en `ERROR` al transcribir. Diagnóstico rápido: `curl -s https://api.groq.com/openai/v1/models -H "Authorization: Bearer <key>"` (200 = válida).
-- **`/config/settings` reporta el proveedor REAL** (de la env var), no el de la BD — para que la UI no mienta. Incluye además los **umbrales QA** configurables.
+- **El proveedor de IA/transcripción lo fija SIEMPRE la env var** (`AI_PROVIDER`/`WHISPER_PROVIDER`), **nunca la BD**. `/config/settings` (GET) lo reporta desde la env var (no miente). En BD (`app_settings`/`SettingsUpdate`) solo se guarda `default_language` + los umbrales `qa_*`; NO reintroduzcas `ai_provider`/`whisper_provider` como settings de BD (no se leerían).
 - **Umbrales QA configurables** (en `app_settings`, editables solo por manager): `qa_target_score=90`, `qa_low_agent_threshold=80`, `qa_red_call_threshold=60`, `qa_min_calls_ranking=5`, `qa_trend_drop_alert=5`.
 - **Campañas con nota de producto:** la entidad `Campaign` lleva una **nota de producto de 9 campos** (producto/servicio, descripción de la oferta, beneficios clave, precio/condiciones, requisitos del cliente, frases obligatorias, claims prohibidos, público objetivo, notas). Se crea por formulario (con asistente IA), o **subiendo un PDF** que la IA parsea (`pypdf`+LLM) y autocompleta; lo que no encuentre se pide en el formulario. La nota **se INYECTA en el prompt de análisis** para evaluar si el ejecutivo ofreció la oferta correcta (integrado en los criterios existentes promotions/compliance). `Call.campaign_id` (FK; se conserva `campaign_type` texto por compatibilidad y para filtros del dashboard).
 - **Enmascarado = best-effort**, NO garantía. Los regex cazan dígitos/algunos números dictados, pero **el audio crudo sale a Groq (EE. UU.)**. Para datos reales: transcripción on-prem/Azure + DPO/CISO.
@@ -283,18 +285,18 @@ cubren el end-to-end real con APIs (eso se valida con audios reales). Correr ant
 Toda la documentación vive en `docs/`. En la raíz solo quedan `README.md` y los
 punteros `AGENTS.md` / `CLAUDE.md`. Índice completo: `docs/00_INDICE.md`.
 
+`docs/` quedó **mínimo y canónico** (los specs de origen numerados 01–07 se consolidaron
+en estos y se eliminaron):
+
 | Archivo (en `docs/`) | Qué es | Vigencia |
 |---|---|---|
-| **`AGENTS.md`** (este) | Estado actual + cómo trabajar | ✅ canónico |
-| **`ESTADO_DEL_PROYECTO.md`** | Memoria del proyecto | ✅ |
+| **`AGENTS.md`** (este) | Estado actual + cómo trabajar (**punto de entrada**) | ✅ canónico |
+| **`ESTADO_DEL_PROYECTO.md`** | Memoria del proyecto + casos de uso, reglas de negocio y gobernanza | ✅ |
 | **`CHANGELOG.md`** | Historial de cambios | ✅ |
 | **`DEPLOY_GRATIS.md`** | Despliegue Vercel+Render gratis | ✅ |
+| **`DESIGN.md`** | Sistema de diseño (identidad Minsait) | ✅ |
 | `00_INDICE.md` | Índice de la documentación | ✅ |
-| `01/02/03_*.md` | Visión, requerimientos, arquitectura | ✅ (sincronizados a Groq) |
-| `06_README_EJECUTIVO.md` | Pitch ejecutivo | ✅ |
-| `DESIGN.md` | Sistema de diseño (identidad Minsait) | ✅ |
-| `04_PROMPT_BACKEND.md`, `05_GUIA_DESPLIEGUE.md` | Prompt de generación / guía vieja | ⚠️ históricos |
-| `07_DISEÑO_VISUAL.md` | Paleta antigua (Índigo/Slate, "Aetheric Intelligence") | ❌ OBSOLETO |
+| `CallQA_AI_Presentacion.pptx` | Slides para presentar al cliente | ✅ (binario) |
 | `../README.md` (raíz) | Landing del repo | ✅ |
 
 ## 16. Dos repos: privado (completo) y público (limpio)

@@ -372,7 +372,7 @@ caduca a los **90 días**.
 ## 12. Historial de iteraciones
 
 1. **Generación inicial** del backend completo (FastAPI + Celery + modelo de
-   datos + tests) a partir del prompt maestro de `04_PROMPT_BACKEND.md`.
+   datos + tests) a partir de un prompt maestro de generación (spec de origen).
 2. **Frontend** Next.js con todas las páginas y el sistema de diseño inicial.
 3. **Verificación** con Docker: build, tests, stack levantado.
 4. **Rediseño de flujo**: subida en lote, detección del ejecutivo por IA,
@@ -411,3 +411,49 @@ caduca a los **90 días**.
 18. **Despliegue de Fase 2 + rediseño a producción** (Vercel + Render) y verificación
     (78 tests + suite E2E 13/13 local y prod). Pendiente: actualizar la
     `GROQ_API_KEY` de Render para reactivar la IA en producción.
+19. **Dos repos** (privado `callqa-ai` completo + público `callqa` limpio, ver
+    `AGENTS.md §16`) y **auditoría de coherencia**: se eliminó código muerto
+    (`require_role`, `kpi-card`, `seed_rubric`, settings de IA que no se leían,
+    artefactos Railway), se alinearon comentarios/docstrings al estado real y se
+    consolidaron los specs de origen (01–07) en los docs canónicos.
+
+---
+
+## 13. Casos de uso, reglas de negocio y gobernanza (consolidado)
+
+> Resumen de los specs de origen (visión, requerimientos, arquitectura, pitch), ya
+> consolidados aquí. La fuente de verdad del comportamiento es el código; el detalle
+> operativo vive en `AGENTS.md`.
+
+**Casos de uso (esencia).** Un manager (admin/jefe) sube **audios en lote** indicando
+campaña, comentario y responsable; por cada llamada la IA **transcribe**, **enmascara
+PII**, **detecta y empareja al ejecutivo** (matching difuso), y **evalúa** contra la
+rúbrica dinámica inyectando la **nota de producto** de la campaña. El manager consulta
+el **dashboard** (KPIs, alertas, campañas, ranking, conversación), el **detalle** de
+cada llamada, descarga el **reporte PDF**, y gestiona ejecutivos, campañas, rúbrica y
+umbrales. El **asesor** entra a **"Mi rendimiento"** y solo ve lo suyo (percentil
+anónimo, qué cambiar con evidencia, cumplimiento por campaña).
+
+**Reglas de negocio clave.**
+- **Bandas de score** (color): `0–59` rojo · `60–79` aceptable · `80–100` excelente.
+- **Umbrales QA** configurables por manager (`app_settings`): objetivo 90, asesor bajo
+  80, llamada roja 60, mínimo de llamadas para ranking 5, alerta de caída 5 puntos.
+- **Rúbrica dinámica**: dimensiones y subcriterios activables; los **pesos suman 100**;
+  las claves las genera un slug; el prompt puntúa las dimensiones reales.
+- **Roles/scoping**: `admin` y `jefe` = gestión + analítica global (`is_manager`);
+  `asesor` solo su ficha, sus llamadas y su panel. `require_manager` protege gestión.
+- **Matching difuso** de nombres de ejecutivo (umbral de similitud 0.82).
+- **Enmascarado de PII** best-effort (regex) **antes** de enviar texto al LLM.
+- **Campañas con nota de producto** (9 campos) → cumplimiento (frases obligatorias,
+  claims prohibidos) evaluado de forma determinista y por el LLM.
+
+**Gobernanza y compliance (banca · Minsait/Indra).** El enmascarado es *best-effort*,
+**no** garantía, y el **audio crudo sale a Groq (EE. UU.)**. Para **datos reales de
+clientes** se requiere: transcripción y análisis **on-prem / Azure** (el factory ya lo
+soporta por configuración) y **aprobación previa de DPO/CISO/Compliance**. Roadmap por
+fases hacia producción real (validaciones de Compliance/DPO/Seguridad; migración a
+**Azure OpenAI + Azure AI Speech**).
+
+**Valor.** Automatiza el QA que hoy es manual y por muestreo (cobertura 100 % vs. ~2 %),
+con **coste $0** en el entorno actual (Groq gratis + tiers gratis de Vercel/Render) y
+**portabilidad** a la infraestructura de Indra solo por configuración.

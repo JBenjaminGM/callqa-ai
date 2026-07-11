@@ -3,8 +3,9 @@ Servicio de almacenamiento de audios.
 
 Usa un patrón factory para soportar dos backends, seleccionables por la
 variable STORAGE_PROVIDER:
-- local: guarda los archivos en disco (Railway Volume en producción).
-- s3:    guarda los archivos en un bucket de Amazon S3.
+- local: guarda los archivos en disco (en Render, /data/audios; OJO: sin disco
+         persistente declarado es EFÍMERO — se pierde en cada redeploy).
+- s3:    guarda los archivos en un bucket de Amazon S3 (persistente, para producción real).
 """
 
 import os

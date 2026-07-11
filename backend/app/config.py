@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     ai_provider: str = "groq"                # groq | claude | openai | azure
     anthropic_api_key: str = ""
     openai_api_key: str = ""
-    ai_model_claude: str = "claude-sonnet-4-6"
+    ai_model_claude: str = "claude-sonnet-5"
     ai_model_openai: str = "gpt-4o"
     ai_model_groq: str = "llama-3.3-70b-versatile"  # LLM gratis de Groq para análisis
 

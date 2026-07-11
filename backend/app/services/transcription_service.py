@@ -2,7 +2,7 @@
 Servicio de transcripción de audio (speech-to-text).
 
 Usa un patrón factory con 3 proveedores, seleccionables por WHISPER_PROVIDER:
-- groq:  Groq API (Whisper large v3) — el usado en el MVP.
+- groq:  Groq API (Whisper large v3) — el usado por defecto.
 - local: Whisper local — stub para el futuro.
 - azure: Azure AI Speech — stub preparado para la migración a Indra.
 

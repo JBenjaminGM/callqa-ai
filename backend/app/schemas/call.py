@@ -33,7 +33,6 @@ class CallCreatedOut(BaseModel):
     id: int
     status: CallStatus
     agent_id: int | None = None
-    estimated_completion_seconds: int = 180
 
 
 class BatchCreatedOut(BaseModel):

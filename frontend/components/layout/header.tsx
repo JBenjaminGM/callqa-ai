@@ -26,7 +26,7 @@ export function Header({ title }: { title: string }) {
   return (
     <header
       className="flex h-16 shrink-0 items-center justify-between border-b
-                 border-border bg-[var(--glass-bg)] px-6 backdrop-blur-xl"
+                 border-border bg-[var(--glass-bg)] px-6"
     >
       <h1 className="text-h2 text-text-primary">{title}</h1>
 

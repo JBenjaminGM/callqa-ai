@@ -253,7 +253,7 @@ def test_pipeline_retry_is_idempotent(monkeypatch):
     monkeypatch.setattr(ct, "get_analysis_provider", lambda: _An())
 
     s = TS()
-    s.add(User(email="u@u.com", password_hash="x", name="U", role="supervisor"))
+    s.add(User(email="u@u.com", password_hash="x", name="U", role="jefe"))
     s.flush()
     s.add(RubricConfig(dimension_key="greeting", dimension_name="Saludo", weight=100.0, display_order=1))
     call = Call(uploaded_by=1, audio_url="f", audio_filename="a.mp3", language="es", status=CallStatus.QUEUED)

@@ -1,5 +1,8 @@
 """
-Tarea Celery de procesamiento de una llamada.
+Procesamiento de una llamada de extremo a extremo.
+
+Se ejecuta en un worker Celery (local/Docker) o inline vía BackgroundTasks
+cuando PROCESS_INLINE=true (Render free, sin worker).
 
 Flujo completo:
   QUEUED -> TRANSCRIBING -> ANALYZING -> DONE  (o ERROR en cualquier punto)
@@ -47,7 +50,7 @@ logger = logging.getLogger("callqa.tasks")
 
 @celery_app.task(name="process_call")
 def process_call(call_id: int) -> None:
-    """Procesa una llamada de extremo a extremo. Se ejecuta en un worker Celery."""
+    """Procesa una llamada de extremo a extremo (worker Celery o inline si PROCESS_INLINE=true)."""
     db = SessionLocal()
     try:
         call = db.get(Call, call_id)

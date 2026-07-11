@@ -4,12 +4,14 @@
 > punto de entrada. En la raíz del repo solo quedan `README.md` y los punteros
 > `AGENTS.md` / `CLAUDE.md` (para que las IAs los descubran y apunten aquí).
 
-**CallQA AI** es una **vista previa para evaluación** de **QA automatizado con IA**
-para call centers bancarios (Minsait / Grupo Indra). Sigue siendo un prototipo y
-está **desplegada en vivo y gratis**:
+**CallQA AI** — plataforma de **QA automatizado con IA** para call centers bancarios
+(Minsait / Grupo Indra). Desplegada en vivo:
 
 - 🌐 Frontend: https://callqa-ai.vercel.app · Backend: https://callqa-api.onrender.com
 - 👤 Cuentas sembradas por rol: `admin@callqa.com` / `Admin123!` · `jefe@callqa.com` / `Jefe123!` · asesor (email del ejecutivo) / `Asesor123!`
+
+> Dos repos: **`callqa-ai`** (privado, completo, fuente de verdad — este) y **`callqa`**
+> (público, solo código limpio). Ver `AGENTS.md` §16.
 
 ---
 
@@ -17,38 +19,36 @@ está **desplegada en vivo y gratis**:
 
 | Quiero… | Lee |
 |---|---|
-| **Entender y modificar el código** (dev o IA) | **`AGENTS.md`** ⭐ |
-| Ver el estado actual y lo pendiente | `ESTADO_DEL_PROYECTO.md` |
+| **Entender y modificar el código** (dev o IA) | **`AGENTS.md`** ⭐ (empieza aquí) |
+| Ver el estado actual, casos de uso, reglas de negocio y lo pendiente | `ESTADO_DEL_PROYECTO.md` |
 | Ver el historial de cambios | `CHANGELOG.md` |
 | **Publicar / desplegar gratis** | `DEPLOY_GRATIS.md` |
-| Presentar al cliente / stakeholders | `06_README_EJECUTIVO.md` + `CallQA_AI_Presentacion.pptx` |
-| Entender el producto y casos de uso | `01_VISION_Y_CASOS_DE_USO.md` |
-| Requerimientos detallados | `02_REQUERIMIENTOS.md` |
-| Arquitectura y modelo de datos | `03_ARQUITECTURA_TECNICA.md` |
 | Sistema de diseño / colores (identidad Minsait) | `DESIGN.md` |
+| Presentar al cliente / stakeholders | `CallQA_AI_Presentacion.pptx` |
 
 ---
 
-## Todos los documentos
+## Todos los documentos (vigentes)
 
-### ✅ Vigentes
-- **`AGENTS.md`** — **Guía maestra de desarrollo / orientación para IAs**: estado actual, arquitectura, mapa del repo, cómo correr/testear/desplegar, *gotchas* y cómo hacer cambios. **El más importante.**
-- **`ESTADO_DEL_PROYECTO.md`** — Memoria del proyecto: qué se construyó y qué queda.
+- **`AGENTS.md`** — **Guía maestra de desarrollo / orientación para IAs**: estado
+  actual, arquitectura, mapa del repo, cómo correr/testear/desplegar, *gotchas* y cómo
+  hacer cambios. **El más importante; el punto de entrada de un chat nuevo.**
+- **`ESTADO_DEL_PROYECTO.md`** — Memoria del proyecto: qué se construyó, casos de uso,
+  reglas de negocio, gobernanza/compliance y qué queda.
 - **`CHANGELOG.md`** — Historial de cambios (con commits).
 - **`DEPLOY_GRATIS.md`** — Despliegue gratis paso a paso (Vercel + Render).
-- **`06_README_EJECUTIVO.md`** — Presentación ejecutiva (cara al cliente): vista previa para evaluación, las 3 vistas por rol, campañas con nota de producto e identidad Minsait.
-- **`CallQA_AI_Presentacion.pptx`** — Slides de alto impacto para presentar.
-- **`01_VISION_Y_CASOS_DE_USO.md`** — Visión, casos de uso, reglas de negocio.
-- **`02_REQUERIMIENTOS.md`** — Requerimientos funcionales y no funcionales.
-- **`03_ARQUITECTURA_TECNICA.md`** — Stack, modelo de datos, contratos de API. Incluye roles (admin/jefe/asesor), campañas, migraciones hasta 0006 y 78 tests (analítica Fase 2 + rediseño premium).
-- **`DESIGN.md`** — Sistema de diseño con la **identidad oficial Minsait** (Pruno `#480E2A` + Gris Cerámica `#E3E2DA` dominan, Fucsia `#FF0054` de acento; tipografía ForFuture Sans; contenedores achaflanados). *La implementación canónica de los colores es `frontend/app/globals.css` + `tailwind.config.ts`.*
+- **`DESIGN.md`** — Sistema de diseño con la **identidad oficial Minsait** (Pruno
+  `#480E2A` + Gris Cerámica `#E3E2DA` dominan, Fucsia `#FF0054` de acento; ForFuture
+  Sans; contenedores achaflanados). *La fuente de verdad del color es
+  `frontend/app/globals.css` + `tailwind.config.ts`.*
+- **`CallQA_AI_Presentacion.pptx`** — Slides para presentar al cliente.
 
-### ⚠️ Históricos / ❌ obsoletos (no usar como referencia actual)
-- ⚠️ **`04_PROMPT_BACKEND.md`** — El prompt maestro con el que se *generó* el backend. Histórico; el proyecto evolucionó (ver `AGENTS.md`).
-- ⚠️ **`05_GUIA_DESPLIEGUE.md`** — Guía de despliegue antigua (Railway). Para desplegar usa **`DEPLOY_GRATIS.md`**.
-- ❌ **`07_DISEÑO_VISUAL.md`** — **OBSOLETO**. La paleta y el lenguaje visual vigentes son la **identidad oficial Minsait** (Pruno + Gris Cerámica + Fucsia, ForFuture Sans, chaflán); ver `DESIGN.md`. *Cualquier mención a Índigo/Slate o "Aetheric Intelligence" en docs antiguas también está obsoleta.*
+> Los specs de origen numerados (`01`–`07`) y la guía de Railway se **consolidaron**
+> en los docs canónicos de arriba y se eliminaron para mantener `docs/` mínimo y
+> coherente. Toda referencia histórica a "Aetheric Intelligence", paleta Índigo/Slate,
+> Railway o "vista previa/prototipo" está **obsoleta** (ver `AGENTS.md`).
 
 ---
 
-> **Nota:** las rutas a código (`backend/...`, `frontend/...`) que aparecen en estos
-> documentos son relativas a la **raíz del repositorio**.
+> **Nota:** las rutas a código (`backend/...`, `frontend/...`) son relativas a la
+> **raíz del repositorio**.

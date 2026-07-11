@@ -59,17 +59,3 @@ def require_manager(current_user: User = Depends(get_current_user)) -> User:
             detail="Acción reservada a jefes de área o administradores.",
         )
     return current_user
-
-
-def require_role(*roles: str):
-    """Factory de dependencia que exige uno de los roles indicados."""
-
-    def checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="No autorizado para esta acción.",
-            )
-        return current_user
-
-    return checker

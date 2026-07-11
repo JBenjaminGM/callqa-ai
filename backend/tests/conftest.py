@@ -17,7 +17,7 @@ from app.config import settings
 from app.database import get_db
 from app.limiter import limiter
 from app.main import app
-from app.models import Agent, Base, RubricConfig, User
+from app.models import Agent, Base, User
 from app.models.user import ROLE_ASESOR
 from app.utils.security import hash_password
 
@@ -123,30 +123,6 @@ def asesor_headers(client, asesor_user):
     )
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
-
-
-@pytest.fixture
-def seed_rubric(db_session):
-    """Carga las 7 dimensiones de la rúbrica para los tests que las necesiten."""
-    dims = [
-        ("greeting", "Saludo", 14.28, 1),
-        ("assertiveness", "Asertividad", 14.28, 2),
-        ("promotions", "Promociones", 14.28, 3),
-        ("compliance", "Cumplimiento", 14.28, 4),
-        ("resolution", "Resolución", 14.28, 5),
-        ("objections", "Objeciones", 14.28, 6),
-        ("sentiment", "Sentimiento", 14.32, 7),
-    ]
-    for key, name, weight, order in dims:
-        db_session.add(
-            RubricConfig(
-                dimension_key=key,
-                dimension_name=name,
-                weight=weight,
-                display_order=order,
-            )
-        )
-    db_session.commit()
 
 
 @pytest.fixture
