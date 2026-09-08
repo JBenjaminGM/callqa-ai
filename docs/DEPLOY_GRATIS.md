@@ -26,19 +26,19 @@ crean gratis con tu GitHub, sin tarjeta).
 1. Entra a **https://render.com** → **Get Started** → inicia sesión con **GitHub**.
 2. Arriba: **New → Blueprint**.
 3. Conecta tu repositorio **`JBenjaminGM/callqa-ai`**. Render leerá el archivo
-   `render.yaml` y te mostrará que va a crear: **callqa-api** (web) y **callqa-db**
+   `render.yaml` y te mostrará que va a crear: **callaibrate-api** (web) y **callaibrate-db**
    (PostgreSQL), ambos *Free*. Pulsa **Apply**.
-4. Configura las variables de entorno del servicio **callqa-api**:
+4. Configura las variables de entorno del servicio **callaibrate-api**:
    - **GROQ_API_KEY** = tu clave `gsk_...`
-   - **CORS_ORIGINS** = `https://callqa-ai.vercel.app` (la URL exacta de tu
+   - **CORS_ORIGINS** = `https://callaibrate.vercel.app` (la URL exacta de tu
      frontend en Vercel, sin barra final; si aún no la tienes, pon `*` y la afinas
      en el paso 3).
    - **PROCESS_INLINE** = `true` (procesa sin worker, vía `BackgroundTasks`).
    - **GROQ_API_KEY**, **JWT_SECRET** y demás secretos los pide Render al aplicar
      el blueprint; `DATABASE_URL` lo inyecta solo.
 5. Espera ~5 min a que construya y despliegue. Cuando esté *Live*, copia la URL
-   del servicio, será algo como **`https://callqa-api.onrender.com`**.
-6. Comprueba que vive: abre **`https://callqa-api.onrender.com/health`** → debe
+   del servicio, será algo como **`https://callaibrate-api.onrender.com`**.
+6. Comprueba que vive: abre **`https://callaibrate-api.onrender.com/health`** → debe
    responder `{"status":"healthy"}`.
 
 ---
@@ -51,23 +51,23 @@ crean gratis con tu GitHub, sin tarjeta).
    el frontend está en esa subcarpeta!).
 4. Despliega **Environment Variables** y añade:
    - **Name:** `NEXT_PUBLIC_API_URL`
-   - **Value:** `https://callqa-api.onrender.com/api/v1`  *(tu URL de Render + `/api/v1`)*
-5. Pulsa **Deploy**. En ~2 min tendrás una URL como **`https://callqa-ai.vercel.app`**.
+   - **Value:** `https://callaibrate-api.onrender.com/api/v1`  *(tu URL de Render + `/api/v1`)*
+5. Pulsa **Deploy**. En ~2 min tendrás una URL como **`https://callaibrate.vercel.app`**.
 
 ---
 
 ## 3) Conectarlos (CORS) y listo
 
-1. Vuelve a **Render → callqa-api → Environment**.
+1. Vuelve a **Render → callaibrate-api → Environment**.
 2. Confirma que **CORS_ORIGINS** es tu URL exacta de Vercel
-   (`https://callqa-ai.vercel.app`, sin barra final). Guarda → se redepliega solo.
+   (`https://callaibrate.vercel.app`, sin barra final). Guarda → se redepliega solo.
 3. Abre tu **URL de Vercel** y entra con una de las cuentas sembradas:
    - **admin:** `admin@callaibrate.com`
    - **jefe:** `jefe@callaibrate.com`
    - **asesor:** el email del ejecutivo (p. ej. `maria@banco.com`)
 
    Las contraseñas las genera el *seed* al azar y las imprime **una sola vez** en los
-   logs del servicio (Render → `callqa-api` → **Logs**, en el primer arranque). Para
+   logs del servicio (Render → `callaibrate-api` → **Logs**, en el primer arranque). Para
    fijarlas tú, define `SEED_ADMIN_PASSWORD`, `SEED_JEFE_PASSWORD` y
    `SEED_ASESOR_PASSWORD` en las variables de entorno antes del primer despliegue.
 

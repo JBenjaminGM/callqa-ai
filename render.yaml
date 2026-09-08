@@ -1,7 +1,5 @@
 # ============================================================
 # render.yaml — Despliegue GRATIS del backend de CallAIbrate en Render.
-# Los nombres de servicio (callqa-api / callqa-db) son identificadores de
-# infraestructura ya creados en Render: renombrarlos crearía servicios nuevos.
 # (El frontend va en Vercel; ver DEPLOY_GRATIS.md.)
 #
 # Crea, en el plan gratuito y ya conectados:
@@ -13,14 +11,14 @@
 # ============================================================
 
 databases:
-  - name: callqa-db
+  - name: callaibrate-db
     plan: free
-    databaseName: callqa
-    user: callqa
+    databaseName: callaibrate
+    user: callaibrate
 
 services:
   - type: web
-    name: callqa-api
+    name: callaibrate-api
     runtime: docker
     plan: free
     rootDir: backend
@@ -43,7 +41,7 @@ services:
         value: /data/audios
       - key: DATABASE_URL          # se conecta automaticamente a la BD de arriba
         fromDatabase:
-          name: callqa-db
+          name: callaibrate-db
           property: connectionString
       - key: JWT_SECRET            # Render genera uno aleatorio
         generateValue: true

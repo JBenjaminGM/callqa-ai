@@ -5,7 +5,7 @@ grabaciones de tus llamadas y la plataforma las transcribe, identifica al ejecut
 evalúa cada llamada contra una rúbrica configurable y te entrega paneles con
 indicadores, alertas accionables y un reporte por llamada.
 
-🌐 **Demo en vivo:** https://callqa-ai.vercel.app · API: https://callqa-api.onrender.com/docs
+🌐 **Demo en vivo:** https://callaibrate.vercel.app · API: https://callaibrate-api.onrender.com/docs
 
 ## Características
 

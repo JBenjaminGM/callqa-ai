@@ -28,16 +28,20 @@ accionables y un **reporte PDF**. Sector: **banca**.
 
 ## 2. Estado actual (en vivo)
 
-> 🔑 **PENDIENTE PROD (IA):** la `GROQ_API_KEY` de **Render** está caducada/inválida →
-> las llamadas nuevas en prod dan `ERROR` (`Groq HTTP 401 Invalid API Key`). Arreglo
-> (30 s, no es código): Render → `callqa-api` → **Environment** → `GROQ_API_KEY` = la
-> key válida de `backend/.env` → **Save**. Es `sync: false` (solo en Render, nunca en el
-> repo); `git push` NO la actualiza. Ver §10.
+> ⚠️ **Producción reconstruida (sept. 2026).** La PostgreSQL free de Render **caducó y
+> se eliminó**; el backend llevaba dos meses muriendo al arrancar y **los datos de
+> producción se perdieron**. Se recreó como `callaibrate-api` + `callaibrate-db`. Ver
+> [`RENOMBRADO_INFRA.md`](RENOMBRADO_INFRA.md). **Volverá a caducar a los 30 días** si
+> se sigue en el plan gratuito.
+>
+> 🔑 **`GROQ_API_KEY`:** la pone el usuario en Render → `callaibrate-api` →
+> **Environment**. Es `sync: false` (solo en Render, nunca en el repo); `git push` NO la
+> actualiza. La clave filtrada en `aeda304` está **revocada**. Ver §10.
 
 - **Repo COMPLETO (privado):** `github.com/JBenjaminGM/callqa-ai` (rama `main`, fuente de verdad: código + `docs/` + `ops/`). **Push a `main` ⇒ redeploy automático** en Vercel y Render.
 - **Repo LIMPIO (público):** `github.com/JBenjaminGM/callqa` — copia derivada solo con código funcional + un `README.md` curado (sin `docs/`, `AGENTS.md`, `CLAUDE.md`, `ops/`; historial propio, sin rastro de autoría). Se genera con **`ops/publish-clean.ps1`** (ver §16). NO se trabaja ahí a mano.
-- **Frontend (Vercel):** https://callqa-ai.vercel.app — dashboard con **rediseño premium de indicadores** (Fase 2).
-- **Backend (Render):** https://callqa-api.onrender.com (`/health`, `/docs`)
+- **Frontend (Vercel):** https://callaibrate.vercel.app — dashboard con **rediseño premium de indicadores** (Fase 2).
+- **Backend (Render):** https://callaibrate-api.onrender.com (`/health`, `/docs`)
 - **Cuentas sembradas:** `admin@callaibrate.com` (admin), `jefe@callaibrate.com` (jefe) y un **asesor por cada ejecutivo demo** (el email del ejecutivo, p. ej. `maria@banco.com`). Las **contraseñas se generan al azar** en el primer seed y se imprimen **una sola vez** (`docker compose logs api`); se pueden fijar con `SEED_ADMIN_PASSWORD` / `SEED_JEFE_PASSWORD` / `SEED_ASESOR_PASSWORD`. El seed **rota** cualquier cuenta que aún use una de las contraseñas que llegaron a estar publicadas.
 - **Coste de operación: $0** (Groq gratis + tiers gratis de Vercel/Render).
 - **Ubicación de trabajo local:** `C:\Users\Benja\Documents\callqa-ai` (NO la copia de OneDrive — Docker falla desde OneDrive por archivos "solo en la nube").
@@ -197,14 +201,14 @@ analítica global; helper `is_manager`); **asesor** solo ve **su propio rendimie
 | `PROCESS_INLINE` | `false` local / `true` en Render | Sin worker Celery cuando es `true` |
 | `DATABASE_URL` | postgres… | Se normaliza `postgres://`→`postgresql://` |
 | `JWT_SECRET` | cadena larga | Cambiar en producción |
-| `CORS_ORIGINS` | URL(s) del frontend | Lista blanca separada por comas (en Render: `https://callqa-ai.vercel.app`) |
+| `CORS_ORIGINS` | URL(s) del frontend | Lista blanca separada por comas (en Render: `https://callaibrate.vercel.app`) |
 
-> En **Vercel** se necesita `NEXT_PUBLIC_API_URL=https://callqa-api.onrender.com/api/v1`.
+> En **Vercel** se necesita `NEXT_PUBLIC_API_URL=https://callaibrate-api.onrender.com/api/v1`.
 
 ## 10. Decisiones clave y *gotchas* (LÉELO antes de tocar)
 
 - **IA = Groq por defecto.** Para usar Claude/OpenAI/Azure: cambiar `AI_PROVIDER` + poner su API key. El código YA lo soporta (factory en `analysis_service.py`). Portar a **Azure OpenAI + Azure AI Speech** (producción Indra) = solo configuración.
-- **🔑 `GROQ_API_KEY` en producción (Render) es `sync: false`** → vive SOLO en el dashboard de Render, **nunca en el repo**, y `git push` NO la cambia. Si Groq devuelve `401 Invalid API Key`, la key de Render caducó (p. ej. tras rotarla por la filtración del commit `aeda304`): actualízala en Render → `callqa-api` → Environment con la key válida de `backend/.env`. Síntoma: llamadas nuevas en prod en `ERROR` al transcribir. Diagnóstico rápido: `curl -s https://api.groq.com/openai/v1/models -H "Authorization: Bearer <key>"` (200 = válida).
+- **🔑 `GROQ_API_KEY` en producción (Render) es `sync: false`** → vive SOLO en el dashboard de Render, **nunca en el repo**, y `git push` NO la cambia. Si Groq devuelve `401 Invalid API Key`, la key de Render caducó (p. ej. tras rotarla por la filtración del commit `aeda304`): actualízala en Render → `callaibrate-api` → Environment con la key válida de `backend/.env`. Síntoma: llamadas nuevas en prod en `ERROR` al transcribir. Diagnóstico rápido: `curl -s https://api.groq.com/openai/v1/models -H "Authorization: Bearer <key>"` (200 = válida).
 - **El proveedor de IA/transcripción lo fija SIEMPRE la env var** (`AI_PROVIDER`/`WHISPER_PROVIDER`), **nunca la BD**. `/config/settings` (GET) lo reporta desde la env var (no miente). En BD (`app_settings`/`SettingsUpdate`) solo se guarda `default_language` + los umbrales `qa_*`; NO reintroduzcas `ai_provider`/`whisper_provider` como settings de BD (no se leerían).
 - **Umbrales QA configurables** (en `app_settings`, editables solo por manager): `qa_target_score=90`, `qa_low_agent_threshold=80`, `qa_red_call_threshold=60`, `qa_min_calls_ranking=5`, `qa_trend_drop_alert=5`.
 - **Campañas con nota de producto:** la entidad `Campaign` lleva una **nota de producto de 9 campos** (producto/servicio, descripción de la oferta, beneficios clave, precio/condiciones, requisitos del cliente, frases obligatorias, claims prohibidos, público objetivo, notas). Se crea por formulario (con asistente IA), o **subiendo un PDF** que la IA parsea (`pypdf`+LLM) y autocompleta; lo que no encuentre se pide en el formulario. La nota **se INYECTA en el prompt de análisis** para evaluar si el ejecutivo ofreció la oferta correcta (integrado en los criterios existentes promotions/compliance). `Call.campaign_id` (FK; se conserva `campaign_type` texto por compatibilidad y para filtros del dashboard).

@@ -116,7 +116,7 @@ El arranque ejecuta automáticamente las migraciones y el *seed* de datos.
 
 El despliegue vigente es **Render** (backend) + **Vercel** (frontend), con coste
 **$0**. La guía completa paso a paso está en **[`../docs/DEPLOY_GRATIS.md`](../docs/DEPLOY_GRATIS.md)**.
-En vivo: API en https://callqa-api.onrender.com · frontend en https://callqa-ai.vercel.app.
+En vivo: API en https://callaibrate-api.onrender.com · frontend en https://callaibrate.vercel.app.
 
 Resumen para el backend en Render (a partir del blueprint `render.yaml` de la raíz):
 
@@ -135,11 +135,11 @@ Resumen para el backend en Render (a partir del blueprint `render.yaml` de la ra
    APP_ENV=production
    STORAGE_PROVIDER=local
    STORAGE_PATH=/data/audios
-   CORS_ORIGINS=https://callqa-ai.vercel.app
+   CORS_ORIGINS=https://callaibrate.vercel.app
    ```
 
 5. `DATABASE_URL` (y `REDIS_URL` si lo usas) los inyecta Render desde el blueprint.
-6. La URL pública la asigna Render automáticamente; verifica en `https://callqa-api.onrender.com/docs`.
+6. La URL pública la asigna Render automáticamente; verifica en `https://callaibrate-api.onrender.com/docs`.
 7. Carga los datos iniciales (admin, jefe, asesores, rúbrica, campañas, ejecutivos)
    ejecutando `python scripts/seed_data.py` desde la shell de Render, o deja que el
    comando de arranque lo haga.

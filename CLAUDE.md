@@ -36,7 +36,9 @@ Esenciales:
   Implementación canónica del color: `frontend/app/globals.css` + `tailwind.config.ts`.
   (Minsait —Pruno/Cerámica/Fucsia, ForFuture Sans, `.chamfer`—, Índigo/Slate,
   "Aetheric Intelligence" y glassmorphism están OBSOLETOS.)
-- **Infra con el nombre viejo a propósito:** los servicios de Render (`callqa-api`,
-  `callqa-db`), el usuario de Postgres, las URLs de producción y la clave
-  `callqa-auth` de localStorage **no** se renombraron: hacerlo implica recrear
-  servicios, invalidar el volumen `pgdata` o cerrar la sesión de todos los usuarios.
+- **Infra renombrada** (septiembre 2026): Render sirve `callaibrate-api` +
+  `callaibrate-db`. Se pudo hacer sin migrar nada porque la PostgreSQL del plan
+  gratuito **había caducado** y los datos de producción ya se habían perdido.
+- **Dos identificadores conservan el nombre viejo a propósito:** el usuario/BD
+  `callqa` del `docker-compose.yml` local (renombrarlo invalida el volumen `pgdata`)
+  y la clave `callqa-auth` de localStorage (cambiarla cierra la sesión de todos).

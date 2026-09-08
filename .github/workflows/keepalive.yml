@@ -15,4 +15,4 @@ jobs:
       - name: Ping al health del backend
         run: |
           curl -sS -m 90 -o /dev/null -w "HTTP %{http_code} en %{time_total}s\n" \
-            https://callqa-api.onrender.com/health || true
+            https://callaibrate-api.onrender.com/health || true

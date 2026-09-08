@@ -8,7 +8,7 @@ documentación.
 > Compliance.** (El banner visible de "vista previa" se retiró de la UI; se conserva
 > la salvaguarda interna `X-Prototype-Notice`.)
 
-- 🌐 **En vivo:** https://callqa-ai.vercel.app · API: https://callqa-api.onrender.com
+- 🌐 **En vivo:** https://callaibrate.vercel.app · API: https://callaibrate-api.onrender.com
 - 👤 **Cuentas:** el seed crea `admin@callaibrate.com`, `jefe@callaibrate.com` y un asesor por cada ejecutivo demo. **Las contraseñas se generan al azar y se imprimen una sola vez**: léelas con `docker compose logs api`.
 - 🎨 **Identidad de marca:** **[`docs/BRAND.md`](docs/BRAND.md)** (fuente de verdad del color, tipografía y tono).
 - 🤖 **¿Eres una IA o un dev nuevo?** → **[`docs/AGENTS.md`](docs/AGENTS.md)** (guía completa).
@@ -67,9 +67,9 @@ dimensión + score global ponderado + recomendaciones accionables + **reporte PD
 | **`docs/`** | **Toda la documentación** (guía `AGENTS.md`, estado, changelog, despliegue, diseño, pitch…) |
 | `docker-compose.yml` · `render.yaml` | Config: stack local / blueprint de Render |
 
-> Los identificadores de infraestructura (`callqa-api`, `callqa-db`, el usuario de
-> Postgres y las URL de producción) conservan el nombre anterior a propósito:
-> renombrarlos en Render implica recrear los servicios. Ver `docs/AGENTS.md`.
+> Dos identificadores conservan el nombre anterior a propósito: el usuario/BD `callqa`
+> del `docker-compose.yml` local (renombrarlo invalida el volumen `pgdata`) y la clave
+> `callqa-auth` de localStorage (cambiarla cerraría la sesión de todos). Ver `docs/AGENTS.md`.
 
 ---
 

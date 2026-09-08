@@ -6,21 +6,23 @@
 > dónde tocar cada cosa), ver **[`AGENTS.md`](AGENTS.md)** y **[`CHANGELOG.md`](CHANGELOG.md)**.
 
 **Última actualización:** Septiembre 2026
-**Estado general:** ✅ Plataforma funcional **desplegada en producción** (Vercel + Render),
-con transcripción y análisis vía **Groq** (coste $0). **87 tests** backend en verde,
-**Fase 2 (analítica de alto impacto)**, **rediseño premium de indicadores** y **rebrand
-a CallAIbrate** aplicados.
+**Estado general:** ✅ Plataforma funcional. **87 tests** backend en verde. **Fase 2
+(analítica de alto impacto)**, **rediseño premium de indicadores** y **rebrand a
+CallAIbrate** aplicados.
 
-> ⚠️ **ACCIÓN PENDIENTE EN PRODUCCIÓN (IA):** la `GROQ_API_KEY` de **Render** sigue
-> siendo la clave filtrada, que está **revocada** (verificado: la API de Groq responde
-> `401`) → las llamadas nuevas en prod terminan en `ERROR`. **Arreglo (30 s):** Render →
-> servicio `callqa-api` → **Environment** → `GROQ_API_KEY` = la clave válida de
-> `backend/.env` (empieza por `gsk_`; verificada, responde `200`) → **Save** (redeploy
-> automático). La clave vive solo en Render (`sync: false`), **nunca en el repo**.
+> ⚠️ **PRODUCCIÓN RECONSTRUIDA (septiembre 2026).** La PostgreSQL del plan gratuito de
+> Render **caducó y fue eliminada**, así que el backend llevaba dos meses muriendo al
+> arrancar (`could not translate host name "dpg-…"`). **Los datos de producción se
+> perdieron** y no había copia de seguridad. Se recreó la infraestructura ya con el
+> nombre nuevo: `callaibrate-api` + `callaibrate-db`. Detalle en
+> [`RENOMBRADO_INFRA.md`](RENOMBRADO_INFRA.md).
 >
-> ⚠️ El backend de Render **no respondió** durante la última auditoría (sin respuesta en
-> 90 s). Comprobar si el servicio está suspendido o si la base de datos PostgreSQL del
-> plan gratuito caducó (Render las caduca a los 30 días).
+> 🔑 **La `GROQ_API_KEY` la pones tú** en Render → `callaibrate-api` → **Environment**
+> (es `sync: false`: vive solo ahí, nunca en el repo, y `git push` no la actualiza). La
+> clave que se filtró en `aeda304` está **revocada**; la válida está en tu `backend/.env`.
+>
+> ⏳ El plan gratuito **volverá a caducar la base a los 30 días**. Si esto tiene que
+> durar, hay que pasar a plan de pago o programar volcados con `pg_dump`.
 
 ---
 
@@ -309,10 +311,10 @@ Claude / OpenAI / Azure son opcionales: cambia `AI_PROVIDER` y pon su API key.
 
 ## 9. Despliegue en producción (gratis, coste $0)
 
-- **Frontend** en Vercel: <https://callqa-ai.vercel.app>
-  (necesita `NEXT_PUBLIC_API_URL=https://callqa-api.onrender.com/api/v1`).
-- **Backend + PostgreSQL** en Render: <https://callqa-api.onrender.com>
-  (necesita `GROQ_API_KEY`, `CORS_ORIGINS=https://callqa-ai.vercel.app`,
+- **Frontend** en Vercel: <https://callaibrate.vercel.app>
+  (necesita `NEXT_PUBLIC_API_URL=https://callaibrate-api.onrender.com/api/v1`).
+- **Backend + PostgreSQL** en Render: <https://callaibrate-api.onrender.com>
+  (necesita `GROQ_API_KEY`, `CORS_ORIGINS=https://callaibrate.vercel.app`,
   `PROCESS_INLINE=true`, `JWT_SECRET`).
 - Despliegue: `git push origin main` → Vercel y Render redepliegan solos.
 
@@ -381,9 +383,12 @@ caduca a los **90 días**.
       corregido.
 - [ ] Antes de producción real: cerrar **[`COMPLIANCE_CHECKLIST.md`](COMPLIANCE_CHECKLIST.md)**
       (validaciones de Compliance, DPO y Seguridad).
-- [ ] Renombrado de la infraestructura (servicios de Render, proyecto de Vercel y
-      repositorios) para alinearla con el nombre nuevo. Runbook:
-      **[`RENOMBRADO_INFRA.md`](RENOMBRADO_INFRA.md)**.
+- [x] **Renombrado de la infraestructura** a `callaibrate-api` / `callaibrate-db` y
+      URLs nuevas. Ver **[`RENOMBRADO_INFRA.md`](RENOMBRADO_INFRA.md)**.
+- [ ] **Copias de seguridad de la base de datos.** Hoy no hay ninguna, y el plan
+      gratuito de Render caduca la PostgreSQL a los 30 días.
+- [ ] **Almacenamiento persistente de audios** (S3): el disco del contenedor es efímero
+      y los audios se pierden en cada redespliegue.
 
 ---
 

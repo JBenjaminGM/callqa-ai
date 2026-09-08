@@ -7,7 +7,7 @@
 **CallAIbrate** — *Calibra la calidad de cada llamada con IA.* Plataforma de QA
 automatizado para call centers del sector banca. Desplegada en vivo:
 
-- 🌐 Frontend: https://callqa-ai.vercel.app · Backend: https://callqa-api.onrender.com
+- 🌐 Frontend: https://callaibrate.vercel.app · Backend: https://callaibrate-api.onrender.com
 - 👤 Cuentas sembradas: `admin@callaibrate.com`, `jefe@callaibrate.com` y un asesor por ejecutivo demo. **Las contraseñas se generan al azar y se imprimen una vez** (`docker compose logs api`).
 
 > Dos repos: **`callqa-ai`** (privado, completo, fuente de verdad — este) y **`callqa`**
