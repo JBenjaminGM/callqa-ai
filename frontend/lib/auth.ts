@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User } from '@/types';
@@ -29,6 +30,33 @@ export const useAuthStore = create<AuthState>()(
     { name: 'callqa-auth' },
   ),
 );
+
+/**
+ * True cuando el estado persistido ya se leyó de localStorage.
+ *
+ * En el primer render `token` siempre es null, porque `persist` rehidrata después
+ * de montar. Sin esperar a que termine, cualquier comprobación de sesión concluye
+ * que no hay sesión y expulsa al usuario al login en cada recarga de página.
+ */
+export function useAuthHydrated(): boolean {
+  // Arranca en false y solo se consulta `persist` dentro del efecto: durante el
+  // prerender en servidor la API de persistencia no existe, y leerla ahí rompe
+  // el build.
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    const { persist: persistApi } = useAuthStore;
+    if (!persistApi) {
+      setHydrated(true);
+      return;
+    }
+    if (persistApi.hasHydrated()) setHydrated(true);
+    // Y si aún no había terminado, avisa cuando lo haga.
+    return persistApi.onFinishHydration(() => setHydrated(true));
+  }, []);
+
+  return hydrated;
+}
 
 /** Devuelve el token actual leyendo directamente del store (uso fuera de React). */
 export function getToken(): string | null {

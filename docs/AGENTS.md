@@ -44,6 +44,7 @@ accionables y un **reporte PDF**. Sector: **banca**.
 - **Backend (Render):** https://callaibrate-api.onrender.com (`/health`, `/docs`)
 - **Cuentas sembradas:** `admin@callaibrate.com` (admin), `jefe@callaibrate.com` (jefe) y un **asesor por cada ejecutivo demo** (el email del ejecutivo, p. ej. `maria@banco.com`). Las **contraseñas se generan al azar** en el primer seed y se imprimen **una sola vez** (`docker compose logs api`); se pueden fijar con `SEED_ADMIN_PASSWORD` / `SEED_JEFE_PASSWORD` / `SEED_ASESOR_PASSWORD`. El seed **rota** cualquier cuenta que aún use una de las contraseñas que llegaron a estar publicadas.
 - **Coste de operación: $0** (Groq gratis + tiers gratis de Vercel/Render).
+- **Workflows de GitHub Actions:** `keepalive.yml` (ping a `/health` cada 12 min; **falla y avisa** si no responde) y `backup-db.yml` (volcado diario con `pg_dump`; necesita el secreto `DATABASE_URL` con la *External Database URL* de Render).
 - **Ubicación de trabajo local:** `C:\Users\Benja\Documents\callqa-ai` (NO la copia de OneDrive — Docker falla desde OneDrive por archivos "solo en la nube").
 
 ## 3. Arquitectura

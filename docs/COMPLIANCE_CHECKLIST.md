@@ -33,6 +33,7 @@ evaluación (cabecera `X-Prototype-Notice`, logs con `environment="evaluation"`)
 | [ ] | Cifrado en reposo del almacenamiento de audios y de la base de datos | Seguridad | Configuración del proveedor |
 | [ ] | Cifrado en tránsito (HTTPS) forzado en frontend y API, sin fallback a HTTP | Seguridad | Configuración TLS |
 | [ ] | Muestreo manual de transcripciones para medir la tasa real de fuga de PII | DPO | Informe de muestreo |
+| [ ] | El **audio original sin enmascarar** se almacena tal cual y se envía completo a Groq. Evaluar si es aceptable o si hay que procesar en infraestructura propia | DPO | Análisis de riesgo |
 
 ## 3. Subencargados de tratamiento
 
@@ -56,7 +57,8 @@ subencargado y necesita su propia verificación.
 | [ ] | Rate limiting activo en autenticación y subida de audios | Seguridad | Configuración de `slowapi` |
 | [ ] | Control de acceso por rol verificado con pruebas: un asesor no accede a datos de otros | Seguridad | Suite de tests de roles |
 | [ ] | **Almacenamiento persistente y cifrado** para los audios. ⚠️ Hoy el almacenamiento local en Render es **efímero**: se pierde en cada redespliegue | Ingeniería | Configuración de S3 o disco persistente |
-| [ ] | Copias de seguridad de la base de datos, con restauración probada | Ingeniería | Informe de prueba de restauración |
+| [~] | Copias de seguridad de la base de datos, con restauración probada | Ingeniería | Existe el workflow `.github/workflows/backup-db.yml` (volcado diario con `pg_dump`, artefacto a 30 días). **Falta** definir el secreto `DATABASE_URL` y **probar una restauración real**. |
+| [ ] | Los dumps de respaldo contienen **transcripciones completas**, es decir datos personales. Definir dónde viven, quién accede y cuánto se conservan | DPO | Política de retención de copias |
 | [ ] | Registro de auditoría de accesos: quién escuchó o descargó qué grabación y cuándo | Seguridad | Diseño e implementación del log |
 | [ ] | Gestión de altas y bajas de usuarios ligada a RR. HH. | Seguridad | Procedimiento |
 | [ ] | Pentest o revisión de seguridad externa sobre la aplicación desplegada | Seguridad | Informe de pentest |
@@ -79,9 +81,10 @@ obligaciones que van más allá de la protección de datos.
 
 | | Incidente | Estado | Nota |
 |---|---|---|---|
-| [x] | Una `GROQ_API_KEY` real se commiteó a `backend/.env.example` (commit `aeda304`, junio 2026) y el repositorio es público | **Cerrado** | La clave fue **revocada** (verificado: la API de Groq responde 401). Sigue presente en el historial de git; no se reescribe el historial porque la clave está muerta y hacerlo rompería todos los clones. **No reutilizar nunca esa clave.** |
+| [x] | Una `GROQ_API_KEY` real se commiteó a `backend/.env.example` (commit `aeda304`, junio 2026) | **Cerrado** | La clave fue **revocada** (verificado: la API de Groq responde 401). Sigue en el historial de git del repositorio privado; no se reescribe porque la clave está muerta y hacerlo rompería todos los clones. El espejo público (`callqa`) se genera con historial propio a partir de un estado en el que la clave ya no estaba. **No reutilizar nunca esa clave.** |
 | [x] | Contraseñas de demostración fijas en el código y publicadas en el README (`Admin123!`, `Jefe123!`, `Asesor123!`) | **Cerrado** | El seed genera contraseñas aleatorias y las muestra una sola vez. Además **rota** cualquier cuenta sembrada que todavía use una de las contraseñas publicadas. |
 | [ ] | Auditoría de si esas contraseñas se usaron en algún entorno accesible desde internet | Pendiente | Revisar logs de acceso del despliegue en Render |
+| [x] | **Pérdida total de los datos de producción** (sept. 2026): la PostgreSQL del plan gratuito de Render caducó a los 30 días y fue eliminada con todo su contenido. No existía ninguna copia de seguridad | **Cerrado sin recuperación** | Los datos eran de un entorno de evaluación, no de clientes reales. Se recreó la base y se añadió `.github/workflows/backup-db.yml`. Ver `RENOMBRADO_INFRA.md`. |
 
 ## 7. Puertas de salida a producción
 

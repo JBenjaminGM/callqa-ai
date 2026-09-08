@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { isManager, useAuthStore } from '@/lib/auth';
+import { isManager, useAuthHydrated, useAuthStore } from '@/lib/auth';
 import { Spinner } from '@/components/ui/feedback';
 
 // Rutas reservadas a roles de gestión (admin / jefe). El asesor que intente
@@ -19,15 +19,20 @@ function isManagerOnly(path: string): boolean {
  * - Sin token → login.
  * - Asesor en una ruta de gestión → su panel personal (/mi-panel).
  * - Manager en /mi-panel → dashboard.
+ *
+ * Espera a que `persist` haya rehidratado el store antes de decidir: si no, en
+ * cada recarga el token aún es null y expulsaría al usuario al login.
  */
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
+  const hydrated = useAuthHydrated();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (!hydrated) return;
     if (!token) {
       router.replace('/login');
       return;
@@ -42,9 +47,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
     setReady(true);
-  }, [token, user, pathname, router]);
+  }, [hydrated, token, user, pathname, router]);
 
-  if (!ready) {
+  if (!hydrated || !ready) {
     return (
       <div className="flex h-screen items-center justify-center text-accent-primary">
         <Spinner className="h-8 w-8" />

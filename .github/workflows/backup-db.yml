@@ -1,0 +1,66 @@
+name: Backup de la base de datos
+
+# Vuelca la base de producción y guarda el dump como artefacto del workflow.
+#
+# Existe porque la PostgreSQL del plan gratuito de Render **caduca a los 30 días**
+# y se elimina con todo dentro. Ya pasó una vez y no había ninguna copia
+# (ver docs/RENOMBRADO_INFRA.md).
+#
+# Requiere el secreto DATABASE_URL con la *External Connection String* de Render
+# (Render → callaibrate-db → Connections → External Database URL). Si el secreto
+# no está definido, el job avisa y termina sin fallar, para no llenar de alertas
+# rojas un repositorio que aún no lo tenga configurado.
+#
+# ⚠️ El dump contiene datos personales (transcripciones de llamadas). Vive en un
+# repositorio privado y se borra a los 30 días. Antes de usar la plataforma con
+# clientes reales hay que revisarlo en docs/COMPLIANCE_CHECKLIST.md.
+on:
+  schedule:
+    - cron: '0 5 * * *' # todos los días a las 05:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comprobar que hay credencial
+        id: check
+        run: |
+          if [ -z "${{ secrets.DATABASE_URL }}" ]; then
+            echo "::warning::Falta el secreto DATABASE_URL: no se puede hacer el backup."
+            echo "Añádelo en Settings → Secrets and variables → Actions con la"
+            echo "External Database URL de Render (callaibrate-db → Connections)."
+            echo "hay_credencial=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "hay_credencial=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Instalar el cliente de PostgreSQL 18
+        if: steps.check.outputs.hay_credencial == 'true'
+        run: |
+          # La versión de pg_dump debe ser >= la del servidor (Render usa 18).
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-client-18
+
+      - name: Volcar la base
+        if: steps.check.outputs.hay_credencial == 'true'
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          nombre="callaibrate-$(date -u +%Y%m%d-%H%M).dump"
+          # Formato custom (-Fc): comprimido y restaurable con pg_restore.
+          pg_dump "$DATABASE_URL" -Fc --no-owner --no-privileges -f "$nombre"
+          ls -lh "$nombre"
+          echo "ARCHIVO=$nombre" >> "$GITHUB_ENV"
+
+      - name: Guardar el dump como artefacto
+        if: steps.check.outputs.hay_credencial == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVO }}
+          path: ${{ env.ARCHIVO }}
+          retention-days: 30
+          if-no-files-found: error

@@ -385,8 +385,11 @@ caduca a los **90 días**.
       (validaciones de Compliance, DPO y Seguridad).
 - [x] **Renombrado de la infraestructura** a `callaibrate-api` / `callaibrate-db` y
       URLs nuevas. Ver **[`RENOMBRADO_INFRA.md`](RENOMBRADO_INFRA.md)**.
-- [ ] **Copias de seguridad de la base de datos.** Hoy no hay ninguna, y el plan
-      gratuito de Render caduca la PostgreSQL a los 30 días.
+- [~] **Copias de seguridad de la base de datos.** Workflow
+      `.github/workflows/backup-db.yml` listo (volcado diario, artefacto a 30 días).
+      **Falta** definir el secreto `DATABASE_URL` en GitHub y probar una restauración.
+- [x] **Vigilancia real del backend.** El keepalive ya **falla** (y avisa) cuando
+      `/health` no responde; antes terminaba en `|| true` y se tragaba la caída.
 - [ ] **Almacenamiento persistente de audios** (S3): el disco del contenedor es efímero
       y los audios se pierden en cada redespliegue.
 

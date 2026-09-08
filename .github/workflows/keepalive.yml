@@ -3,6 +3,11 @@ name: Keep backend awake
 # Mantiene "despierto" el backend en Render (plan gratis), que se duerme tras
 # ~15 min de inactividad y tarda ~50s en el arranque en frío. Un ping periódico
 # a /health evita ese arranque en frío durante las presentaciones.
+#
+# El ping TAMBIÉN sirve de vigilancia: si /health deja de responder, este job
+# falla y GitHub avisa. La versión anterior terminaba en `|| true`, así que se
+# tragaba el error — el backend estuvo dos meses caído sin que nadie se enterara
+# (ver docs/RENOMBRADO_INFRA.md).
 on:
   schedule:
     - cron: '*/12 * * * *' # cada 12 minutos
@@ -14,5 +19,23 @@ jobs:
     steps:
       - name: Ping al health del backend
         run: |
-          curl -sS -m 90 -o /dev/null -w "HTTP %{http_code} en %{time_total}s\n" \
-            https://callaibrate-api.onrender.com/health || true
+          # 3 intentos: el primero puede tardar ~50s por el arranque en frío.
+          for intento in 1 2 3; do
+            codigo=$(curl -sS -m 90 -o /tmp/health.txt -w '%{http_code}' \
+              https://callaibrate-api.onrender.com/health || echo "000")
+            echo "Intento $intento: HTTP $codigo"
+            if [ "$codigo" = "200" ]; then
+              cat /tmp/health.txt
+              exit 0
+            fi
+            sleep 15
+          done
+
+          echo "::error::El backend no respondió 200 en /health tras 3 intentos."
+          echo "Causas habituales, en orden de probabilidad:"
+          echo "  1. La PostgreSQL del plan gratuito de Render caducó (los 30 días)."
+          echo "     Síntoma en los logs: 'could not translate host name \"dpg-...\"'."
+          echo "  2. El servicio está suspendido o superó las horas del plan gratuito."
+          echo "  3. Un despliegue dejó el servicio en estado de fallo."
+          echo "Revisa: https://dashboard.render.com"
+          exit 1

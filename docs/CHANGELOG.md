@@ -5,6 +5,28 @@ Cambios relevantes. Formato: descripción (commit). Lo más nuevo arriba.
 > Las entradas anteriores al rebrand se conservan tal cual: nombran el producto como
 > "CallQA AI" y la identidad Minsait porque así era entonces. Son historia, no estado.
 
+## Reconstruccion de produccion, vigilancia y arreglo de sesion
+
+- `Infraestructura`: la PostgreSQL del plan gratuito de Render **caducó y fue
+  eliminada**; el backend llevaba dos meses muriendo al arrancar y **los datos de
+  producción se perdieron** (no había copia). Sin nada que migrar, se recreó todo ya
+  con el nombre nuevo: `callaibrate-api` + `callaibrate-db`, y las URLs pasaron a
+  `callaibrate-api.onrender.com` y `callaibrate.vercel.app` (el dominio anterior
+  quedó como redirect 307, de modo que hay un único origen). Detalle y lecciones en
+  `docs/RENOMBRADO_INFRA.md`.
+- `Fix`: **la recarga de página cerraba la sesión.** `AuthGuard` y la página raíz
+  decidían antes de que `zustand/persist` rehidratara el store, así que el token
+  siempre era `null` en el primer render y expulsaban al usuario al login en cada
+  F5. Se añadió `useAuthHydrated()` en `lib/auth.ts` y ambas esperan a que la
+  rehidratación termine. La raíz, además, ahora envía al asesor a `/mi-panel`.
+- `Vigilancia`: el keepalive terminaba en `|| true`, así que se tragaba la caída —
+  por eso el backend estuvo dos meses muerto sin que nadie se enterara. Ahora
+  reintenta 3 veces y **falla con un diagnóstico** si `/health` no responde.
+- `Backups`: nuevo `.github/workflows/backup-db.yml` (volcado diario con `pg_dump`,
+  artefacto a 30 días). Necesita el secreto `DATABASE_URL`; si falta, avisa sin
+  fallar. Los dumps contienen transcripciones, así que quedan anotados en
+  `COMPLIANCE_CHECKLIST.md`.
+
 ## Rebrand a CallAIbrate + reproductor, export CSV y seguridad
 - `Marca`: nueva identidad **CallAIbrate** con `docs/BRAND.md` como fuente de verdad.
   Paleta **paper `#F5F1E8`** / **ink `#2A2420`** con acentos **rust `#B8441F`** y
