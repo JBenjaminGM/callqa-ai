@@ -195,7 +195,7 @@ export default function AgentDetailPage() {
                 <p className="text-small text-text-secondary">
                   Llamadas analizadas
                 </p>
-                <p className="text-kpi text-accent-primary">
+                <p className="text-kpi font-mono text-accent-primary">
                   {dash?.total_calls ?? agent.total_calls}
                 </p>
               </Card>
@@ -203,7 +203,7 @@ export default function AgentDetailPage() {
                 <p className="text-small text-text-secondary">
                   Score promedio
                 </p>
-                <p className="text-kpi text-accent-primary">
+                <p className="text-kpi font-mono text-accent-primary">
                   {(dash?.average_score ?? agent.average_score ?? 0).toFixed(
                     1,
                   )}
@@ -211,7 +211,7 @@ export default function AgentDetailPage() {
               </Card>
               <Card className="flex flex-col gap-1">
                 <p className="text-small text-text-secondary">Tendencia</p>
-                <p className="text-kpi text-accent-primary">
+                <p className="text-kpi font-mono text-accent-primary">
                   {dash?.score_trend ?? '—'}
                 </p>
               </Card>

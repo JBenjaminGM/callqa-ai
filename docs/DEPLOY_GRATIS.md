@@ -1,4 +1,4 @@
-# 🚀 Publicar CallQA AI gratis (Vercel + Render + Groq)
+# 🚀 Publicar CallAIbrate gratis (Vercel + Render + Groq)
 
 Guía para dejar la plataforma **accesible desde cualquier ordenador**, **sin pagar nada**.
 
@@ -62,9 +62,14 @@ crean gratis con tu GitHub, sin tarjeta).
 2. Confirma que **CORS_ORIGINS** es tu URL exacta de Vercel
    (`https://callqa-ai.vercel.app`, sin barra final). Guarda → se redepliega solo.
 3. Abre tu **URL de Vercel** y entra con una de las cuentas sembradas:
-   - **admin:** `admin@callqa.com` / `Admin123!`
-   - **jefe:** `jefe@callqa.com` / `Jefe123!`
-   - **asesor:** el email del ejecutivo (p. ej. `maria@banco.com`) / `Asesor123!`
+   - **admin:** `admin@callaibrate.com`
+   - **jefe:** `jefe@callaibrate.com`
+   - **asesor:** el email del ejecutivo (p. ej. `maria@banco.com`)
+
+   Las contraseñas las genera el *seed* al azar y las imprime **una sola vez** en los
+   logs del servicio (Render → `callqa-api` → **Logs**, en el primer arranque). Para
+   fijarlas tú, define `SEED_ADMIN_PASSWORD`, `SEED_JEFE_PASSWORD` y
+   `SEED_ASESOR_PASSWORD` en las variables de entorno antes del primer despliegue.
 
 🎉 ¡Ya está online y accesible desde cualquier PC, gratis!
 

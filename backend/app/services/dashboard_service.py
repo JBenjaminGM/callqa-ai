@@ -9,7 +9,7 @@ agregación de forma aislada. Todo es determinista y de coste $0 (sin IA).
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app.models.agent import Agent
 from app.models.analysis import Analysis
 from app.models.call import Call, CallStatus
+from app.models.settings import RubricConfig
 from app.services.compliance_service import check_product_note_compliance
 from app.services.conversation_metrics_service import compute_conversation_metrics
 
@@ -34,19 +35,31 @@ _MIN_CALLS_AGENT_ALERT = 3
 # --------------------------------------------------------------------------- #
 # Ventana temporal y consultas base
 # --------------------------------------------------------------------------- #
+def utcnow() -> datetime:
+    """
+    UTC actual como datetime *naive*.
+
+    Las columnas de fecha del modelo son `DateTime` sin zona horaria, así que un
+    datetime *aware* no se puede comparar con ellas. Se toma la hora en UTC de
+    forma explícita (en lugar del `datetime.utcnow()` obsoleto) y se descarta el
+    tzinfo para conservar la semántica naive-UTC de la base de datos.
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 def resolve_window(
     period: str = "30d",
     date_from: date | None = None,
     date_to: date | None = None,
 ) -> tuple[datetime, datetime]:
     """Resuelve la ventana [inicio, fin]. El rango de fechas prima sobre el periodo."""
-    end = datetime.combine(date_to, time.max) if date_to else datetime.utcnow()
+    end = datetime.combine(date_to, time.max) if date_to else utcnow()
     if date_from:
         start = datetime.combine(date_from, time.min)
     elif date_to:
         start = end - timedelta(days=PERIOD_DAYS.get(period, 30))
     else:
-        start = datetime.utcnow() - timedelta(days=PERIOD_DAYS.get(period, 30))
+        start = utcnow() - timedelta(days=PERIOD_DAYS.get(period, 30))
     return start, end
 
 
@@ -637,3 +650,81 @@ def agent_recommendations(
     campaigns.sort(key=lambda c: c["total_calls"], reverse=True)
 
     return {"total_calls": len(rows), "recommendations": items, "by_campaign": campaigns}
+
+
+# --------------------------------------------------------------------------- #
+# Exportación del reporte de equipo
+# --------------------------------------------------------------------------- #
+def team_report(
+    db: Session,
+    start: datetime,
+    end: datetime,
+    campaign: str | None,
+    red_threshold: int,
+) -> tuple[list[str], list[list]]:
+    """
+    Reporte del equipo listo para exportar: cabeceras y una fila por ejecutivo.
+
+    Agrupa por ejecutivo registrado. Las llamadas todavía sin asignar se agrupan
+    bajo el nombre que detectó la IA, para que no desaparezcan del reporte.
+    Se ordena de menor a mayor score, que es el orden en el que un jefe quiere
+    leerlo: primero quien necesita atención.
+    """
+    rows = done_analyses(db, start, end, campaign=campaign)
+
+    dimensions = db.scalars(
+        select(RubricConfig).order_by(RubricConfig.display_order)
+    ).all()
+    dimension_keys = [d.dimension_key for d in dimensions]
+
+    agents = {a.id: a for a in db.scalars(select(Agent))}
+
+    grouped: dict[str, list[tuple[Call, Analysis]]] = defaultdict(list)
+    for call, analysis in rows:
+        agent = agents.get(call.agent_id) if call.agent_id else None
+        if agent is not None:
+            key = f"agent:{agent.id}"
+        else:
+            key = f"detected:{(call.detected_agent_name or 'Sin asignar').strip()}"
+        grouped[key].append((call, analysis))
+
+    header = [
+        "Ejecutivo",
+        "Email",
+        "Campañas",
+        "Registrado",
+        "Llamadas",
+        "Score promedio",
+        *[d.dimension_name for d in dimensions],
+        "Llamadas en rojo",
+        "% en rojo",
+    ]
+
+    table: list[list] = []
+    for key, group in grouped.items():
+        if key.startswith("agent:"):
+            agent = agents[int(key.split(":", 1)[1])]
+            name, email, registered = agent.name, agent.email or "", "sí"
+        else:
+            name, email, registered = key.split(":", 1)[1], "", "no"
+
+        campaigns = sorted({c.campaign_type for c, _ in group if c.campaign_type})
+        averages = dimension_averages(group)
+        red = sum(1 for _, a in group if (a.global_score or 0) < red_threshold)
+
+        table.append(
+            [
+                name,
+                email,
+                " / ".join(campaigns),
+                registered,
+                len(group),
+                average_score(group),
+                *[averages.get(k, "") for k in dimension_keys],
+                red,
+                round(red * 100 / len(group), 1) if group else 0.0,
+            ]
+        )
+
+    table.sort(key=lambda row: row[5])
+    return header, table

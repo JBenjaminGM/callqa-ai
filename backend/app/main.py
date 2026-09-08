@@ -1,5 +1,5 @@
 """
-Punto de entrada de la aplicación FastAPI de CallQA AI.
+Punto de entrada de la aplicación FastAPI de CallAIbrate.
 
 Configura CORS, logging estructurado, rate limiting, los routers de la API
 y un middleware que añade el header de aviso de prototipo a cada respuesta.
@@ -20,7 +20,7 @@ from app.config import settings
 from app.limiter import limiter
 from app.routers import agents, auth, calls, campaigns, config, dashboard
 
-# Aviso obligatorio del prototipo (contexto Minsait/Indra).
+# Salvaguarda interna: recuerda que el entorno es de evaluación.
 PROTOTYPE_NOTICE = "Evaluation environment - Do not use with real customer data"
 
 
@@ -51,10 +51,32 @@ def _configure_logging() -> None:
 
 
 _configure_logging()
-logger = logging.getLogger("callqa")
+logger = logging.getLogger("callaibrate")
+
+
+# Valor de ejemplo de JWT_SECRET. Sirve en desarrollo; en producción firmaría los
+# tokens con un secreto que cualquiera puede leer en el repositorio.
+DEFAULT_JWT_SECRET = "cambia-esto-en-produccion"
+
+
+def verify_production_secrets() -> None:
+    """
+    Aborta el arranque si producción usa el JWT_SECRET de ejemplo.
+
+    Con un secreto conocido cualquiera puede firmar tokens válidos y suplantar a
+    un administrador, así que es preferible no arrancar a servir tráfico inseguro.
+    """
+    if settings.app_env == "production" and settings.jwt_secret == DEFAULT_JWT_SECRET:
+        raise RuntimeError(
+            "JWT_SECRET tiene el valor de ejemplo y APP_ENV=production. "
+            "Define un JWT_SECRET largo y aleatorio antes de arrancar la API."
+        )
+
+
+verify_production_secrets()
 
 app = FastAPI(
-    title="CallQA AI - API",
+    title="CallAIbrate - API",
     description=(
         "Backend de la plataforma de Quality Assurance automatizado con IA para "
         "call centers. Vista previa para evaluación — no utilizar con datos reales de clientes."
@@ -108,7 +130,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 def root() -> dict:
     """Endpoint raíz: confirma que la API está viva."""
     return {
-        "service": "CallQA AI",
+        "service": "CallAIbrate",
         "status": "ok",
         "notice": PROTOTYPE_NOTICE,
         "docs": "/docs",

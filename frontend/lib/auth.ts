@@ -24,6 +24,8 @@ export const useAuthStore = create<AuthState>()(
       setSession: (token, user) => set({ token, user }),
       clearSession: () => set({ token: null, user: null }),
     }),
+    // La clave se mantiene pese al rebrand: cambiarla cerraría la sesión de
+    // todos los usuarios que ya tienen un token guardado.
     { name: 'callqa-auth' },
   ),
 );

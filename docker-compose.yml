@@ -1,5 +1,5 @@
 # ============================================================
-# CallQA AI — Stack completo (monorepo)
+# CallAIbrate — Stack completo (monorepo)
 # Levanta backend + worker + base de datos + frontend con un solo comando:
 #
 #     docker compose up --build

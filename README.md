@@ -1,14 +1,16 @@
-# 🎧 CallQA AI
+# 🎧 CallAIbrate
 
-Plataforma de **Quality Assurance automatizado con IA** para call centers
-bancarios (Minsait / Grupo Indra). Monorepo: backend + frontend + documentación.
+**Calibra la calidad de cada llamada con IA.** Plataforma de Quality Assurance
+automatizado para call centers del sector banca. Monorepo: backend + frontend +
+documentación.
 
 > ⚠️ **No utilizar con datos reales de clientes sin la aprobación previa de
 > Compliance.** (El banner visible de "vista previa" se retiró de la UI; se conserva
 > la salvaguarda interna `X-Prototype-Notice`.)
 
 - 🌐 **En vivo:** https://callqa-ai.vercel.app · API: https://callqa-api.onrender.com
-- 👤 **Roles:** `admin@callqa.com` / `Admin123!` (admin) · `jefe@callqa.com` / `Jefe123!` (jefe) · asesores con el email del ejecutivo (p. ej. `maria@banco.com` / `Asesor123!`).
+- 👤 **Cuentas:** el seed crea `admin@callaibrate.com`, `jefe@callaibrate.com` y un asesor por cada ejecutivo demo. **Las contraseñas se generan al azar y se imprimen una sola vez**: léelas con `docker compose logs api`.
+- 🎨 **Identidad de marca:** **[`docs/BRAND.md`](docs/BRAND.md)** (fuente de verdad del color, tipografía y tono).
 - 🤖 **¿Eres una IA o un dev nuevo?** → **[`docs/AGENTS.md`](docs/AGENTS.md)** (guía completa).
 - 📚 **Toda la documentación está en [`docs/`](docs/)** (índice: [`docs/00_INDICE.md`](docs/00_INDICE.md)).
 
@@ -48,8 +50,11 @@ dimensión + score global ponderado + recomendaciones accionables + **reporte PD
   por formulario, con asistente IA, o subiendo un PDF que la IA parsea.
 - **Umbrales QA configurables:** objetivo, alertas de asesor/llamada y ranking,
   editables por el jefe.
-- **Identidad Minsait:** paleta Pruno + Gris Cerámica con acento Fucsia,
-  tipografía ForFuture Sans y contenedores achaflanados.
+- **Reproductor sincronizado:** el audio de la llamada se reproduce junto a la
+  transcripción; al hacer clic en un segmento, el audio salta a ese momento.
+- **Exportación CSV** del reporte del equipo, con los filtros del dashboard.
+- **Identidad CallAIbrate:** paleta paper + ink con acentos rust y gold,
+  tipografías Manrope / Inter / IBM Plex Mono. Ver **[`docs/BRAND.md`](docs/BRAND.md)**.
 
 ---
 
@@ -62,11 +67,15 @@ dimensión + score global ponderado + recomendaciones accionables + **reporte PD
 | **`docs/`** | **Toda la documentación** (guía `AGENTS.md`, estado, changelog, despliegue, diseño, pitch…) |
 | `docker-compose.yml` · `render.yaml` | Config: stack local / blueprint de Render |
 
+> Los identificadores de infraestructura (`callqa-api`, `callqa-db`, el usuario de
+> Postgres y las URL de producción) conservan el nombre anterior a propósito:
+> renombrarlos en Render implica recrear los servicios. Ver `docs/AGENTS.md`.
+
 ---
 
 ## 🛠️ Desarrollo y despliegue
 
-- **Tests backend (78):** `cd backend && .venv\Scripts\python -m pytest -q`.
+- **Tests backend (87):** `cd backend && .venv\Scripts\python -m pytest -q`.
 - **Frontend en local:** `cd frontend && npm install && npm run dev`.
 - **Desplegar:** `git push origin main` → Vercel y Render redepliegan solos. Guía: **[`docs/DEPLOY_GRATIS.md`](docs/DEPLOY_GRATIS.md)**.
 

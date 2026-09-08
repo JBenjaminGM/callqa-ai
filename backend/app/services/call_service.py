@@ -10,7 +10,7 @@ from app.models.analysis import Analysis
 from app.models.call import Call, CallStatus
 from app.models.settings import RubricConfig
 
-logger = logging.getLogger("callqa.calls")
+logger = logging.getLogger("callaibrate.calls")
 
 # Progreso aproximado (%) asociado a cada estado, para el polling del frontend.
 STATUS_PROGRESS = {

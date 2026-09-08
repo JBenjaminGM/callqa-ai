@@ -1,90 +1,89 @@
 ---
-name: Minsait — Calidad con impacto
+name: CallAIbrate — Calibra la calidad de cada llamada con IA
 colors:
-  # --- Marca Minsait (fuente de verdad: frontend/app/globals.css) ---
-  pruno: '#480e2a'
-  pruno-oscuro: '#260717'
-  fucsia: '#ff0054'
-  gris-ceramica: '#e3e2da'
-  blanco: '#ffffff'
-  # --- Modo claro (Minsait light · Gris Cerámica) ---
-  bg-primary: '#e3e2da'
+  # --- Tokens de marca (fuente de verdad: docs/BRAND.md) ---
+  ink: '#2a2420'
+  ink-soft: '#6b5d52'
+  paper: '#f5f1e8'
+  surface: '#ffffff'
+  border: '#e2d9c8'
+  rust: '#b8441f'
+  rust-soft: '#f0dac9'
+  gold: '#a67c27'
+  gold-soft: '#efe2c4'
+  # --- Modo claro (tokens semánticos de la app) ---
+  bg-primary: '#f5f1e8'
   bg-secondary: '#ffffff'
   bg-card: '#ffffff'
-  bg-accent: '#d6d5cc'
-  accent-primary: '#480e2a'
-  accent-secondary: '#7e2349'
-  text-primary: '#480e2a'
-  text-secondary: '#5e4a54'
-  text-muted: '#8a7e83'
-  border: '#c9c7bd'
-  glow: 'rgba(255, 0, 84, 0.22)'
-  shadow: 'rgba(72, 14, 42, 0.1)'
-  # --- Modo oscuro (Minsait dark · Pruno Oscuro / Pruno) ---
-  dark-bg-primary: '#260717'
-  dark-bg-secondary: '#480e2a'
-  dark-bg-card: '#3a0b22'
-  dark-bg-accent: '#5c1536'
-  dark-accent-primary: '#ff0054'
-  dark-accent-secondary: '#9a3460'
-  dark-text-primary: '#ffffff'
-  dark-text-secondary: '#d9c7d0'
-  dark-text-muted: '#a98b99'
-  dark-border: '#5c1536'
-  # --- Estado / dataviz (paleta secundaria oficial Minsait digital) ---
-  success: '#246b4e'       # green-4 (claro) / #65d16f green-2 (oscuro)
-  warning: '#e56813'       # orange-3 (claro) / #fc8535 orange-2 (oscuro)
-  danger: '#d2044a'        # pink-3 (claro) / #ef659d pink-2 (oscuro)
-  info: '#534199'          # violet-4 (claro) / #9c85ff violet-2 (oscuro)
+  bg-accent: '#ede7db'
+  accent-primary: '#b8441f'
+  accent-secondary: '#a67c27'
+  text-primary: '#2a2420'
+  text-secondary: '#6b5d52'
+  text-muted: '#8c7f73'
+  glow: 'rgba(184, 68, 31, 0.22)'
+  shadow: 'rgba(42, 36, 32, 0.1)'
+  # --- Modo oscuro (paleta derivada, addendum de BRAND.md) ---
+  dark-bg-primary: '#1c1815'
+  dark-bg-secondary: '#262019'
+  dark-bg-card: '#262019'
+  dark-bg-accent: '#332b23'
+  dark-accent-primary: '#d95f35'
+  dark-accent-secondary: '#c99b3e'
+  dark-text-primary: '#f5f1e8'
+  dark-text-secondary: '#b3a595'
+  dark-text-muted: '#8a7d70'
+  dark-border: '#3a322a'
+  # --- Estado / dataviz ---
+  success: '#3f7a4f'       # claro / '#5fa271' oscuro
+  warning: '#a67c27'       # = gold (no hay un tercer acento)
+  danger: '#a8341e'        # claro / '#d2543a' oscuro
+  info: '#6b5d52'          # = ink-soft
 typography:
   display:
-    fontFamily: ForFuture Sans
+    fontFamily: Manrope
     fontSize: 40px
-    fontWeight: '400'
-    lineHeight: 1
-    textTransform: lowercase
+    fontWeight: '700'
+    lineHeight: 1.05
   h1:
-    fontFamily: ForFuture Sans
+    fontFamily: Manrope
     fontSize: 28px
-    fontWeight: '400'
-    lineHeight: 1.1
-    textTransform: lowercase
+    fontWeight: '700'
+    lineHeight: 1.15
   h2:
-    fontFamily: ForFuture Sans
+    fontFamily: Manrope
     fontSize: 22px
-    fontWeight: '400'
-    lineHeight: 1.1
-    textTransform: lowercase
+    fontWeight: '700'
+    lineHeight: 1.2
   h3:
-    fontFamily: ForFuture Sans
+    fontFamily: Manrope
     fontSize: 18px
-    fontWeight: '400'
-    lineHeight: 1.1
-    textTransform: lowercase
+    fontWeight: '700'
+    lineHeight: 1.25
   body:
-    fontFamily: ForFuture Sans
+    fontFamily: Inter
     fontSize: 14px
     fontWeight: '400'
     lineHeight: 1.6
   small:
-    fontFamily: ForFuture Sans
+    fontFamily: Inter
     fontSize: 12px
     fontWeight: '400'
     lineHeight: 1.5
   kpi:
-    fontFamily: ForFuture Sans
+    fontFamily: IBM Plex Mono
     fontSize: 48px
-    fontWeight: '900'
+    fontWeight: '800'
     lineHeight: 1
   destacado:
-    fontFamily: ForFuture Sans
-    fontWeight: '700'
+    fontFamily: Inter
+    fontWeight: '600'
     textTransform: uppercase
     letterSpacing: 0.08em
 shapes:
-  chamfer: 14px          # chaflán de contenedores (.chamfer); 9px en móvil
-  chamfer-mobile: 9px
-  cta: 9999px            # CTA = píldora Fucsia
+  radius-card: 8px       # contenedores (.rounded-card)
+  radius-control: 6px    # botones, inputs, chips (.rounded-control)
+  radius-round: 9999px   # solo avatares, puntos de estado y barras de progreso
 spacing:
   unit: 8px
   container-max: 1280px
@@ -95,90 +94,167 @@ spacing:
 ---
 
 ## Marca y estilo
-El sistema de diseño adopta la **identidad oficial Minsait** (Grupo Indra) bajo la firma **"calidad con impacto"** (Tech for impact). La personalidad de marca es sobria, corporativa y de alto contraste: dominan **Pruno** (#480e2a) y **Gris Cerámica** (#e3e2da), y el **Fucsia** (#ff0054) aparece **solo como acento** (resalte, CTA, foco). Es el tono adecuado para un cliente de banca.
 
-> ⚠️ El antiguo sistema **"Aetheric Intelligence" (Índigo / Slate, glassmorphism)** queda **OBSOLETO**. Cualquier referencia a Índigo `#4f46e5`/`#6366f1`, canvas Slate-navy `#0b1020` o tipografía Inter debe ignorarse.
+El sistema de diseño implementa la identidad **CallAIbrate** bajo el tagline
+**"Calibra la calidad de cada llamada con IA"**. La personalidad es **editorial y
+sobria**: un lienzo cálido de papel (`paper`) con texto en tinta (`ink`), y dos únicos
+acentos de marca —**rust** (#b8441f) para lo importante y **gold** (#a67c27) como
+secundario—. Es el tono adecuado para una herramienta que evalúa el trabajo de
+personas: seria, legible, nada estridente.
 
-El estilo visual es **plano y editorial corporativo**: superficies sólidas (no glassmorphism), contenedores **achaflanados** (clase `.chamfer`) con el mismo chaflán en toda la app, y titulares en **minúscula** con la palabra clave resaltada en Fucsia (dispositivo "calidad con **impacto**"). El **modo claro es el predeterminado** (lienzo Gris Cerámica); el modo oscuro usa Pruno / Pruno Oscuro.
+> **Fuente de verdad de la marca: [`BRAND.md`](BRAND.md).** Este documento describe
+> cómo se implementa en la app. Si los dos se contradicen, manda `BRAND.md`.
+
+> ⚠️ Identidades **OBSOLETAS**: la de **Minsait** (Pruno `#480e2a` + Gris Cerámica
+> `#e3e2da` + Fucsia `#ff0054`, tipografía ForFuture Sans, contenedores achaflanados
+> `.chamfer`, titulares en minúscula, "tech for impact") y la anterior **"Aetheric
+> Intelligence"** (Índigo/Slate, glassmorphism). Cualquier referencia a esos colores,
+> fuentes o clases debe ignorarse y corregirse.
+
+El estilo visual es **plano**: superficies sólidas con borde de 1px y sombra sutil,
+radios pequeños (8px en contenedores, 6px en controles), sin glassmorphism ni
+gradientes decorativos. El **modo claro es el predeterminado**; el modo oscuro es una
+paleta derivada que invierte fondo y texto y aclara los acentos.
 
 ## Colores
-> **Fuente de verdad del color: `frontend/app/globals.css` + `frontend/tailwind.config.ts`.** Este documento es una referencia; las variables CSS mandan.
 
-La paleta se ancla en **Pruno** (#480e2a) como primario (logo, navegación activa, KPIs, gráficos, enlaces, cuerpo de texto sobre cerámica) y **Gris Cerámica** (#e3e2da) como lienzo y base de contenedores. El **Fucsia** (#ff0054) se reserva como acento: realce, CTA y anillo de foco.
+> **Implementación canónica: `frontend/app/globals.css` + `frontend/tailwind.config.ts`.**
+> Las variables CSS mandan sobre esta tabla.
 
-- **Modo claro (predeterminado):** lienzo Gris Cerámica (#e3e2da) con tarjetas blancas achaflanadas. Texto en Pruno. Hovers tonales en cerámica (`#d6d5cc`), sin opacidad.
-- **Modo oscuro:** lienzo Pruno Oscuro (#260717) y superficies Pruno tonal (#3a0b22). Aquí el acento primario pasa a **Fucsia** para resaltar sobre el lienzo Pruno.
-- **Acento Fucsia:** CTAs en píldora, realces puntuales y anillo de foco accesible. `--glow: rgba(255,0,84,0.22)` (0.35 en oscuro) para foco/realce.
+La paleta se ancla en **paper** (#f5f1e8) como lienzo y **ink** (#2a2420) como texto y
+como fondo del lateral de navegación. **Rust** es el acento de marca: CTA, navegación
+activa, el "AI" del wordmark, la serie principal de un gráfico y el anillo de foco.
+**Gold** es el secundario y también el color de alerta.
 
-### Estado / dataviz (paleta secundaria oficial Minsait digital)
-Para estados y gráficas se usa la paleta secundaria digital de Minsait, con variantes por modo:
+- **Modo claro (predeterminado):** lienzo paper con tarjetas blancas de borde `#e2d9c8`.
+  Hovers sobre el neutro derivado `#ede7db`.
+- **Modo oscuro:** lienzo `#1c1815` y superficies `#262019`. Los acentos se aclaran
+  (`rust` → `#d95f35`, `gold` → `#c99b3e`) para mantener contraste AA.
+- **Barra lateral:** siempre en ink (`#2a2420` literal, no el token), en ambos modos,
+  con el wordmark en negativo. Va en literal precisamente porque el token `--ink` se
+  invierte en modo oscuro.
+
+### Estado / dataviz
+
+`success` y `danger` son **funcionales**, no decorativos: nunca se usan para branding.
+Como la marca solo define dos acentos, `warning` reutiliza `gold` e `info` reutiliza
+`ink-soft`.
 
 | Estado | Claro | Oscuro | Uso |
 |---|---|---|---|
-| `--success` | `#246b4e` (green-4) | `#65d16f` (green-2) | Scores altos (≥ objetivo), confirmaciones |
-| `--warning` | `#e56813` (orange-3) | `#fc8535` (orange-2) | Scores intermedios, alertas |
-| `--danger`  | `#d2044a` (pink-3)  | `#ef659d` (pink-2)  | Scores bajos / llamadas rojas, errores |
-| `--info`    | `#534199` (violet-4) | `#9c85ff` (violet-2) | Información general, enlaces |
+| `--success` | `#3f7a4f` | `#5fa271` | Scores altos (≥ objetivo), confirmaciones |
+| `--warning` | `#a67c27` | `#c99b3e` | Scores intermedios, alertas |
+| `--danger` | `#a8341e` | `#d2543a` | Scores bajos / llamadas rojas, errores |
+| `--info` | `#6b5d52` | `#b3a595` | Información neutra, hablante "cliente" |
 
 ## Tipografía
-El sistema usa **ForFuture Sans**, la tipografía corporativa de Minsait, servida con archivos **woff2 locales** desde `frontend/public/fonts` (pesos 300/400/400 italic/500/700/900). Fallback: `Arial, sans-serif`.
 
-Los **titulares van en minúscula** (`text-transform: lowercase`, vía `globals.css`), con peso Regular (400) y `line-height` ajustado (1–1.1), reforzando el tono editorial sobrio de Minsait. La **palabra clave del titular se resalta en Fucsia** con la clase `.hl` (dispositivo "calidad con impacto"). El eyebrow/destacado (`.destacado`) va en **Bold MAYÚSCULAS** con `letter-spacing` amplio.
+Tres familias, cargadas con `next/font/google` en `app/layout.tsx` y expuestas como
+variables CSS (`--font-manrope`, `--font-inter`, `--font-plex-mono`).
 
-| Token | Tamaño / peso | Uso |
+| Familia | Pesos | Uso |
 |---|---|---|
-| `text-display` | 40px / 400 | Hero, títulos de página |
-| `text-h1` | 28px / 400 | Títulos de sección |
-| `text-h2` | 22px / 400 | Subtítulos |
-| `text-h3` | 18px / 400 | Títulos de tarjeta |
-| `text-body` | 14px / 400 | Texto general (line-height 1.6) |
-| `text-small` | 12px / 400 | Captions, labels |
-| `text-kpi` | 48px / 900 | Números grandes en dashboard |
+| **Manrope** | 500, 700, 800 | Titulares (`h1`–`h4`), wordmark |
+| **Inter** | 400, 500, 600 | Cuerpo, UI, formularios, etiquetas |
+| **IBM Plex Mono** | 400, 500, 600 | **Solo datos numéricos**: scores, IDs de llamada, marcas de tiempo, porcentajes |
+
+Regla dura: **la mono nunca se usa en texto de interfaz**. Su función es que las cifras
+queden alineadas y comparables de un vistazo, siempre con `tabular-nums`.
+
+Los titulares van en **caso frase** (sin `text-transform`) y admiten **una** palabra
+clave resaltada en rust con la clase `.hl`. Los *eyebrows* (`.destacado`) sí van en
+mayúsculas, con `letter-spacing` amplio y en `text-muted`.
+
+| Token | Tamaño / peso | Familia | Uso |
+|---|---|---|---|
+| `text-display` | 40px / 700 | Manrope | Hero, títulos de página |
+| `text-h1` | 28px / 700 | Manrope | Títulos de sección |
+| `text-h2` | 22px / 700 | Manrope | Subtítulos, cabecera |
+| `text-h3` | 18px / 700 | Manrope | Títulos de tarjeta |
+| `text-body` | 14px / 400 | Inter | Texto general (line-height 1.6) |
+| `text-small` | 12px / 400 | Inter | Captions, labels |
+| `text-kpi` | 48px / 800 | IBM Plex Mono | Números grandes del dashboard |
+
+## Ícono y wordmark
+
+`frontend/components/brand/logo.tsx` exporta dos piezas, y son las únicas fuentes del
+logotipo en la app (no hay imágenes de marca en `public/` salvo el favicon):
+
+- **`<Waveform />`** — 6 barras verticales con terminaciones redondeadas
+  (`viewBox="0 0 72 40"`, geometría exacta de `BRAND.md`). La barra central va en
+  `rust` y la última en `gold`; las demás heredan `currentColor`, de modo que el mismo
+  SVG funciona sobre fondo claro y sobre el lateral oscuro.
+- **`<Wordmark size="sm|md|lg" />`** — símbolo + nombre. El fragmento **"AI" siempre en
+  rust**: es lo que hace legible el juego de palabras *Call · AI · Calibrate*.
+
+`public/favicon.svg` repite el waveform sobre un cuadrado paper con esquinas de 14px.
 
 ## Layout y espaciado
-El layout mantiene una rejilla corporativa con base de **8px**. Ancho de contenido máximo 1280px, gutters de 32px y márgenes de 64px en escritorio; en móvil los márgenes se estrechan a 20px y el gutter a 16px.
 
-- **Sidebar siempre Pruno** con el logo Minsait en blanco, en ambos modos.
-- **Tarjetas blancas achaflanadas** sobre el lienzo cerámica en modo claro.
-- **Padding consistente** en múltiplos de la unidad de 8px.
+Rejilla con base de **8px**. Ancho de contenido máximo 1280px, gutters de 32px y
+márgenes de 64px en escritorio; en móvil, márgenes de 20px y gutter de 16px.
+
+- **Barra lateral** de 240px, siempre en ink, con el wordmark arriba y el tagline abajo.
+- **Tarjetas** blancas con borde de 1px sobre el lienzo paper.
+- **Padding** en múltiplos de 8px.
 
 ## Elevación y profundidad
-Minsait es **plano**: la profundidad se logra con **superficies sólidas, bordes tonales de 1px y sombras sutiles** (`--shadow`), no con glassmorphism ni blur. La clase `.glass` se conserva por compatibilidad pero ahora renderiza una superficie **sólida** (fondo + borde de 1px), no una capa traslúcida con backdrop-blur. El único "glow" admitido es el anillo/realce **Fucsia** de foco (`--glow`).
+
+La profundidad se logra con **superficie sólida + borde tonal de 1px + `shadow-sm`**.
+Nunca sombras duras, blur ni glassmorphism. La clase `.glass` se conserva por
+compatibilidad, pero renderiza una superficie sólida. El único "glow" admitido es el
+anillo de foco rust (`--glow`), aplicado vía `*:focus-visible`.
 
 ## Formas
-El lenguaje de forma es el **chaflán Minsait**, no el redondeado.
 
-- **Contenedores (tarjetas, paneles, modales):** clase `.chamfer` con `--chamfer: 14px` (9px en móvil, ≤ 640px), recortando las 8 esquinas mediante `clip-path: polygon(...)`. El mismo chaflán se aplica de forma uniforme en toda la app.
-- **CTA primario:** **píldora Fucsia** (radio completo, `border-radius` full).
-- **Scrollbar:** discreta, esquinas rectas (sin radio).
+| Elemento | Clase | Radio |
+|---|---|---|
+| Tarjetas, paneles, avisos, tooltips | `rounded-card` | 8px |
+| Botones, inputs, selects, chips, badges | `rounded-control` | 6px |
+| Avatares, puntos de estado, spinners, barras de progreso | `rounded-full` | círculo |
+
+La clase `.chamfer` y la variable `--chamfer` de la identidad anterior **ya no existen**.
 
 ## Componentes
-- **CTA primario:** píldora con relleno **Fucsia** (#ff0054) y texto blanco; reservado para la acción principal de cada vista. El resto de botones usan estilo sobrio en Pruno / borde tonal.
-- **Tarjetas achaflanadas:** superficie sólida (blanca en claro, Pruno tonal en oscuro), borde tonal de 1px y recorte `.chamfer`. Sin blur.
-- **Inputs:** superficie sólida con borde tonal; el foco muestra el **anillo Fucsia** accesible (`outline: 3px solid var(--fucsia)`, WCAG). El autocompletado del navegador se fuerza a respetar la superficie/texto del tema.
-- **Titulares con realce:** `h1–h4` en minúscula; la palabra clave en `.hl` (Fucsia) materializa "calidad con impacto".
-- **Badges de score:** colores de estado por umbral (danger/warning/success) usando la paleta secundaria Minsait.
-- **Animaciones:** aparición suave `animate-fade-in` (respeta `prefers-reduced-motion`) y `skeleton` de carga con pulso sobre el borde tonal.
 
-## Visualización de datos (dataviz · Fase 2)
-El sistema de indicadores (`frontend/components/dashboard/viz.tsx`) eleva la analítica a un
-nivel **enterprise/“vendible”** sin romper la sobriedad plana de Minsait: la riqueza viene de
-**tipografía, dataviz y uso medido del acento**, no de sombras pesadas (el `clip-path` del
-chaflán recorta las sombras, así que las tarjetas se leen por contraste de relleno).
+- **CTA primario:** relleno **rust** con texto blanco, radio de 6px. Sin mayúsculas
+  forzadas ni forma de píldora. El resto de botones: contorno rust (`secondary`),
+  discreto (`ghost`) o `danger`.
+- **Tarjetas:** superficie sólida, borde de 1px, `shadow-sm`, `rounded-card`.
+- **Inputs y selects:** superficie sólida con borde tonal; el foco muestra el anillo
+  rust accesible (`outline: 3px solid var(--rust)`, WCAG). El autocompletado del
+  navegador se fuerza a respetar la superficie y el texto del tema.
+- **Titulares con realce:** `h1`–`h4` en Manrope, caso frase, con `.hl` en la palabra
+  clave (rust). Como máximo una por bloque.
+- **Badges de score:** color por umbral (`danger`/`warning`/`success`), cifra en mono.
+- **Transcripción sincronizada** (`components/calls/transcript-player.tsx`): el
+  segmento que suena se marca con fondo `rust-soft` y borde izquierdo rust; al hacer
+  clic en cualquier segmento, el audio salta a ese momento. Las marcas de tiempo van
+  en mono.
+- **Animaciones:** aparición suave `animate-fade-in` (respeta `prefers-reduced-motion`)
+  y `skeleton` de carga con pulso sobre el borde tonal.
 
-Principios aplicados (mejores prácticas de dashboards B2B):
-- **Lo importante primero, jerarquía clara**: un **gauge de score** como elemento héroe,
-  números grandes con `tabular-nums`, eyebrow en mayúsculas + titular en minúscula por sección.
-- **Contexto, no solo cifras**: cada KPI lleva su **delta vs periodo anterior** (`DeltaPill`,
-  flecha + color semántico) y, cuando aplica, **sparkline** o progreso a meta.
-- **Gráfico correcto por dato**: score 0-100 → **anillo** (`ScoreGauge`); distribución →
-  **donut** con etiqueta central (`Donut`); evolución → **área con gradiente** + línea de meta
-  (`CallsTrendChart`, `ReferenceLine`); comparación entre campañas → **tabla con barras inline**
-  (`MiniProgress`) + delta chips; dimensiones del equipo → **radar**.
-- **Color accesible y semántico**: `success/warning/danger` por umbral (`scoreVar()`); el
-  **Fucsia** se reserva para el dato/serie más importante y el modo oscuro.
-- **Alertas legibles**: franja de severidad a la izquierda + icono por tipo + jerarquía título/desc.
-- **Tooltips de marca** (`BrandTooltip`) achaflanados y consistentes con el tema.
+## Visualización de datos (dataviz)
+
+El sistema de indicadores (`frontend/components/dashboard/viz.tsx`) mantiene el nivel
+enterprise sin romper la sobriedad plana de la marca: la riqueza viene de la
+**tipografía, la dataviz y el uso medido del acento**, no de sombras pesadas.
+
+Principios aplicados:
+
+- **Lo importante primero:** un **gauge de score** como elemento héroe, cifras grandes
+  en mono con `tabular-nums`, eyebrow en mayúsculas + titular en caso frase por sección.
+- **Contexto, no solo cifras:** cada KPI lleva su **delta vs periodo anterior**
+  (`DeltaPill`, flecha + color semántico) y, cuando aplica, sparkline o progreso a meta.
+- **Gráfico correcto por dato:** score 0-100 → anillo (`ScoreGauge`); distribución →
+  donut con etiqueta central (`Donut`); evolución → área con gradiente y línea de meta
+  (`CallsTrendChart`); comparación entre campañas → tabla con barras inline
+  (`MiniProgress`) + delta chips; dimensiones del equipo → radar.
+- **Color accesible y semántico:** `success`/`warning`/`danger` por umbral
+  (`scoreVar()`); el **rust** se reserva para la serie o el dato más importante.
+- **Alertas legibles:** franja de severidad a la izquierda + icono por tipo + jerarquía
+  título/descripción.
+- **Tooltips de marca** (`BrandTooltip`) con `rounded-card`, coherentes con el tema.
 
 | Primitiva | Para qué |
 |---|---|
@@ -187,10 +263,24 @@ Principios aplicados (mejores prácticas de dashboards B2B):
 | `Donut` | Distribución con valor/etiqueta central |
 | `MiniProgress` | Barra horizontal compacta (tablas, compliance) |
 | `DeltaPill` | Variación vs periodo anterior (flecha + color) |
-| `BrandTooltip` | Tooltip de Recharts con estilo Minsait |
+| `BrandTooltip` | Tooltip de Recharts con el estilo de la marca |
 | `StatCard` | KPI premium: label + valor + delta + sparkline/meta (`stat-card.tsx`) |
 | `SectionHeader`/`Eyebrow` | Ritmo y jerarquía de secciones (`ui/section.tsx`) |
 | `CallsTrendChart` | Volumen (área) + score medio (línea) + meta (`trend-chart.tsx`) |
 
-> **Reutiliza estas primitivas** en vez de crear gráficos sueltos; todas leen las variables CSS
-> (tema claro/oscuro automático) y respetan la paleta. Fuente de verdad del color: `globals.css`.
+> **Reutiliza estas primitivas** en vez de crear gráficos sueltos: todas leen las
+> variables CSS (tema claro/oscuro automático) y respetan la paleta. Implementación
+> canónica del color: `globals.css`.
+
+## Tono de voz
+
+Directo y objetivo, nunca punitivo ni robótico. La plataforma evalúa a personas reales.
+
+**Así sí:** *"Faltó mencionar la TEA en el minuto 3. Cubrir esto sube el score en 6 puntos."*
+· *"No se pudo procesar el audio. Vuelve a subirlo o revisa el formato del archivo."*
+
+**Así no:** *"¡El asesor falló en cumplir con los requisitos obligatorios!"*
+· *"Ocurrió un error inesperado. Contacte al administrador del sistema."*
+
+Voz activa, sin disculpas en los errores, sin adjetivos de venta, y nombrando las cosas
+como las entiende un asesor o un jefe de campaña, no como están construidas por dentro.

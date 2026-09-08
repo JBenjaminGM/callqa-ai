@@ -193,7 +193,7 @@ export default function NewCampaignPage() {
           </Card>
 
           {info && (
-            <div className="rounded-lg border border-info/30 bg-info/10 px-4 py-3 text-body text-info">
+            <div className="rounded-card border border-info/30 bg-info/10 px-4 py-3 text-body text-info">
               {info}
             </div>
           )}

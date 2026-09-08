@@ -8,7 +8,6 @@ import {
   Download,
   RefreshCw,
   Trash2,
-  FileAudio,
   UserPlus,
 } from 'lucide-react';
 import {
@@ -21,6 +20,7 @@ import {
 import { api, getErrorMessage } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Card, CardTitle } from '@/components/ui/card';
+import { TranscriptPlayer } from '@/components/calls/transcript-player';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { PriorityBadge, ScoreBadge, StatusBadge } from '@/components/ui/badge';
@@ -112,7 +112,7 @@ export default function CallDetailPage() {
                   {callAgentName(call)}
                   {!call.agent && call.detected_agent_name && (
                     <span
-                      className="rounded-md bg-warning/15 px-2 py-0.5
+                      className="rounded-control bg-warning/15 px-2 py-0.5
                                  text-small font-medium text-warning"
                     >
                       Detectado por IA · sin registrar
@@ -287,7 +287,7 @@ export default function CallDetailPage() {
                       {call.analysis.recommendations.map((rec, i) => (
                         <div
                           key={i}
-                          className="rounded-lg border border-border bg-bg-secondary p-3"
+                          className="rounded-card border border-border bg-bg-secondary p-3"
                         >
                           <div className="mb-1 flex items-center gap-2">
                             <PriorityBadge priority={rec.priority} />
@@ -314,42 +314,13 @@ export default function CallDetailPage() {
               <ConversationMetricsCard metrics={call.conversation_metrics} />
             )}
 
-            {/* Transcripción */}
+            {/* Transcripción sincronizada con el audio */}
             {call.transcription && (
-              <Card>
-                <CardTitle className="mb-3">Transcripción</CardTitle>
-                <div className="mb-3 flex items-center gap-2 text-small text-text-muted">
-                  <FileAudio size={14} />
-                  {call.audio_filename ?? 'audio'}
-                </div>
-                <div className="flex max-h-96 flex-col gap-2 overflow-y-auto">
-                  {call.transcription.segments.length > 0 ? (
-                    call.transcription.segments.map((seg, i) => (
-                      <div key={i} className="flex gap-3">
-                        <span className="w-12 shrink-0 font-mono text-small text-text-muted">
-                          {formatDuration(seg.start)}
-                        </span>
-                        <span
-                          className={
-                            seg.speaker === 'agent'
-                              ? 'text-small font-semibold text-accent-primary'
-                              : 'text-small font-semibold text-info'
-                          }
-                        >
-                          {seg.speaker === 'agent' ? 'Ejecutivo' : 'Cliente'}:
-                        </span>
-                        <span className="text-small text-text-secondary">
-                          {seg.text}
-                        </span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-small text-text-secondary">
-                      {call.transcription.full_text}
-                    </p>
-                  )}
-                </div>
-              </Card>
+              <TranscriptPlayer
+                callId={call.id}
+                transcription={call.transcription}
+                audioFilename={call.audio_filename}
+              />
             )}
 
             <p className="text-small text-text-muted">

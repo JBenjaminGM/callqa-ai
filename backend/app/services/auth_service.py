@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.utils.security import verify_password
 
-logger = logging.getLogger("callqa.auth")
+logger = logging.getLogger("callaibrate.auth")
 
 
 def authenticate_user(db: Session, email: str, password: str) -> User | None:

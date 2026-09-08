@@ -51,7 +51,7 @@ export function Header({ title }: { title: string }) {
         <button
           onClick={logout}
           aria-label="Cerrar sesión"
-          className="flex h-10 w-10 items-center justify-center rounded-lg
+          className="flex h-10 w-10 items-center justify-center rounded-control
                      text-text-secondary transition-colors hover:bg-bg-accent/40"
         >
           <LogOut size={18} />

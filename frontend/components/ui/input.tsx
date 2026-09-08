@@ -1,14 +1,14 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
-// Estilo común de los inputs Minsait: superficie sólida, foco con glow Fucsia.
+// Estilo común de los inputs: superficie sólida, radio de control y foco Rust.
 const base =
-  'w-full rounded-lg border border-border bg-[var(--glass-bg)] ' +
+  'w-full rounded-control border border-border bg-[var(--glass-bg)] ' +
   'text-text-primary placeholder:text-text-muted transition-all ' +
   'focus:border-accent-primary focus:shadow-[0_0_0_3px_var(--glow)] ' +
   'focus:outline-none disabled:opacity-50';
 
-/** Campo de texto con foco resaltado en Fucsia. */
+/** Campo de texto con el foco resaltado en el acento de marca. */
 export const Input = forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement>

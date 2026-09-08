@@ -1,7 +1,7 @@
-# 🎨 CallQA AI — Frontend
+# 🎨 CallAIbrate — Frontend
 
 Interfaz web de la plataforma de Quality Assurance automatizado para call centers
-bancarios (Minsait / Grupo Indra). Construida con **Next.js 14**, TypeScript y
+del sector banca. Construida con **Next.js 14**, TypeScript y
 Tailwind CSS.
 
 > ⚠️ **No utilizar con datos reales de clientes sin la aprobación previa de
@@ -20,7 +20,7 @@ se adaptan al rol:
 - **asesor:** solo ve su ficha, sus llamadas y su panel **"Mi rendimiento"**
   (`/mi-panel`); recibe los demás accesos bloqueados por guard de rol.
 
-Se conecta al backend de CallQA AI mediante su API REST.
+Se conecta al backend de CallAIbrate mediante su API REST.
 
 ---
 
@@ -35,7 +35,7 @@ Se conecta al backend de CallQA AI mediante su API REST.
 | Estado de sesión | Zustand (persistido en localStorage) |
 | Formularios | React Hook Form + Zod |
 | Gráficos | Recharts |
-| Tipografía | ForFuture Sans (woff2 locales en `public/fonts`) |
+| Tipografía | Manrope · Inter · IBM Plex Mono (`next/font/google`) |
 | Iconos | lucide-react |
 
 ---
@@ -43,7 +43,7 @@ Se conecta al backend de CallQA AI mediante su API REST.
 ## 3. Requisitos previos
 
 - **Node.js 18 o superior** — https://nodejs.org
-- El **backend de CallQA AI** corriendo (local con Docker, o desplegado en Render).
+- El **backend de CallAIbrate** corriendo (local con Docker, o desplegado en Render).
 
 ---
 
@@ -71,13 +71,17 @@ Abre **http://localhost:3000**.
 
 ### Cuentas sembradas
 
-| Rol | Email | Contraseña |
-|---|---|---|
-| admin | `admin@callqa.com` | `Admin123!` |
-| jefe | `jefe@callqa.com` | `Jefe123!` |
-| asesor | email del ejecutivo (p. ej. `maria@banco.com`) | `Asesor123!` |
+| Rol | Email |
+|---|---|
+| admin | `admin@callaibrate.com` |
+| jefe | `jefe@callaibrate.com` |
+| asesor | el email del ejecutivo (p. ej. `maria@banco.com`) |
 
-> El login ya no muestra credenciales en pantalla: úsalas desde aquí.
+> **Las contraseñas se generan al azar en el primer *seed* y se imprimen una sola
+> vez.** Léelas con `docker compose logs api`, o fíjalas tú definiendo
+> `SEED_ADMIN_PASSWORD`, `SEED_JEFE_PASSWORD` y `SEED_ASESOR_PASSWORD` antes de
+> sembrar. Si una cuenta todavía usa una de las contraseñas que llegaron a estar
+> publicadas en el repositorio, el *seed* la rota automáticamente.
 
 ---
 
@@ -111,7 +115,7 @@ https://callqa-ai.vercel.app (API: https://callqa-api.onrender.com).
 ```
 frontend/
 ├── app/
-│   ├── layout.tsx          # Layout raíz: fuentes (ForFuture Sans), tema, providers
+│   ├── layout.tsx          # Layout raíz: fuentes (next/font/google), tema, providers
 │   ├── providers.tsx       # TanStack Query
 │   ├── page.tsx            # Redirección inicial (por rol)
 │   ├── login/page.tsx      # Inicio de sesión
@@ -134,31 +138,32 @@ frontend/
 │   ├── queries.ts          # Hooks de TanStack Query
 │   └── utils.ts            # Helpers (formato, scores, clases)
 ├── public/
-│   ├── fonts/              # ForFuture Sans (woff2)
-│   └── brand/              # Logo oficial Minsait
+│   └── favicon.svg         # Ícono waveform de la marca
 ├── types/index.ts          # Tipos que reflejan la API
 └── tailwind.config.ts      # Sistema de diseño
 ```
 
 ---
 
-## 7. Sistema de diseño — identidad Minsait
+## 7. Sistema de diseño — identidad CallAIbrate
 
-La paleta (modo claro y oscuro) está definida como variables CSS en
-`app/globals.css` (implementación **canónica**) y mapeada a Tailwind en
-`tailwind.config.ts`.
+La fuente de verdad de la marca es **[`docs/BRAND.md`](../docs/BRAND.md)**. La
+implementación canónica del color son las variables CSS de `app/globals.css`,
+mapeadas a Tailwind en `tailwind.config.ts`.
 
-- **Paleta oficial Minsait:** Pruno (#480E2A) y Gris Cerámica (#E3E2DA)
-  **dominan**; Fucsia (#FF0054) **solo** como acento.
-- **Modo claro por defecto** (Gris Cerámica) + modo oscuro Pruno; el toggle del
-  header persiste la elección en `localStorage`.
-- **Sidebar** siempre Pruno con el logo blanco.
-- **Tipografía** ForFuture Sans; titulares en minúscula con la palabra clave en
-  Fucsia ("calidad con impacto"); CTA = píldora Fucsia.
-- **Contenedores achaflanados** (clase `.chamfer`).
-- Scores con color semántico: verde (80-100), amarillo (60-79), rojo (0-59).
+- **Paleta:** paper (#F5F1E8) e ink (#2A2420) dominan; **rust** (#B8441F) es el
+  acento de marca y **gold** (#A67C27) el secundario.
+- **Modo claro por defecto** + modo oscuro derivado; el toggle del header
+  persiste la elección en `localStorage`.
+- **Sidebar** siempre en ink, con el wordmark en negativo y el "AI" en rust.
+- **Tipografía:** Manrope en titulares, Inter en cuerpo y UI, IBM Plex Mono
+  **solo** para datos numéricos (scores, IDs, marcas de tiempo).
+- **Radios:** 8px en contenedores (`rounded-card`), 6px en controles
+  (`rounded-control`). Sombras sutiles, sin glassmorphism ni gradientes.
+- Scores con color semántico: verde (80-100), ámbar (60-79), rojo (0-59).
 
-> La paleta Índigo/Slate y el lenguaje "Aetheric Intelligence" están **obsoletos**.
+> Las identidades anteriores (Minsait Pruno/Cerámica/Fucsia con ForFuture Sans,
+> Índigo/Slate "Aetheric Intelligence") están **obsoletas**.
 
 ---
 

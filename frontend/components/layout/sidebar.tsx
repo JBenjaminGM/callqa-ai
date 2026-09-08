@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isManager, useAuthStore } from '@/lib/auth';
+import { Wordmark } from '@/components/brand/logo';
 
 // Navegación para roles de gestión (admin / jefe).
 const MANAGER_NAV = [
@@ -30,25 +31,22 @@ const ASESOR_NAV = [
   { href: '/calls', label: 'Mis llamadas', icon: Phone },
 ];
 
-/** Barra lateral de navegación — fondo Pruno con el logo blanco Minsait (negativo). */
+/**
+ * Barra lateral de navegación: lienzo Ink con el wordmark en negativo.
+ *
+ * Los colores van en literal y no como `bg-ink`/`text-paper` porque el lateral
+ * debe permanecer oscuro también en modo oscuro, donde esos tokens se invierten.
+ */
 export function Sidebar() {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const navItems = isManager(user) ? MANAGER_NAV : ASESOR_NAV;
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col bg-[var(--pruno)] p-3 text-white">
-      {/* Lockup de marca: logo blanco Minsait + nombre del producto */}
-      <div className="mb-6 px-2 pt-4">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/brand/minsait-logo-blanco.svg"
-          alt="Minsait"
-          width={150}
-          height={15}
-          className="h-auto w-[150px]"
-        />
-        <p className="destacado mt-3 text-[11px] text-white/55">CallQA AI</p>
+    <aside className="flex w-60 shrink-0 flex-col bg-[#2a2420] p-3 text-paper">
+      {/* Lockup de marca. El "AI" va en Rust; el resto hereda el color del texto. */}
+      <div className="mb-6 px-2 pt-4 text-[#f5f1e8]">
+        <Wordmark size="md" />
       </div>
 
       <nav className="flex flex-col gap-1">
@@ -65,10 +63,10 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-body transition-colors',
+                'flex items-center gap-3 rounded-control px-3 py-2.5 text-body transition-colors',
                 active
-                  ? 'bg-[var(--fucsia)] font-bold text-[var(--pruno-oscuro)]'
-                  : 'text-white/75 hover:bg-white/10 hover:text-white',
+                  ? 'bg-[#b8441f] font-semibold text-white'
+                  : 'text-[#f5f1e8]/70 hover:bg-white/10 hover:text-[#f5f1e8]',
               )}
             >
               <Icon size={18} />
@@ -78,8 +76,8 @@ export function Sidebar() {
         })}
       </nav>
 
-      <p className="mt-auto px-3 pb-2 text-[11px] lowercase tracking-wide text-white/45">
-        tech for <span className="text-[var(--fucsia)]">impact</span>
+      <p className="mt-auto px-3 pb-2 text-[11px] leading-snug text-[#f5f1e8]/45">
+        Calibra la calidad de cada llamada con IA.
       </p>
     </aside>
   );

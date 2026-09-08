@@ -4,26 +4,17 @@ import { cn } from '@/lib/utils';
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant;
-  size?: Size;
-}
-
 const variants: Record<Variant, string> = {
-  // CTA principal Minsait: píldora Fucsia con etiqueta "destacado" (bold mayúsculas).
-  primary:
-    'bg-[var(--fucsia)] text-[var(--pruno-oscuro)] font-bold uppercase tracking-wide ' +
-    'hover:-translate-y-px disabled:opacity-50',
-  // Secundaria: contorno Pruno (estilo "ghost on light"), se rellena al hover.
+  // CTA principal: sólido en el acento de marca.
+  primary: 'bg-rust text-white hover:opacity-90 disabled:opacity-50',
+  // Secundaria: contorno, se rellena al pasar el ratón.
   secondary:
-    'bg-transparent text-accent-primary border-2 border-accent-primary ' +
-    'hover:bg-accent-primary hover:text-white disabled:opacity-50',
+    'bg-transparent text-rust border border-rust ' +
+    'hover:bg-rust hover:text-white disabled:opacity-50',
   // Terciaria discreta.
-  ghost:
-    'bg-transparent text-text-primary hover:bg-bg-accent disabled:opacity-50',
+  ghost: 'bg-transparent text-text-primary hover:bg-bg-accent disabled:opacity-50',
   // Acción destructiva.
-  danger:
-    'bg-danger text-white font-bold uppercase tracking-wide hover:opacity-90 disabled:opacity-50',
+  danger: 'bg-danger text-white hover:opacity-90 disabled:opacity-50',
 };
 
 const sizes: Record<Size, string> = {
@@ -32,14 +23,19 @@ const sizes: Record<Size, string> = {
   lg: 'h-12 px-7 text-body',
 };
 
-/** Botón reutilizable con las variantes de la identidad Minsait (CTA = píldora Fucsia). */
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: Variant;
+  size?: Size;
+}
+
+/** Botón reutilizable. Radio de 6px y sombra sutil, según docs/BRAND.md. */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', ...props }, ref) => (
     <button
       ref={ref}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-full font-medium',
-        'transition-all duration-200 disabled:cursor-not-allowed',
+        'inline-flex items-center justify-center gap-2 rounded-control font-medium',
+        'transition-colors duration-200 disabled:cursor-not-allowed',
         variants[variant],
         sizes[size],
         className,

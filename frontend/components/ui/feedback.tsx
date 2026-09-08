@@ -47,7 +47,7 @@ export function EmptyState({
 /** Mensaje de error en pantalla. */
 export function ErrorState({ message }: { message: string }) {
   return (
-    <div className="rounded-lg border border-danger/30 bg-danger/10 p-4 text-body text-danger">
+    <div className="rounded-card border border-danger/30 bg-danger/10 p-4 text-body text-danger">
       {message}
     </div>
   );

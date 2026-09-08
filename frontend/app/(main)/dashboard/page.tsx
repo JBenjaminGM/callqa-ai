@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, Clock, Phone, X } from 'lucide-react';
+import { AlertCircle, Clock, Download, Phone, X } from 'lucide-react';
 import {
   useAgents,
   useCampaigns,
@@ -12,7 +12,7 @@ import {
   useSettings,
   useTopRecommendations,
 } from '@/lib/queries';
-import { getErrorMessage } from '@/lib/api';
+import { api, getErrorMessage } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Card, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,13 +41,14 @@ const PERIODS = [
   { value: '90d', label: '90 días' },
 ];
 
-/** Dashboard del jefe — analítica de alto impacto con identidad Minsait. */
+/** Dashboard del jefe: analítica de alto impacto del equipo. */
 export default function DashboardPage() {
   const [period, setPeriod] = useState('30d');
   const [campaign, setCampaign] = useState('');
   const [agentId, setAgentId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   const { data: agents } = useAgents();
   const { data: campaigns } = useCampaigns();
@@ -70,6 +71,30 @@ export default function DashboardPage() {
     campaign: campaign || undefined,
   });
 
+  /** Descarga el reporte del equipo en CSV con los filtros que están aplicados. */
+  async function exportCsv() {
+    setExporting(true);
+    try {
+      const res = await api.get('/dashboard/report.csv', {
+        responseType: 'blob',
+        params: {
+          period,
+          campaign: campaign || undefined,
+          date_from: dateFrom || undefined,
+          date_to: dateTo || undefined,
+        },
+      });
+      const url = URL.createObjectURL(res.data as Blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `reporte-equipo-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }
+
   const datesActive = Boolean(dateFrom || dateTo);
   const hasFilters = Boolean(campaign || agentId || dateFrom || dateTo);
   function clearFilters() {
@@ -90,14 +115,14 @@ export default function DashboardPage() {
         {/* ---------- Toolbar de filtros ---------- */}
         <Card className="mb-6 flex flex-wrap items-center gap-3 p-3.5">
           {/* Control segmentado de periodo */}
-          <div className="flex rounded-full bg-bg-accent p-0.5" role="tablist">
+          <div className="flex rounded-control bg-bg-accent p-0.5" role="tablist">
             {PERIODS.map((p) => (
               <button
                 key={p.value}
                 onClick={() => setPeriod(p.value)}
                 disabled={datesActive}
                 className={cn(
-                  'rounded-full px-3.5 py-1.5 text-small font-semibold transition-colors disabled:opacity-40',
+                  'rounded-control px-3.5 py-1.5 text-small font-semibold transition-colors disabled:opacity-40',
                   period === p.value && !datesActive
                     ? 'bg-accent-primary text-white shadow-sm'
                     : 'text-text-secondary hover:text-text-primary',
@@ -139,6 +164,17 @@ export default function DashboardPage() {
               <X size={16} /> Limpiar
             </Button>
           )}
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={exportCsv}
+            disabled={exporting}
+            className="ml-auto"
+          >
+            <Download size={16} />
+            {exporting ? 'Preparando…' : 'Exportar CSV'}
+          </Button>
         </Card>
 
         {isLoading && (
@@ -162,7 +198,7 @@ export default function DashboardPage() {
             }
             action={
               hasFilters ? undefined : (
-                <Link href="/calls/new" className="rounded-full bg-accent-primary px-4 py-2 text-body text-white">
+                <Link href="/calls/new" className="rounded-control bg-rust px-4 py-2 text-body text-white">
                   Subir llamada
                 </Link>
               )
@@ -174,7 +210,7 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-8">
             {/* ---------- Resumen ---------- */}
             <section className="flex flex-col gap-3">
-              <SectionHeader eyebrow="visión general" title={<>calidad con <span className="hl">impacto</span></>} />
+              <SectionHeader eyebrow="visión general" title={<>Calidad con <span className="hl">impacto</span></>} />
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                 {/* Gauge héroe */}
                 <Card className="flex flex-col items-center justify-center gap-3 text-center">
@@ -212,7 +248,7 @@ export default function DashboardPage() {
 
             {/* ---------- Tendencias ---------- */}
             <section className="flex flex-col gap-3">
-              <SectionHeader eyebrow="tendencias" title={<>evolución y <span className="hl">distribución</span></>} />
+              <SectionHeader eyebrow="tendencias" title={<>Evolución y <span className="hl">distribución</span></>} />
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
                 <div className="lg:col-span-3">
                   <CallsTrendChart data={data.calls_by_day} target={target} />
@@ -225,7 +261,7 @@ export default function DashboardPage() {
 
             {/* ---------- Campañas y equipo ---------- */}
             <section className="flex flex-col gap-3">
-              <SectionHeader eyebrow="desempeño" title={<>campañas y <span className="hl">equipo</span></>} />
+              <SectionHeader eyebrow="desempeño" title={<>Campañas y <span className="hl">equipo</span></>} />
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {byCampaign && <CampaignKpiTable rows={byCampaign} />}
                 <TeamRadar averages={data.team_dimension_averages} />
@@ -234,18 +270,18 @@ export default function DashboardPage() {
 
             {/* ---------- Señales ---------- */}
             <section className="flex flex-col gap-3">
-              <SectionHeader eyebrow="señales" title={<>alertas y <span className="hl">oportunidades</span></>} />
+              <SectionHeader eyebrow="señales" title={<>Alertas y <span className="hl">oportunidades</span></>} />
               <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
                 {alerts && <AlertsPanel alerts={alerts} />}
                 {topProblems && <TopProblems items={topProblems} />}
               </div>
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <Card>
-                  <CardTitle className="mb-3">mejor <span className="hl">desempeño</span></CardTitle>
+                  <CardTitle className="mb-3">Mejor <span className="hl">desempeño</span></CardTitle>
                   <RankingList items={data.top_performers} />
                 </Card>
                 <Card>
-                  <CardTitle className="mb-3">oportunidad de <span className="hl">mejora</span></CardTitle>
+                  <CardTitle className="mb-3">Oportunidad de <span className="hl">mejora</span></CardTitle>
                   <RankingList items={data.improvement_opportunities} />
                 </Card>
               </div>
@@ -254,7 +290,7 @@ export default function DashboardPage() {
             {/* ---------- Conversación ---------- */}
             {data.conversation_summary && (
               <section className="flex flex-col gap-3">
-                <SectionHeader eyebrow="cómo se habla" title={<>dinámica de <span className="hl">conversación</span></>} />
+                <SectionHeader eyebrow="cómo se habla" title={<>Dinámica de <span className="hl">conversación</span></>} />
                 <ConversationStats summary={data.conversation_summary} />
               </section>
             )}
@@ -273,17 +309,17 @@ function RankingList({ items }: { items: AgentScore[] }) {
     <ul className="flex flex-col gap-1">
       {items.map((item, i) => {
         const content = (
-          <div className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-bg-accent/50">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg-accent text-small font-bold tabular-nums text-text-secondary">
+          <div className="flex items-center gap-3 rounded-card px-2 py-2 transition-colors hover:bg-bg-accent/50">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg-accent text-small font-mono font-semibold tabular-nums text-text-secondary">
               {i + 1}
             </span>
             <span className="flex-1 truncate text-body text-text-primary">{item.name}</span>
             {!item.registered && (
-              <span className="rounded-md bg-warning/15 px-1.5 py-0.5 text-[11px] font-medium text-warning">
+              <span className="rounded-control bg-warning/15 px-1.5 py-0.5 text-[11px] font-medium text-warning">
                 sin registrar
               </span>
             )}
-            <span className="text-small tabular-nums text-text-muted">{item.total_calls} ll.</span>
+            <span className="text-small font-mono tabular-nums text-text-muted">{item.total_calls} ll.</span>
             <ScoreBadge score={Math.round(item.avg_score)} />
           </div>
         );

@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/feedback';
+import { Wordmark } from '@/components/brand/logo';
 import type { TokenResponse } from '@/types';
 
 const loginSchema = z.object({
@@ -49,34 +50,17 @@ export default function LoginPage() {
     <div className="flex min-h-screen flex-col bg-bg-primary">
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-md animate-fade-in">
-          {/* Contenedor achaflanado con la marca Minsait y el dispositivo de titular */}
-          <div className="chamfer bg-bg-card p-8 sm:p-10">
-            {/* Logo Minsait: positivo (Pruno) en claro, blanco en oscuro */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/brand/minsait-logo-pruno.svg"
-              alt="Minsait"
-              width={160}
-              height={16}
-              className="block h-auto w-[160px] dark:hidden"
-            />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/brand/minsait-logo-blanco.svg"
-              alt="Minsait"
-              width={160}
-              height={16}
-              className="hidden h-auto w-[160px] dark:block"
-            />
+          {/* Tarjeta de acceso con el lockup de marca y el titular */}
+          <div className="rounded-card border border-border bg-bg-card p-8 shadow-sm sm:p-10">
+            <Wordmark size="lg" />
 
-            {/* Titular: minúscula, palabra clave en Fucsia, sin punto final */}
             <h1 className="mt-7 text-display text-text-primary">
-              calidad con
+              Calibra la calidad
               <br />
-              <span className="hl">impacto</span>
+              de cada <span className="hl">llamada</span>
             </h1>
             <p className="destacado mt-3 text-[11px] text-text-muted">
-              CallQA AI · Quality Assurance con IA
+              Quality Assurance con IA
             </p>
 
             {/* Formulario */}
@@ -86,7 +70,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@callqa.com"
+                placeholder="tu@empresa.com"
                 autoComplete="email"
                 {...register('email')}
               />
@@ -114,7 +98,7 @@ export default function LoginPage() {
             </div>
 
             {serverError && (
-              <p className="mb-4 rounded-lg bg-danger/10 px-3 py-2 text-small text-danger">
+              <p className="mb-4 rounded-control bg-danger/10 px-3 py-2 text-small text-danger">
                 {serverError}
               </p>
             )}

@@ -1,7 +1,7 @@
-# 🎧 CallQA AI — Backend
+# 🎧 CallAIbrate — Backend
 
 Backend de la plataforma de Quality Assurance automatizado para call centers
-bancarios (Minsait / Grupo Indra). Permite subir grabaciones de llamadas,
+bancarios del sector banca. Permite subir grabaciones de llamadas,
 transcribirlas con IA y evaluarlas automáticamente contra una rúbrica dinámica
 (7 dimensiones por defecto, con subcriterios activables).
 
@@ -98,13 +98,17 @@ El arranque ejecuta automáticamente las migraciones y el *seed* de datos.
 
 ### Cuentas sembradas
 
-| Rol | Email | Contraseña |
-|---|---|---|
-| admin | `admin@callqa.com` | `Admin123!` |
-| jefe | `jefe@callqa.com` | `Jefe123!` |
-| asesor | email del ejecutivo (p. ej. `maria@banco.com`) | `Asesor123!` |
+| Rol | Email |
+|---|---|
+| admin | `admin@callaibrate.com` |
+| jefe | `jefe@callaibrate.com` |
+| asesor | el email del ejecutivo (p. ej. `maria@banco.com`) |
 
-> El *seed* no imprime contraseñas y el login no muestra credenciales: úsalas desde aquí.
+> **Las contraseñas se generan al azar en el primer *seed* y se imprimen una sola
+> vez.** Léelas con `docker compose logs api`, o fíjalas tú definiendo
+> `SEED_ADMIN_PASSWORD`, `SEED_JEFE_PASSWORD` y `SEED_ASESOR_PASSWORD` antes de
+> sembrar. Si una cuenta todavía usa una de las contraseñas que llegaron a estar
+> publicadas en el repositorio, el *seed* la rota automáticamente.
 
 ---
 
@@ -245,7 +249,7 @@ del reintento, modo inline, umbrales QA y creación del login de asesor.
 
 ---
 
-## 10. Notas sobre portabilidad (contexto Minsait/Indra)
+## 10. Notas sobre portabilidad
 
 El código está preparado para migrar a infraestructura Azure sin reescribirse:
 

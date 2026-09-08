@@ -1,1 +1,1 @@
-"""Paquete principal del backend de CallQA AI."""
+"""Paquete principal del backend de CallAIbrate."""

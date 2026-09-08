@@ -1,4 +1,4 @@
-"""Esquema inicial de CallQA AI
+"""Esquema inicial de CallAIbrate
 
 Revision ID: 0001
 Revises:

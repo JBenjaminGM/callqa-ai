@@ -1,14 +1,14 @@
-# 📚 Índice de documentación — CallQA AI
+# 📚 Índice de documentación — CallAIbrate
 
 > Toda la documentación del proyecto vive en esta carpeta **`docs/`**. Este es el
 > punto de entrada. En la raíz del repo solo quedan `README.md` y los punteros
 > `AGENTS.md` / `CLAUDE.md` (para que las IAs los descubran y apunten aquí).
 
-**CallQA AI** — plataforma de **QA automatizado con IA** para call centers bancarios
-(Minsait / Grupo Indra). Desplegada en vivo:
+**CallAIbrate** — *Calibra la calidad de cada llamada con IA.* Plataforma de QA
+automatizado para call centers del sector banca. Desplegada en vivo:
 
 - 🌐 Frontend: https://callqa-ai.vercel.app · Backend: https://callqa-api.onrender.com
-- 👤 Cuentas sembradas por rol: `admin@callqa.com` / `Admin123!` · `jefe@callqa.com` / `Jefe123!` · asesor (email del ejecutivo) / `Asesor123!`
+- 👤 Cuentas sembradas: `admin@callaibrate.com`, `jefe@callaibrate.com` y un asesor por ejecutivo demo. **Las contraseñas se generan al azar y se imprimen una vez** (`docker compose logs api`).
 
 > Dos repos: **`callqa-ai`** (privado, completo, fuente de verdad — este) y **`callqa`**
 > (público, solo código limpio). Ver `AGENTS.md` §16.
@@ -23,8 +23,10 @@
 | Ver el estado actual, casos de uso, reglas de negocio y lo pendiente | `ESTADO_DEL_PROYECTO.md` |
 | Ver el historial de cambios | `CHANGELOG.md` |
 | **Publicar / desplegar gratis** | `DEPLOY_GRATIS.md` |
-| Sistema de diseño / colores (identidad Minsait) | `DESIGN.md` |
-| Presentar al cliente / stakeholders | `CallQA_AI_Presentacion.pptx` |
+| **Identidad de marca** (color, tipografía, tono) | **`BRAND.md`** ⭐ |
+| Sistema de diseño e implementación | `DESIGN.md` |
+| Validaciones legales previas a producción real | `COMPLIANCE_CHECKLIST.md` |
+| Renombrar servicios, repos y dominios | `RENOMBRADO_INFRA.md` |
 
 ---
 
@@ -37,16 +39,26 @@
   reglas de negocio, gobernanza/compliance y qué queda.
 - **`CHANGELOG.md`** — Historial de cambios (con commits).
 - **`DEPLOY_GRATIS.md`** — Despliegue gratis paso a paso (Vercel + Render).
-- **`DESIGN.md`** — Sistema de diseño con la **identidad oficial Minsait** (Pruno
-  `#480E2A` + Gris Cerámica `#E3E2DA` dominan, Fucsia `#FF0054` de acento; ForFuture
-  Sans; contenedores achaflanados). *La fuente de verdad del color es
-  `frontend/app/globals.css` + `tailwind.config.ts`.*
-- **`CallQA_AI_Presentacion.pptx`** — Slides para presentar al cliente.
+- **`BRAND.md`** — **Fuente de verdad de la marca CallAIbrate**: paleta (paper/ink
+  con acentos rust y gold), tipografías Manrope/Inter/IBM Plex Mono, wordmark, formas
+  y tono de voz. Cualquier cambio visual empieza aquí.
+- **`DESIGN.md`** — Cómo se implementa `BRAND.md` en la app: tokens, componentes y
+  dataviz. *La implementación canónica del color es `frontend/app/globals.css` +
+  `tailwind.config.ts`.*
+- **`COMPLIANCE_CHECKLIST.md`** — Comprobaciones de Compliance, DPO y Seguridad que
+  deben cerrarse antes de tratar grabaciones reales de clientes.
+- **`RENOMBRADO_INFRA.md`** — Pasos para alinear la infraestructura (repos de GitHub,
+  servicios de Render, proyecto de Vercel) con el nombre nuevo, y por qué no se hizo
+  automáticamente. Incluye cómo actualizar la `GROQ_API_KEY` en Render.
 
 > Los specs de origen numerados (`01`–`07`) y la guía de Railway se **consolidaron**
 > en los docs canónicos de arriba y se eliminaron para mantener `docs/` mínimo y
-> coherente. Toda referencia histórica a "Aetheric Intelligence", paleta Índigo/Slate,
-> Railway o "vista previa/prototipo" está **obsoleta** (ver `AGENTS.md`).
+> coherente. Toda referencia histórica a "CallQA AI", la identidad Minsait
+> (Pruno/Cerámica/Fucsia, ForFuture Sans), "Aetheric Intelligence", paleta
+> Índigo/Slate, Railway o "vista previa/prototipo" está **obsoleta** (ver `AGENTS.md`).
+>
+> La presentación `CallQA_AI_Presentacion.pptx` se **eliminó**: reflejaba la marca
+> anterior e incluía las credenciales demo antiguas.
 
 ---
 

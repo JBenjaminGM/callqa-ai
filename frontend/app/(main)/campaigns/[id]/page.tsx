@@ -116,7 +116,7 @@ export default function CampaignDetailPage() {
 
               {formError && <ErrorState message={formError} />}
               {saved && (
-                <div className="rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-body text-success">
+                <div className="rounded-card border border-success/30 bg-success/10 px-4 py-3 text-body text-success">
                   Cambios guardados.
                 </div>
               )}

@@ -1,9 +1,8 @@
 import { cn } from '@/lib/utils';
 
 /**
- * Tarjeta "contenedor" Minsait: superficie sólida con chaflán (chamfer) en las
- * cuatro esquinas, todas iguales. Plana, sin sombra (el clip-path no recorta
- * sombras); el chaflán se lee por el contraste de relleno con el lienzo.
+ * Tarjeta "contenedor": superficie sólida sobre el lienzo paper, radio de 8px y
+ * sombra sutil. Sin gradientes ni glassmorphism (docs/BRAND.md).
  */
 export function Card({
   className,
@@ -12,7 +11,8 @@ export function Card({
   return (
     <div
       className={cn(
-        'chamfer animate-fade-in bg-bg-card p-5 text-text-primary',
+        'rounded-card animate-fade-in border border-border bg-bg-card p-5',
+        'text-text-primary shadow-sm',
         className,
       )}
       {...props}

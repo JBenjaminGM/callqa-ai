@@ -1,33 +1,37 @@
-# 🧠 Estado del Proyecto — CallQA AI
+# 🧠 Estado del Proyecto — CallAIbrate
 
 > **Memoria de desarrollo.** Este documento resume lo construido, las decisiones y lo pendiente.
 >
 > 👉 **Para el estado MÁS ACTUAL y la guía de desarrollo** (cómo correr, testear, desplegar y
 > dónde tocar cada cosa), ver **[`AGENTS.md`](AGENTS.md)** y **[`CHANGELOG.md`](CHANGELOG.md)**.
 
-**Última actualización:** Junio 2026
+**Última actualización:** Septiembre 2026
 **Estado general:** ✅ Plataforma funcional **desplegada en producción** (Vercel + Render),
-con transcripción y análisis vía **Groq** (coste $0). **78 tests** backend en verde,
-**Fase 2 (analítica de alto impacto)** y **rediseño premium de indicadores** ya en vivo.
+con transcripción y análisis vía **Groq** (coste $0). **87 tests** backend en verde,
+**Fase 2 (analítica de alto impacto)**, **rediseño premium de indicadores** y **rebrand
+a CallAIbrate** aplicados.
 
-> ⚠️ **ACCIÓN PENDIENTE EN PRODUCCIÓN (IA):** la `GROQ_API_KEY` de **Render** está
-> caducada/inválida (la key filtrada que se revocó) → las llamadas nuevas en prod dan
-> `ERROR` con `Groq HTTP 401 Invalid API Key`. **Arreglo (30 s):** Render → servicio
-> `callqa-api` → **Environment** → `GROQ_API_KEY` = la key válida de `backend/.env`
-> (empieza por `gsk_`) → **Save** (redeploy automático). La key vive solo en Render
-> (`sync: false`), **nunca en el repo**.
+> ⚠️ **ACCIÓN PENDIENTE EN PRODUCCIÓN (IA):** la `GROQ_API_KEY` de **Render** sigue
+> siendo la clave filtrada, que está **revocada** (verificado: la API de Groq responde
+> `401`) → las llamadas nuevas en prod terminan en `ERROR`. **Arreglo (30 s):** Render →
+> servicio `callqa-api` → **Environment** → `GROQ_API_KEY` = la clave válida de
+> `backend/.env` (empieza por `gsk_`; verificada, responde `200`) → **Save** (redeploy
+> automático). La clave vive solo en Render (`sync: false`), **nunca en el repo**.
+>
+> ⚠️ El backend de Render **no respondió** durante la última auditoría (sin respuesta en
+> 90 s). Comprobar si el servicio está suspendido o si la base de datos PostgreSQL del
+> plan gratuito caducó (Render las caduca a los 30 días).
 
 ---
 
-## 1. ¿Qué es CallQA AI?
+## 1. ¿Qué es CallAIbrate?
 
 Plataforma web de **Quality Assurance automatizado con IA** para call centers
 bancarios. El usuario sube grabaciones de llamadas; la IA las transcribe
 (Groq Whisper large v3), **enmascara la PII** (best-effort), identifica al
 ejecutivo y las **evalúa** con un LLM (Groq Llama 3.3 70B) contra una rúbrica
 dinámica, produciendo scores por dimensión, un score global ponderado,
-recomendaciones accionables y un reporte PDF. Cliente: Minsait (Grupo Indra),
-sector banca.
+recomendaciones accionables y un reporte PDF. Sector: banca.
 
 > ⚠️ **No debe usarse con datos reales de clientes sin la aprobación previa de
 > Compliance.** Por decisión del responsable, el **banner visible de "vista previa"
@@ -65,7 +69,7 @@ Navegador ──HTTPS──> Frontend (Next.js 14) ──REST──> Backend (Fa
 | Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS |
 | Datos en frontend | TanStack Query + Axios; estado de sesión con Zustand |
 | Gráficos | Recharts |
-| Tipografía | ForFuture Sans (woff2 locales) |
+| Tipografía | Manrope · Inter · IBM Plex Mono (`next/font/google`) |
 | Contenedores | Docker Compose (todo el stack) |
 
 ---
@@ -99,14 +103,13 @@ callqa-ai/
 │
 ├── frontend/                 # Aplicación Next.js
 │   ├── app/                   # Páginas (login + grupo (main) + /campaigns + /mi-panel)
-│   │   └── globals.css        # Tokens de color Minsait (fuente de verdad)
+│   │   └── globals.css        # Tokens de color CallAIbrate (implementación canónica)
 │   ├── components/            # UI, layout, charts, dashboard
 │   ├── lib/
 │   │   └── api.ts             # Axios + resiliencia de cold-start (timeout 90s, reintentos)
-│   ├── public/fonts/          # ForFuture Sans (woff2)
-│   ├── public/brand/          # Logo oficial Minsait
+│   ├── public/favicon.svg     # Ícono waveform de la marca
 │   ├── types/                 # Tipos TypeScript
-│   ├── tailwind.config.ts     # Tokens de color Minsait
+│   ├── tailwind.config.ts     # Mapea los tokens a clases de Tailwind
 │   └── Dockerfile             # Imagen de producción (salida standalone)
 │
 └── docs/                     # TODA la documentación del proyecto
@@ -172,7 +175,7 @@ callqa-ai/
   configuración y **Mi rendimiento** (panel del asesor).
 - **Navegación y redirección por rol**: asesor → `/mi-panel`; admin/jefe →
   `/dashboard`; guard por rol que devuelve 403 a quien no corresponde.
-- Identidad visual **Minsait** (modo claro por defecto, sidebar Pruno).
+- Identidad visual **CallAIbrate** (modo claro por defecto, sidebar en ink).
 - **Dashboard del jefe (Fase 2)**: toolbar compacto con control segmentado, banda
   de resumen con **gauge de score** + KPI cards con delta/sparkline, tendencias
   (área con gradiente + donut de distribución), **tabla de campañas** con barras y
@@ -185,7 +188,7 @@ callqa-ai/
   mensaje "activando el servidor").
 - **Sistema de dataviz premium** (`components/dashboard/viz.tsx`): `ScoreGauge`,
   `Sparkline`, `Donut`, `MiniProgress`, `DeltaPill`, `BrandTooltip`, `StatCard`,
-  `CallsTrendChart` — fiel a la identidad Minsait. Banner de prototipo retirado de la UI.
+  `CallsTrendChart`. Banner de prototipo retirado de la UI.
 
 ---
 
@@ -214,23 +217,26 @@ callqa-ai/
 
 ## 6. Sistema de diseño
 
-Identidad visual oficial **Minsait** (Grupo Indra):
+Identidad **CallAIbrate**. La fuente de verdad de la marca es
+**[`BRAND.md`](BRAND.md)**; **[`DESIGN.md`](DESIGN.md)** explica cómo se implementa.
 
-- Paleta corporativa: **Pruno `#480E2A`** y **Gris Cerámica `#E3E2DA`** dominan;
-  **Fucsia `#FF0054`** únicamente como **acento** (CTA en píldora, palabra clave
-  de los titulares).
-- **Modo claro por defecto** (Gris Cerámica) + **modo oscuro Pruno**.
-- **Sidebar siempre Pruno** con el logo oficial Minsait en blanco.
-- Contenedores **achaflanados** (clase `.chamfer`).
-- Titulares en minúscula con la palabra clave en Fucsia (dispositivo
-  "calidad con impacto").
-- Tipografía **ForFuture Sans** (woff2 locales en `frontend/public/fonts`).
-- **Fuente de verdad del color:** `frontend/app/globals.css` + `tailwind.config.ts`.
+- Paleta: **paper `#F5F1E8`** e **ink `#2A2420`** dominan; **rust `#B8441F`** es el
+  acento de marca y **gold `#A67C27`** el secundario. `success`/`danger` son
+  funcionales, no decorativos.
+- **Modo claro por defecto** + **modo oscuro derivado** (addendum de `BRAND.md`).
+- **Sidebar siempre en ink**, con el wordmark en negativo y el "AI" en rust.
+- Radios de **8px** en contenedores y **6px** en controles; sombras sutiles, sin
+  glassmorphism ni gradientes decorativos.
+- Titulares en **caso frase** con una palabra clave opcional en rust (`.hl`).
+- Tipografías **Manrope / Inter / IBM Plex Mono** (esta última solo para datos
+  numéricos), cargadas con `next/font/google`.
+- **Implementación canónica del color:** `frontend/app/globals.css` + `tailwind.config.ts`.
 
 > Nota histórica: iteraciones previas usaron la paleta corporativa púrpura de
-> Minsait, una paleta Electric Rose / Deep Plum y, más tarde, el sistema
-> "Aetheric Intelligence" con paleta Índigo/Slate; **todas quedaron obsoletas**
-> al adoptar la identidad oficial Minsait actual.
+> Minsait (Pruno / Gris Cerámica / Fucsia con ForFuture Sans y contenedores
+> achaflanados), una paleta Electric Rose / Deep Plum y el sistema "Aetheric
+> Intelligence" con paleta Índigo/Slate; **todas quedaron obsoletas** al adoptar
+> la identidad CallAIbrate actual.
 
 ---
 
@@ -271,9 +277,11 @@ Levanta 5 servicios (postgres, redis, api, worker, frontend).
 
 - Frontend: <http://localhost:3000>
 - API / docs: <http://localhost:8000/docs>
-- Cuentas sembradas: `admin@callqa.com` / `Admin123!` (admin) ·
-  `jefe@callqa.com` / `Jefe123!` (jefe) · un **asesor** por cada ejecutivo demo
-  (su email, p. ej. `maria@banco.com` / `Asesor123!`).
+- Cuentas sembradas: `admin@callaibrate.com` (admin) · `jefe@callaibrate.com`
+  (jefe) · un **asesor** por cada ejecutivo demo (su email, p. ej.
+  `maria@banco.com`). Las contraseñas se **generan al azar** en el primer seed y se
+  imprimen una sola vez (`docker compose logs api`); se pueden fijar con
+  `SEED_ADMIN_PASSWORD` / `SEED_JEFE_PASSWORD` / `SEED_ASESOR_PASSWORD`.
 
 Tests backend (desde `backend/`): `.\.venv\Scripts\python.exe -m pytest -q`.
 Build frontend (desde `frontend/`): `npm run build`.
@@ -360,12 +368,22 @@ caduca a los **90 días**.
 - [x] **Vista de asesor enriquecida** (percentil anónimo en la campaña, "qué cambiar"
       con evidencia, cumplimiento por campaña) — Fase 2.
 - [x] **Rediseño premium de indicadores y UX** (gauge, sparklines, donut, delta chips,
-      tabla de campañas, alertas por severidad) fiel a la identidad Minsait.
+      tabla de campañas, alertas por severidad).
 - [ ] **⚠️ Actualizar `GROQ_API_KEY` en Render** (dashboard, `sync: false`) con la key
       válida para que la IA procese en producción. Es lo único que bloquea la IA en prod.
-- [ ] Reproductor de audio sincronizado con la transcripción.
-- [ ] Exportación masiva (CSV) del reporte del equipo.
-- [ ] Antes de producción real: validaciones de Compliance, DPO y Seguridad.
+- [x] **Reproductor de audio sincronizado** con la transcripción (endpoint
+      `GET /calls/{id}/audio` + `components/calls/transcript-player.tsx`).
+- [x] **Exportación CSV** del reporte del equipo (`GET /dashboard/report.csv` +
+      botón en el dashboard, respeta los filtros activos).
+- [x] **Rebrand a CallAIbrate** (`docs/BRAND.md` + `DESIGN.md`).
+- [x] **Endurecimiento de seguridad:** contraseñas de seed aleatorias con rotación de
+      las publicadas, guardarraíl de `JWT_SECRET` en producción, `datetime.utcnow()`
+      corregido.
+- [ ] Antes de producción real: cerrar **[`COMPLIANCE_CHECKLIST.md`](COMPLIANCE_CHECKLIST.md)**
+      (validaciones de Compliance, DPO y Seguridad).
+- [ ] Renombrado de la infraestructura (servicios de Render, proyecto de Vercel y
+      repositorios) para alinearla con el nombre nuevo. Runbook:
+      **[`RENOMBRADO_INFRA.md`](RENOMBRADO_INFRA.md)**.
 
 ---
 
@@ -377,7 +395,7 @@ caduca a los **90 días**.
 3. **Verificación** con Docker: build, tests, stack levantado.
 4. **Rediseño de flujo**: subida en lote, detección del ejecutivo por IA,
    matching difuso, asignación posterior, filtro por fecha (con tests adicionales).
-5. **Reestilo** a la identidad corporativa (púrpura Minsait).
+5. **Reestilo** a una identidad corporativa púrpura.
 6. **Reestilo** al sistema "Aetheric Intelligence" (glassmorphism, paleta Índigo/Slate).
 7. **Optimización**: frontend a modo producción (salida standalone) y
    reorganización en este **monorepo** con un único `docker-compose.yml`.
@@ -407,7 +425,7 @@ caduca a los **90 días**.
 17. **Rediseño premium de indicadores y UX**: sistema de dataviz de marca
     (`components/dashboard/viz.tsx`) — gauge de score, sparklines, donut, delta
     chips, tabla de campañas, alertas por severidad, toolbar segmentado — fiel a la
-    identidad Minsait. Banner de prototipo **retirado** de la UI.
+    la identidad de entonces. Banner de prototipo **retirado** de la UI.
 18. **Despliegue de Fase 2 + rediseño a producción** (Vercel + Render) y verificación
     (78 tests + suite E2E 13/13 local y prod). Pendiente: actualizar la
     `GROQ_API_KEY` de Render para reactivar la IA en producción.
@@ -416,6 +434,15 @@ caduca a los **90 días**.
     (`require_role`, `kpi-card`, `seed_rubric`, settings de IA que no se leían,
     artefactos Railway), se alinearon comentarios/docstrings al estado real y se
     consolidaron los specs de origen (01–07) en los docs canónicos.
+
+20. **Rebrand a CallAIbrate + mejoras**: nueva identidad (`docs/BRAND.md` como fuente
+    de verdad) con paleta paper/ink y acentos rust/gold, tipografías Manrope / Inter /
+    IBM Plex Mono, wordmark waveform como componente SVG, radios de 8/6 px en lugar de
+    los contenedores achaflanados y titulares en caso frase. Además: **reproductor de
+    audio sincronizado** con la transcripción (endpoint de audio nuevo), **exportación
+    CSV** del reporte de equipo, **contraseñas de seed aleatorias** con rotación de las
+    que llegaron a estar publicadas, **guardarraíl de `JWT_SECRET`** en producción,
+    `datetime.utcnow()` corregido y `COMPLIANCE_CHECKLIST.md`. +9 tests (total **87**).
 
 ---
 
@@ -447,7 +474,7 @@ anónimo, qué cambiar con evidencia, cumplimiento por campaña).
 - **Campañas con nota de producto** (9 campos) → cumplimiento (frases obligatorias,
   claims prohibidos) evaluado de forma determinista y por el LLM.
 
-**Gobernanza y compliance (banca · Minsait/Indra).** El enmascarado es *best-effort*,
+**Gobernanza y compliance (banca).** El enmascarado es *best-effort*,
 **no** garantía, y el **audio crudo sale a Groq (EE. UU.)**. Para **datos reales de
 clientes** se requiere: transcripción y análisis **on-prem / Azure** (el factory ya lo
 soporta por configuración) y **aprobación previa de DPO/CISO/Compliance**. Roadmap por

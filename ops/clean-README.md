@@ -1,4 +1,4 @@
-# CallQA AI
+# CallAIbrate
 
 Plataforma web de **quality assurance automatizado** para call centers. Sube las
 grabaciones de tus llamadas y la plataforma las transcribe, identifica al ejecutivo,

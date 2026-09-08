@@ -1,1 +1,1 @@
-"""Routers de la API REST de CallQA AI."""
+"""Routers de la API REST de CallAIbrate."""

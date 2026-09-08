@@ -12,12 +12,12 @@
 
 ## 1. Qué es
 
-**CallQA AI**: plataforma web de **Quality Assurance automatizado con IA** para
+**CallAIbrate**: plataforma web de **Quality Assurance automatizado con IA** para
 call centers bancarios. Un manager sube audios de llamadas; la IA las
 **transcribe** (Groq Whisper large v3), **enmascara la PII** (best-effort) y las
 **analiza con un LLM** (Groq Llama 3.3 70B) contra una **rúbrica dinámica**, y
 devuelve scores por dimensión, un **score global ponderado**, recomendaciones
-accionables y un **reporte PDF**. Cliente: **Minsait (Grupo Indra)**, sector banca.
+accionables y un **reporte PDF**. Sector: **banca**.
 
 > ⚠️ **No utilizar con datos reales de clientes sin la aprobación previa de
 > Compliance.** Por decisión del responsable, el **banner visible de "vista previa /
@@ -38,7 +38,7 @@ accionables y un **reporte PDF**. Cliente: **Minsait (Grupo Indra)**, sector ban
 - **Repo LIMPIO (público):** `github.com/JBenjaminGM/callqa` — copia derivada solo con código funcional + un `README.md` curado (sin `docs/`, `AGENTS.md`, `CLAUDE.md`, `ops/`; historial propio, sin rastro de autoría). Se genera con **`ops/publish-clean.ps1`** (ver §16). NO se trabaja ahí a mano.
 - **Frontend (Vercel):** https://callqa-ai.vercel.app — dashboard con **rediseño premium de indicadores** (Fase 2).
 - **Backend (Render):** https://callqa-api.onrender.com (`/health`, `/docs`)
-- **Cuentas sembradas:** `admin@callqa.com`/`Admin123!` (admin), `jefe@callqa.com`/`Jefe123!` (jefe), y un **asesor por cada ejecutivo demo** (email del ejecutivo, p. ej. `maria@banco.com`/`Asesor123!`). El login YA NO muestra credenciales y el seed YA NO imprime contraseñas.
+- **Cuentas sembradas:** `admin@callaibrate.com` (admin), `jefe@callaibrate.com` (jefe) y un **asesor por cada ejecutivo demo** (el email del ejecutivo, p. ej. `maria@banco.com`). Las **contraseñas se generan al azar** en el primer seed y se imprimen **una sola vez** (`docker compose logs api`); se pueden fijar con `SEED_ADMIN_PASSWORD` / `SEED_JEFE_PASSWORD` / `SEED_ASESOR_PASSWORD`. El seed **rota** cualquier cuenta que aún use una de las contraseñas que llegaron a estar publicadas.
 - **Coste de operación: $0** (Groq gratis + tiers gratis de Vercel/Render).
 - **Ubicación de trabajo local:** `C:\Users\Benja\Documents\callqa-ai` (NO la copia de OneDrive — Docker falla desde OneDrive por archivos "solo en la nube").
 
@@ -66,7 +66,7 @@ Navegador ─HTTPS→ Frontend (Next.js·Vercel) ─REST→ Backend (FastAPI·Re
 
 | Capa | Tecnologías |
 |---|---|
-| Frontend | Next.js 14 (App Router), TypeScript, Tailwind, TanStack Query, Zustand, Recharts, Axios, **ForFuture Sans** |
+| Frontend | Next.js 14 (App Router), TypeScript, Tailwind, TanStack Query, Zustand, Recharts, Axios, **Manrope / Inter / IBM Plex Mono** |
 | Backend | Python 3.11, FastAPI, SQLAlchemy 2.0, Alembic, Pydantic v2, slowapi |
 | Cola (solo local) | Celery 5 + Redis |
 | Base de datos | PostgreSQL 15 |
@@ -130,9 +130,9 @@ frontend/
                        JWT en localStorage; guarda role/agent_id), queries.ts (TODOS los hooks de
                        TanStack Query), utils.ts (dimensionLabel, formatos)
   types/index.ts       Tipos TS que reflejan la API
-  public/fonts         ForFuture Sans (woff2 locales)
-  public/brand         Logo oficial Minsait
-  app/globals.css      ★ COLORES CANÓNICOS (variables CSS Minsait, modo claro+oscuro)
+  components/brand/    logo.tsx — Waveform + Wordmark (única fuente del logotipo)
+  public/favicon.svg   ícono waveform de la marca
+  app/globals.css      ★ COLORES CANÓNICOS (variables CSS CallAIbrate, modo claro+oscuro)
   tailwind.config.ts   mapea los colores a las variables CSS
 docs/                  00–07 + DESIGN.md (especificación de origen; ver §12)
 .github/workflows/     keepalive.yml (ping a /health cada 12 min para mitigar el cold-start)
@@ -178,7 +178,7 @@ analítica global; helper `is_manager`); **asesor** solo ve **su propio rendimie
 
 - **Stack completo (Docker):** `cd C:\Users\Benja\Documents\callqa-ai && docker compose up -d --build`
   (5 servicios: postgres, redis, api, worker, frontend)
-  → app http://localhost:3000 · API http://localhost:8000/docs · login `admin@callqa.com`/`Admin123!`.
+  → app http://localhost:3000 · API http://localhost:8000/docs · login `admin@callaibrate.com` con la contraseña que imprime el seed (`docker compose logs api`).
   Apagar: `docker compose down`.
 - **Tests backend (61):** desde `backend/`, `.\.venv\Scripts\python.exe -m pytest -q`
   (el venv ya tiene `requirements.txt`; SQLite en memoria, sin red).
@@ -212,24 +212,25 @@ analítica global; helper `is_manager`); **asesor** solo ve **su propio rendimie
 - **Diarización (quién habla):** la hace el **LLM por contenido**; la heurística de pausas es solo fallback. Es aproximada en turnos ambiguos. Fiable de verdad = speaker-ID acústico (Azure Speech / pyannote).
 - **Rúbrica DINÁMICA:** editable con subcriterios activables y **categorías que se pueden añadir/eliminar**. `PUT /config/rubric` es **reemplazo completo** (crea/actualiza/borra; genera la clave con slug). El prompt construye `dimension_scores` con las claves reales → las categorías nuevas se puntúan solas. En el frontend, `dimensionLabel()` (lib/utils.ts) humaniza claves desconocidas.
 - **Dashboard:** filtros campaña/ejecutivo/fechas/periodo; endpoint `/dashboard/campaigns`. Las fechas se comparan con `datetime.utcnow()` (naïve) porque la BD guarda timestamps naïve — NO usar `datetime.now(timezone.utc)` ahí (rompía con un `TypeError`).
-- **Colores = identidad Minsait:** la fuente de verdad es `frontend/app/globals.css` + `tailwind.config.ts` (variables CSS Minsait). `DESIGN.md` es referencia; **`07_DISEÑO_VISUAL.md` y cualquier mención a "Aetheric Intelligence" o a la paleta Índigo/Slate están OBSOLETOS**.
+- **Colores = identidad CallAIbrate:** la fuente de verdad de la **marca** es `docs/BRAND.md`; la **implementación** canónica es `frontend/app/globals.css` + `tailwind.config.ts`. `DESIGN.md` explica cómo se aplica. **La identidad Minsait (Pruno/Cerámica/Fucsia, ForFuture Sans, `.chamfer`) y "Aetheric Intelligence" (Índigo/Slate) están OBSOLETAS.**
 - **Despliegue:** el arranque (migraciones+seed+uvicorn) vive en el **CMD del Dockerfile** (no en `render.yaml`) para evitar que Render parta mal el comando con comillas (daba exit 127).
 - **Cold-start:** ver §3 (keepalive + resiliencia en `lib/api.ts`).
 
-## 11. Diseño = identidad Minsait
+## 11. Diseño = identidad CallAIbrate
 
-UI rebrandeada a la **identidad oficial de Minsait** (el diseño anterior "Aetheric
-Intelligence" Índigo/Slate quedó **obsoleto**).
+UI rebrandeada a **CallAIbrate**. Las identidades anteriores (**Minsait**
+Pruno/Cerámica/Fucsia con ForFuture Sans, y "Aetheric Intelligence" Índigo/Slate)
+quedaron **obsoletas**.
 
-- **Paleta:** **Pruno `#480E2A`** + **Gris Cerámica `#E3E2DA`** DOMINAN; **Fucsia `#FF0054`** SOLO como acento.
-- **Tipografía:** **ForFuture Sans** (woff2 locales en `frontend/public/fonts`).
-- **Logo** oficial Minsait en `frontend/public/brand`.
-- **Contenedores ACHAFLANADOS** (clase `.chamfer`).
-- **Titulares en minúscula** con la palabra clave en Fucsia (dispositivo "calidad con impacto").
-- **CTA** = píldora Fucsia.
-- **Modo claro por defecto** (Gris Cerámica) + **modo oscuro Pruno**.
-- **Sidebar** siempre Pruno con el logo blanco.
-- **Fuente de verdad del color:** `frontend/app/globals.css` + `tailwind.config.ts`.
+- **Fuente de verdad de la marca:** **`docs/BRAND.md`**. Cualquier cambio visual empieza ahí.
+- **Paleta:** **paper `#F5F1E8`** + **ink `#2A2420`** dominan; **rust `#B8441F`** es el acento de marca y **gold `#A67C27`** el secundario. `success`/`danger` son funcionales, no decorativos.
+- **Tipografía:** **Manrope** (titulares), **Inter** (cuerpo/UI), **IBM Plex Mono** (solo datos numéricos), vía `next/font/google`.
+- **Wordmark:** `frontend/components/brand/logo.tsx` (`<Waveform />`, `<Wordmark />`). El fragmento "AI" siempre en rust.
+- **Radios:** `rounded-card` (8px) en contenedores, `rounded-control` (6px) en controles. `rounded-full` solo en avatares, puntos y barras. **La clase `.chamfer` ya no existe.**
+- **Titulares en caso frase** con una palabra clave opcional en rust (`<span class="hl">`).
+- **Modo claro por defecto** + **modo oscuro derivado** (ver addendum de `BRAND.md`).
+- **Sidebar** siempre en ink (color literal, porque el token se invierte en oscuro), con el wordmark en negativo.
+- **Implementación canónica del color:** `frontend/app/globals.css` + `tailwind.config.ts`.
 - **Sistema de dataviz premium (Fase 2):** `frontend/components/dashboard/viz.tsx`
   centraliza las primitivas de visualización fieles a la marca — `ScoreGauge` (anillo
   de score), `Sparkline`, `Donut`, `MiniProgress`, `DeltaPill`, `BrandTooltip` —; más
@@ -267,7 +268,7 @@ activable); `app_settings` (clave-valor: idioma + **umbrales QA `qa_*`**).
 - **Cambiar la BD:** edita el modelo en `app/models/`, luego `alembic revision -m "..."` (o crea el archivo a mano siguiendo `0005`), y `alembic upgrade head`. El `seed_data.py` corre en cada arranque (idempotente).
 - **Cambiar/añadir proveedor IA:** `app/services/analysis_service.py` (análisis) o `transcription_service.py` (STT) — patrón factory. Variable `AI_PROVIDER`/`WHISPER_PROVIDER`.
 - **Tocar el prompt de la IA:** `app/prompts/analysis_es.py` / `_en.py` (es dinámico según la rúbrica e inyecta la nota de producto de la campaña).
-- **Cambiar colores/diseño:** `frontend/app/globals.css` + `tailwind.config.ts` (variables Minsait) — se propaga a toda la app y a los gráficos.
+- **Cambiar colores/diseño:** primero `docs/BRAND.md`, luego `frontend/app/globals.css` + `tailwind.config.ts` — se propaga a toda la app y a los gráficos.
 - **Añadir una página/hook frontend:** página en `frontend/app/(main)/...`, hooks de datos en `frontend/lib/queries.ts`, tipos en `frontend/types/index.ts`.
 - **Desplegar cambios:** solo `git push origin main` (Vercel + Render redepliegan).
 
@@ -294,9 +295,11 @@ en estos y se eliminaron):
 | **`ESTADO_DEL_PROYECTO.md`** | Memoria del proyecto + casos de uso, reglas de negocio y gobernanza | ✅ |
 | **`CHANGELOG.md`** | Historial de cambios | ✅ |
 | **`DEPLOY_GRATIS.md`** | Despliegue Vercel+Render gratis | ✅ |
-| **`DESIGN.md`** | Sistema de diseño (identidad Minsait) | ✅ |
+| **`BRAND.md`** | **Fuente de verdad de la marca CallAIbrate** | ✅ canónico |
+| **`DESIGN.md`** | Cómo se implementa `BRAND.md` en la app | ✅ |
+| **`COMPLIANCE_CHECKLIST.md`** | Validaciones de Compliance/DPO/Seguridad previas a producción real | ✅ |
+| **`RENOMBRADO_INFRA.md`** | Cómo renombrar repos/servicios/dominios a CallAIbrate (pendiente, lo hace el usuario) | ✅ |
 | `00_INDICE.md` | Índice de la documentación | ✅ |
-| `CallQA_AI_Presentacion.pptx` | Slides para presentar al cliente | ✅ (binario) |
 | `../README.md` (raíz) | Landing del repo | ✅ |
 
 ## 16. Dos repos: privado (completo) y público (limpio)

@@ -1,6 +1,7 @@
 """Tests de subida de llamadas, cálculo de score y enmascaramiento."""
 
 import io
+import os
 from types import SimpleNamespace
 
 from app.services.analysis_service import calculate_global_score
@@ -300,3 +301,58 @@ def test_upload_processed_inline_without_celery(client, auth_headers, monkeypatc
     assert response.status_code == 202
     # La tarea en segundo plano corre tras enviar la respuesta (TestClient la ejecuta).
     assert procesadas == [response.json()["id"]]
+
+
+# ---------------------------------------------------------------
+# Descarga del audio para el reproductor
+# ---------------------------------------------------------------
+def _subir_audio(client, auth_headers, monkeypatch, contenido=b"audio de prueba"):
+    """Sube una llamada de prueba y devuelve su id."""
+    monkeypatch.setattr("app.routers.calls.process_call.delay", lambda call_id: None)
+    response = client.post(
+        "/api/v1/calls",
+        headers=auth_headers,
+        files={"audio": ("prueba.mp3", io.BytesIO(contenido), "audio/mpeg")},
+    )
+    assert response.status_code == 202
+    return response.json()["id"]
+
+
+def test_get_call_audio_devuelve_el_archivo(client, auth_headers, monkeypatch):
+    """El endpoint de audio entrega el archivo original con su tipo MIME."""
+    contenido = b"contenido binario del audio"
+    call_id = _subir_audio(client, auth_headers, monkeypatch, contenido)
+
+    response = client.get(f"/api/v1/calls/{call_id}/audio", headers=auth_headers)
+
+    assert response.status_code == 200
+    assert response.content == contenido
+    assert response.headers["content-type"].startswith("audio/mpeg")
+    assert "inline" in response.headers["content-disposition"]
+
+
+def test_get_call_audio_404_si_el_archivo_ya_no_esta(
+    client, auth_headers, monkeypatch, db_session
+):
+    """Si el almacenamiento perdió el archivo, responde 404 explicándolo."""
+    from app.models.call import Call
+
+    call_id = _subir_audio(client, auth_headers, monkeypatch)
+    call = db_session.get(Call, call_id)
+    os.remove(call.audio_url)
+
+    response = client.get(f"/api/v1/calls/{call_id}/audio", headers=auth_headers)
+
+    assert response.status_code == 404
+    assert "audio" in response.json()["detail"].lower()
+
+
+def test_get_call_audio_prohibido_para_un_asesor_ajeno(
+    client, auth_headers, asesor_headers, monkeypatch
+):
+    """Un asesor no puede descargar el audio de una llamada que no es suya."""
+    call_id = _subir_audio(client, auth_headers, monkeypatch)
+
+    response = client.get(f"/api/v1/calls/{call_id}/audio", headers=asesor_headers)
+
+    assert response.status_code == 403

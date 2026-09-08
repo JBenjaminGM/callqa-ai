@@ -66,7 +66,7 @@ export default function MyPanelPage() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-h3 text-text-primary">
-              hola, {agent?.name ?? user.name}
+              Hola, {agent?.name ?? user.name}
             </p>
             <p className="text-small text-text-secondary">
               {agent?.campaign ?? 'Tu desempeño en las llamadas evaluadas'}
@@ -118,7 +118,7 @@ export default function MyPanelPage() {
                 label="Tendencia"
                 value={dash.score_trend}
                 icon={<TrendingUp size={16} />}
-                caption="evolución de tu score"
+                caption="Evolución de tu score"
               />
             </div>
 

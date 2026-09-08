@@ -76,15 +76,15 @@ export function AlertsPanel({ alerts }: { alerts: DashboardAlert[] }) {
       <div className="flex items-center justify-between px-5 pt-5">
         <CardTitle className="flex items-center gap-2">
           <AlertTriangle size={18} className="text-warning" />
-          alertas <span className="hl">accionables</span>
+          Alertas <span className="hl">accionables</span>
         </CardTitle>
         <div className="flex items-center gap-2">
           {high > 0 && (
-            <span className="rounded-full bg-danger/12 px-2.5 py-1 text-small font-bold text-danger">
+            <span className="rounded-control bg-danger/12 px-2.5 py-1 text-small font-bold text-danger">
               {high} críticas
             </span>
           )}
-          <span className="rounded-full bg-bg-accent px-2.5 py-1 text-small font-semibold text-text-secondary">
+          <span className="rounded-control bg-bg-accent px-2.5 py-1 text-small font-semibold text-text-secondary">
             {alerts.length}
           </span>
         </div>
@@ -103,9 +103,9 @@ export function AlertsPanel({ alerts }: { alerts: DashboardAlert[] }) {
               ? `/agents/${a.agent_id}`
               : undefined;
           const body = (
-            <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-bg-accent/50">
+            <div className="flex items-center gap-3 rounded-card px-3 py-2.5 transition-colors hover:bg-bg-accent/50">
               <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control"
                 style={{ background: `color-mix(in srgb, ${meta.color} 14%, transparent)`, color: meta.color }}
               >
                 <Icon size={17} />
@@ -143,14 +143,14 @@ export function CampaignKpiTable({ rows }: { rows: CampaignKpi[] }) {
   if (rows.length === 0) {
     return (
       <Card>
-        <CardTitle className="mb-2">rendimiento por <span className="hl">campaña</span></CardTitle>
+        <CardTitle className="mb-2">Rendimiento por <span className="hl">campaña</span></CardTitle>
         <p className="text-small text-text-muted">Sin datos en este periodo.</p>
       </Card>
     );
   }
   return (
     <Card>
-      <CardTitle className="mb-4">rendimiento por <span className="hl">campaña</span></CardTitle>
+      <CardTitle className="mb-4">Rendimiento por <span className="hl">campaña</span></CardTitle>
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-y-1 text-small">
           <thead>
@@ -169,7 +169,7 @@ export function CampaignKpiTable({ rows }: { rows: CampaignKpi[] }) {
                 <td className="max-w-[10rem] truncate py-1.5 pr-3 font-medium text-text-primary">
                   {r.campaign}
                 </td>
-                <td className="py-1.5 pr-3 tabular-nums text-text-secondary">
+                <td className="py-1.5 pr-3 font-mono tabular-nums text-text-secondary">
                   {r.total_calls}
                 </td>
                 <td className="py-1.5 pr-3">
@@ -178,7 +178,7 @@ export function CampaignKpiTable({ rows }: { rows: CampaignKpi[] }) {
                       <MiniProgress value={r.avg_score} />
                     </div>
                     <span
-                      className="w-9 shrink-0 text-right font-bold tabular-nums"
+                      className="w-9 shrink-0 text-right font-mono font-semibold tabular-nums"
                       style={{ color: scoreVar(r.avg_score) }}
                     >
                       {r.avg_score.toFixed(0)}
@@ -190,7 +190,7 @@ export function CampaignKpiTable({ rows }: { rows: CampaignKpi[] }) {
                 </td>
                 <td className="py-1.5 pr-3">
                   <span
-                    className="font-semibold tabular-nums"
+                    className="font-mono font-semibold tabular-nums"
                     style={{ color: r.red_pct > 25 ? 'var(--danger)' : 'var(--text-secondary)' }}
                   >
                     {r.red_pct}%
@@ -198,7 +198,7 @@ export function CampaignKpiTable({ rows }: { rows: CampaignKpi[] }) {
                 </td>
                 <td className="py-1.5">
                   {r.sentiment != null ? (
-                    <span className="inline-flex items-center gap-1.5 tabular-nums text-text-secondary">
+                    <span className="inline-flex items-center gap-1.5 font-mono tabular-nums text-text-secondary">
                       <span
                         className="h-2 w-2 rounded-full"
                         style={{ background: scoreVar(r.sentiment) }}
@@ -223,7 +223,7 @@ export function CampaignKpiTable({ rows }: { rows: CampaignKpi[] }) {
  * --------------------------------------------------------------------------- */
 export function TopProblems({
   items,
-  title = 'top problemas recurrentes',
+  title = 'Top problemas recurrentes',
 }: {
   items: (RecommendationStat | AgentRecommendationStat)[];
   title?: string;
@@ -247,7 +247,7 @@ export function TopProblems({
       </CardTitle>
       <ul className="flex flex-col gap-3">
         {items.map((it, i) => (
-          <li key={i} className="rounded-xl border border-border bg-bg-secondary p-3">
+          <li key={i} className="rounded-card border border-border bg-bg-secondary p-3">
             <div className="mb-1.5 flex flex-wrap items-center gap-2">
               <PriorityBadge
                 priority={(it.priority as 'high' | 'medium' | 'low') ?? 'medium'}
@@ -255,13 +255,13 @@ export function TopProblems({
               <span className="flex-1 text-body font-semibold text-text-primary">
                 {it.title}
               </span>
-              <span className="rounded-full bg-accent-primary/10 px-2 py-0.5 text-small font-bold tabular-nums text-accent-primary dark:bg-fucsia/15 dark:text-fucsia">
+              <span className="rounded-control bg-accent-primary/10 px-2 py-0.5 text-small font-mono font-semibold tabular-nums text-accent-primary dark:bg-rust/15 dark:text-rust">
                 ×{it.count}
               </span>
             </div>
             <div className="mb-2 h-1 w-full overflow-hidden rounded-full bg-bg-accent">
               <div
-                className="h-full rounded-full bg-accent-primary/40 dark:bg-fucsia/40"
+                className="h-full rounded-full bg-accent-primary/40 dark:bg-rust/40"
                 style={{ width: `${(it.count / max) * 100}%` }}
               />
             </div>
@@ -298,16 +298,16 @@ export function ConversationStats({ summary }: { summary: ConversationSummary })
     <Card>
       <CardTitle className="mb-4 flex items-center gap-2">
         <MessageSquare size={18} className="text-accent-primary" />
-        dinámica de <span className="hl">conversación</span>
+        Dinámica de <span className="hl">conversación</span>
         <span className="text-small font-normal text-text-muted">
           · {summary.calls_measured} llamadas medidas
         </span>
       </CardTitle>
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-card bg-border sm:grid-cols-3 lg:grid-cols-5">
         {items.map((it) => (
           <div key={it.label} className="flex flex-col gap-1.5 bg-bg-card p-4">
             <span className="flex items-center gap-1.5 text-text-muted">{it.icon}</span>
-            <span className="text-h2 font-black tabular-nums text-text-primary">{it.value}</span>
+            <span className="text-h2 font-mono font-semibold tabular-nums text-text-primary">{it.value}</span>
             <span className="text-small text-text-secondary">{it.label}</span>
           </div>
         ))}
@@ -333,7 +333,7 @@ export function ConversationMetricsCard({ metrics }: { metrics: ConversationMetr
     <Card>
       <CardTitle className="mb-4 flex items-center gap-2">
         <MessageSquare size={18} className="text-accent-primary" />
-        dinámica de la <span className="hl">conversación</span>
+        Dinámica de la <span className="hl">conversación</span>
       </CardTitle>
       <div className="mb-1 flex justify-between text-small">
         <span className="font-medium text-accent-primary">Ejecutivo {agentPct}%</span>
@@ -343,10 +343,10 @@ export function ConversationMetricsCard({ metrics }: { metrics: ConversationMetr
         <div className="h-full bg-accent-primary" style={{ width: `${agentPct}%`, transition: 'width 0.7s ease' }} />
         <div className="h-full bg-info" style={{ width: `${customerPct}%`, transition: 'width 0.7s ease' }} />
       </div>
-      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-card bg-border sm:grid-cols-3 lg:grid-cols-5">
         {tiles.map((t) => (
           <div key={t.label} className="flex flex-col gap-1 bg-bg-card p-3">
-            <span className="text-h3 font-black tabular-nums text-text-primary">{t.value}</span>
+            <span className="text-h3 font-mono font-semibold tabular-nums text-text-primary">{t.value}</span>
             <span className="text-[11px] text-text-secondary">{t.label}</span>
           </div>
         ))}
@@ -377,7 +377,7 @@ export function ScoreDistribution({
   }));
   return (
     <Card>
-      <CardTitle className="mb-4">distribución de <span className="hl">scores</span></CardTitle>
+      <CardTitle className="mb-4">Distribución de <span className="hl">scores</span></CardTitle>
       <div className="flex flex-wrap items-center justify-center gap-6">
         <Donut segments={segments} centerValue={total} centerLabel="llamadas" />
         <ul className="flex flex-col gap-2.5">
@@ -391,10 +391,10 @@ export function ScoreDistribution({
                   <p className="text-small font-medium text-text-primary">{meta.label}</p>
                   <p className="text-[11px] text-text-muted">{d.range} puntos</p>
                 </div>
-                <span className="ml-auto text-body font-bold tabular-nums text-text-primary">
+                <span className="ml-auto text-body font-mono font-semibold tabular-nums text-text-primary">
                   {d.count}
                 </span>
-                <span className="w-10 text-right text-small tabular-nums text-text-muted">
+                <span className="w-10 text-right text-small font-mono tabular-nums text-text-muted">
                   {pct}%
                 </span>
               </li>
@@ -429,10 +429,10 @@ export function PercentileCard({ data }: { data: AgentPercentile }) {
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Award size={26} className="text-accent-primary dark:text-fucsia" />
+          <Award size={26} className="text-accent-primary dark:text-rust" />
           <div>
             <p className="flex items-baseline gap-2">
-              <span className="text-display font-black tabular-nums text-accent-primary dark:text-fucsia">
+              <span className="text-display font-mono font-semibold tabular-nums text-accent-primary dark:text-rust">
                 P{p}
               </span>
               <span className="text-small text-text-secondary">percentil</span>
@@ -446,13 +446,13 @@ export function PercentileCard({ data }: { data: AgentPercentile }) {
         <div className="flex gap-6 text-center">
           <div>
             <p className="text-[11px] uppercase tracking-wide text-text-muted">Tu media</p>
-            <p className="text-h2 font-black tabular-nums" style={{ color: scoreVar(data.agent_avg ?? 0) }}>
+            <p className="text-h2 font-mono font-semibold tabular-nums" style={{ color: scoreVar(data.agent_avg ?? 0) }}>
               {data.agent_avg?.toFixed(1)}
             </p>
           </div>
           <div>
             <p className="text-[11px] uppercase tracking-wide text-text-muted">Media campaña</p>
-            <p className="text-h2 font-black tabular-nums text-text-muted">
+            <p className="text-h2 font-mono font-semibold tabular-nums text-text-muted">
               {data.campaign_avg?.toFixed(1)}
             </p>
           </div>
@@ -481,10 +481,10 @@ export function AgentCampaignBreakdownList({ items }: { items: AgentCampaignBrea
   if (items.length === 0) return null;
   return (
     <Card>
-      <CardTitle className="mb-4">mi desempeño por <span className="hl">campaña</span></CardTitle>
+      <CardTitle className="mb-4">Mi desempeño por <span className="hl">campaña</span></CardTitle>
       <div className="flex flex-col gap-3">
         {items.map((c) => (
-          <div key={c.campaign} className="rounded-xl border border-border bg-bg-secondary p-3.5">
+          <div key={c.campaign} className="rounded-card border border-border bg-bg-secondary p-3.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-body font-semibold text-text-primary">{c.campaign}</span>
               <span className="flex items-center gap-2">
@@ -501,7 +501,7 @@ export function AgentCampaignBreakdownList({ items }: { items: AgentCampaignBrea
                     <div className="min-w-[60px] flex-1">
                       <MiniProgress value={c.compliance.coverage_pct} color="var(--success)" />
                     </div>
-                    <span className="w-10 text-right font-semibold tabular-nums text-text-primary">
+                    <span className="w-10 text-right font-mono font-semibold tabular-nums text-text-primary">
                       {c.compliance.coverage_pct}%
                     </span>
                   </div>
@@ -533,7 +533,7 @@ export function TeamRadar({ averages }: { averages: Record<string, number> }) {
   if (!averages || Object.keys(averages).length === 0) return null;
   return (
     <Card>
-      <CardTitle className="mb-2">dimensiones del <span className="hl">equipo</span></CardTitle>
+      <CardTitle className="mb-2">Dimensiones del <span className="hl">equipo</span></CardTitle>
       <ScoreRadar scores={averages} seriesLabel="Equipo" />
     </Card>
   );

@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * Primitivas de visualización de datos de CallQA — nivel "BI premium" pero fiel a
- * la identidad Minsait (plano, geométrico, paleta Pruno/Cerámica + acentos).
+ * Primitivas de visualización de datos: nivel "BI premium" pero fiel a la
+ * identidad CallAIbrate (plano, geométrico, paleta paper/ink + acentos rust y gold).
  *
  * Todo usa variables CSS de globals.css para tema claro/oscuro automático.
  */
@@ -69,7 +69,7 @@ export function ScoreGauge({
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span
-          className="font-black tabular-nums leading-none"
+          className="font-mono font-semibold tabular-nums leading-none"
           style={{ color: col, fontSize: size * 0.3 }}
         >
           {Number.isFinite(v) ? v.toFixed(decimals) : '—'}
@@ -207,7 +207,7 @@ export function Donut({
       {(centerValue != null || centerLabel) && (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           {centerValue != null && (
-            <span className="text-h2 font-black tabular-nums text-text-primary">
+            <span className="text-h2 font-mono font-semibold tabular-nums text-text-primary">
               {centerValue}
             </span>
           )}
@@ -277,7 +277,7 @@ export function DeltaPill({
   const pad = size === 'xs' ? 'px-1.5 py-0.5 text-[11px]' : 'px-2 py-0.5 text-small';
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full font-semibold tabular-nums ${pad} ${cls}`}
+      className={`inline-flex items-center gap-1 rounded-control font-mono font-semibold tabular-nums ${pad} ${cls}`}
     >
       {arrow} {Math.abs(delta).toFixed(1)}
       {suffix}
@@ -301,7 +301,7 @@ export function BrandTooltip({
 }) {
   if (!active || !payload || payload.length === 0) return null;
   return (
-    <div className="chamfer bg-bg-card px-3 py-2 shadow-lg ring-1 ring-border">
+    <div className="rounded-card bg-bg-card px-3 py-2 shadow-lg ring-1 ring-border">
       {label != null && (
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-text-muted">
           {label}
@@ -314,7 +314,7 @@ export function BrandTooltip({
             style={{ background: p.color ?? 'var(--accent-primary)' }}
           />
           <span className="text-text-secondary">{p.name}:</span>
-          <span className="font-semibold tabular-nums">
+          <span className="font-mono font-semibold tabular-nums">
             {formatter ? formatter(p.value, p.name) : p.value}
           </span>
         </p>

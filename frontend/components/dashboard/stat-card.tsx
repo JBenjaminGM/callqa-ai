@@ -39,7 +39,7 @@ export function StatCard({
         <span className="destacado text-[11px] text-text-muted">{label}</span>
         {icon && (
           <span
-            className="flex h-8 w-8 items-center justify-center rounded-lg"
+            className="flex h-8 w-8 items-center justify-center rounded-control"
             style={{ background: 'var(--bg-accent)', color: accent }}
           >
             {icon}
@@ -49,7 +49,7 @@ export function StatCard({
 
       <div className="flex items-end gap-2">
         <span
-          className="font-black leading-none tabular-nums"
+          className="font-mono font-semibold leading-none tabular-nums"
           style={{ color: accent, fontSize: 34 }}
         >
           {value}

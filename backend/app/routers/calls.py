@@ -1,6 +1,7 @@
 """Endpoints de subida, consulta y procesamiento de llamadas."""
 
 import math
+import os
 from datetime import date
 
 from fastapi import (
@@ -46,6 +47,17 @@ from app.tasks.call_tasks import process_call
 from app.utils.audio import validate_audio_file
 
 router = APIRouter(prefix="/calls", tags=["calls"])
+
+# Tipo MIME por extensión, para que el navegador sepa reproducir el audio.
+AUDIO_MEDIA_TYPES = {
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+    ".m4a": "audio/mp4",
+    ".mp4": "audio/mp4",
+    ".ogg": "audio/ogg",
+    ".webm": "audio/webm",
+    ".flac": "audio/flac",
+}
 
 
 def _agent_ref(call: Call) -> AgentRef | None:
@@ -437,6 +449,46 @@ def download_report(
         media_type="application/pdf",
         headers={
             "Content-Disposition": f'attachment; filename="reporte_llamada_{call_id}.pdf"'
+        },
+    )
+
+
+@router.get("/{call_id}/audio")
+def get_call_audio(
+    call_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Devuelve el audio original de la llamada, para reproducirlo en el navegador.
+
+    El `audio_url` guardado es una ruta interna del almacenamiento (disco o S3),
+    no una URL pública, así que el archivo se sirve desde aquí aplicando el mismo
+    control de acceso que el resto del detalle de la llamada.
+    """
+    call = call_service.get_call(db, call_id)
+    if call is None:
+        raise HTTPException(status_code=404, detail="Llamada no encontrada.")
+    _ensure_can_view_call(current_user, call)
+
+    try:
+        content = get_storage_provider().load(call.audio_url)
+    except Exception:  # noqa: BLE001
+        # El almacenamiento local es efímero en algunos despliegues: el archivo
+        # puede haber desaparecido aunque la llamada siga en la base de datos.
+        raise HTTPException(
+            status_code=404,
+            detail="El archivo de audio ya no está disponible. Vuelve a subir la llamada.",
+        )
+
+    extension = os.path.splitext(call.audio_filename or call.audio_url)[1].lower()
+    filename = call.audio_filename or f"llamada_{call_id}{extension or '.mp3'}"
+    return Response(
+        content=content,
+        media_type=AUDIO_MEDIA_TYPES.get(extension, "application/octet-stream"),
+        headers={
+            "Content-Disposition": f'inline; filename="{filename}"',
+            "Accept-Ranges": "none",
         },
     )
 

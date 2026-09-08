@@ -118,7 +118,7 @@ export default function NewCallPage() {
               <Label>Archivos de audio (hasta {MAX_FILES})</Label>
               <label
                 className="flex cursor-pointer flex-col items-center justify-center
-                           gap-2 rounded-xl border-2 border-dashed border-border
+                           gap-2 rounded-card border-2 border-dashed border-border
                            bg-bg-secondary px-4 py-8 text-center transition-colors
                            hover:border-accent-primary"
               >
@@ -145,7 +145,7 @@ export default function NewCallPage() {
                   {files.map((f, i) => (
                     <li
                       key={`${f.name}-${i}`}
-                      className="flex items-center gap-2 rounded-lg border
+                      className="flex items-center gap-2 rounded-control border
                                  border-border bg-bg-secondary px-3 py-2"
                     >
                       <FileAudio size={16} className="text-accent-primary" />

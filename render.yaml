@@ -1,5 +1,7 @@
 # ============================================================
-# render.yaml — Despliegue GRATIS del backend de CallQA AI en Render.
+# render.yaml — Despliegue GRATIS del backend de CallAIbrate en Render.
+# Los nombres de servicio (callqa-api / callqa-db) son identificadores de
+# infraestructura ya creados en Render: renombrarlos crearía servicios nuevos.
 # (El frontend va en Vercel; ver DEPLOY_GRATIS.md.)
 #
 # Crea, en el plan gratuito y ya conectados:

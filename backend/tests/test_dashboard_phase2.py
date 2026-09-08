@@ -282,3 +282,59 @@ def test_agent_recommendations_content_and_scoping(
         ).status_code
         == 403
     )
+
+
+# ===============================================================
+# Exportación CSV del reporte de equipo
+# ===============================================================
+def test_report_csv_incluye_una_fila_por_ejecutivo(
+    client, auth_headers, admin_user, db_session
+):
+    """El CSV trae la cabecera, una fila por ejecutivo y el BOM que Excel espera."""
+    agent = Agent(name="Ana Torres", email="ana@banco.com", campaign="Tarjetas")
+    db_session.add(agent)
+    db_session.flush()
+    _done_call(db_session, admin_user.id, agent_id=agent.id,
+               campaign_type="Tarjetas", score=90)
+    _done_call(db_session, admin_user.id, agent_id=agent.id,
+               campaign_type="Tarjetas", score=40)
+    _done_call(db_session, admin_user.id, detected="Beto Sin Registrar", score=70)
+
+    response = client.get("/api/v1/dashboard/report.csv", headers=auth_headers)
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    assert "reporte-equipo-" in response.headers["content-disposition"]
+
+    body = response.content.decode("utf-8-sig")
+    lines = [line for line in body.splitlines() if line.strip()]
+    assert lines[0].startswith("Ejecutivo,Email,Campañas")
+    assert len(lines) == 3  # cabecera + ejecutivo registrado + detectado
+    assert "Ana Torres" in body
+    assert "Beto Sin Registrar" in body
+
+
+def test_report_csv_respeta_el_filtro_de_campana(
+    client, auth_headers, admin_user, db_session
+):
+    """Filtrar por campaña deja fuera a los ejecutivos de las demás."""
+    a = Agent(name="Ana Torres", email="ana@banco.com", campaign="Tarjetas")
+    b = Agent(name="Beto Ruiz", email="beto@banco.com", campaign="Seguros")
+    db_session.add_all([a, b])
+    db_session.flush()
+    _done_call(db_session, admin_user.id, agent_id=a.id, campaign_type="Tarjetas")
+    _done_call(db_session, admin_user.id, agent_id=b.id, campaign_type="Seguros")
+
+    response = client.get(
+        "/api/v1/dashboard/report.csv?campaign=Tarjetas", headers=auth_headers
+    )
+
+    body = response.content.decode("utf-8-sig")
+    assert "Ana Torres" in body
+    assert "Beto Ruiz" not in body
+
+
+def test_report_csv_prohibido_para_asesor(client, asesor_headers):
+    """El reporte del equipo es solo para roles de gestión."""
+    response = client.get("/api/v1/dashboard/report.csv", headers=asesor_headers)
+    assert response.status_code == 403

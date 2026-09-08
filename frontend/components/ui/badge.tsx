@@ -20,8 +20,8 @@ export function ScoreBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1',
-        'text-small font-semibold',
+        'inline-flex items-center gap-1.5 rounded-control px-2.5 py-1',
+        'text-small font-mono font-semibold tabular-nums',
         colorClass,
       )}
     >
@@ -45,7 +45,7 @@ export function StatusBadge({ status }: { status: CallStatus }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1',
+        'inline-flex items-center gap-1.5 rounded-control px-2.5 py-1',
         'text-small font-medium',
         STATUS_STYLES[status],
       )}
@@ -77,7 +77,7 @@ export function PriorityBadge({
   return (
     <span
       className={cn(
-        'rounded-md px-2 py-0.5 text-small font-semibold',
+        'rounded-control px-2 py-0.5 text-small font-semibold',
         styles,
       )}
     >

@@ -1,5 +1,5 @@
 # ============================================================
-# CallQA AI - Dockerfile multi-stage
+# CallAIbrate - Dockerfile multi-stage
 # ============================================================
 
 # ---- Etapa 1: builder (instala dependencias) ----

@@ -8,9 +8,15 @@ Crea, de forma idempotente (no duplica si ya existen):
 - 3 ejecutivos de ejemplo y una cuenta de asesor por cada uno.
 - 3 campañas de ejemplo con su nota de producto.
 
+Las contraseñas de las cuentas de ejemplo NO están en el código: se toman de
+SEED_ADMIN_PASSWORD / SEED_JEFE_PASSWORD / SEED_ASESOR_PASSWORD si están
+definidas y, si no, se generan aleatorias y se imprimen UNA sola vez al final.
+
 Uso:  python scripts/seed_data.py
 """
 
+import os
+import secrets
 import sys
 from datetime import date
 from pathlib import Path
@@ -30,14 +36,61 @@ from app.models.user import (  # noqa: E402
     ROLE_JEFE,
     User,
 )
-from app.utils.security import hash_password  # noqa: E402
+from app.utils.security import hash_password, verify_password  # noqa: E402
 
-# Credenciales iniciales de las cuentas de ejemplo (admin, jefe de área y asesores).
-ADMIN_EMAIL = "admin@callqa.com"
-ADMIN_PASSWORD = "Admin123!"
-JEFE_EMAIL = "jefe@callqa.com"
-JEFE_PASSWORD = "Jefe123!"
-ASESOR_PASSWORD = "Asesor123!"  # contraseña inicial de las cuentas de asesor
+# Cuentas de gestión de ejemplo. Las contraseñas se resuelven en tiempo de
+# ejecución (ver _resolve_password), nunca se escriben aquí.
+ADMIN_EMAIL = "admin@callaibrate.com"
+JEFE_EMAIL = "jefe@callaibrate.com"
+
+# Emails de la marca anterior. Si existe la cuenta vieja y no la nueva, se
+# renombra en vez de duplicarla: así conserva su historial y sus permisos.
+LEGACY_EMAILS = {
+    "admin@callqa.com": ADMIN_EMAIL,
+    "jefe@callqa.com": JEFE_EMAIL,
+}
+
+# Contraseñas que versiones anteriores de este seed fijaban en el código y que
+# llegaron a estar publicadas en el repositorio. Cualquier cuenta sembrada que
+# todavía use una de ellas se rota a una contraseña aleatoria.
+PUBLISHED_PASSWORDS = ("Admin123!", "Jefe123!", "Asesor123!")
+
+# Credenciales generadas durante esta ejecución, para imprimirlas al terminar.
+_NEW_CREDENTIALS: list[tuple[str, str]] = []
+
+
+def _resolve_password(env_var: str, email: str) -> str:
+    """
+    Contraseña para una cuenta sembrada.
+
+    Usa la variable de entorno si está definida (útil en CI y en despliegues
+    controlados). Si no, genera una aleatoria y la anota para mostrarla al final:
+    es la única vez que se podrá leer.
+    """
+    from_env = os.getenv(env_var)
+    if from_env:
+        return from_env
+    generated = secrets.token_urlsafe(12)
+    _NEW_CREDENTIALS.append((email, generated))
+    return generated
+
+
+def _print_new_credentials() -> None:
+    """Muestra, una sola vez, las contraseñas generadas en esta ejecución."""
+    if not _NEW_CREDENTIALS:
+        return
+    line = "=" * 68
+    print()
+    print(line)
+    print("CREDENCIALES GENERADAS - se muestran una sola vez. Guardalas ahora.")
+    print(line)
+    for email, password in _NEW_CREDENTIALS:
+        print(f"  {email:<34} {password}")
+    print(line)
+    print("Para fijarlas tu mismo, define SEED_ADMIN_PASSWORD, SEED_JEFE_PASSWORD")
+    print("y SEED_ASESOR_PASSWORD antes de ejecutar el seed.")
+    print()
+
 
 # Las 7 dimensiones de la rúbrica (regla de negocio RN-01).
 RUBRIC = [
@@ -152,13 +205,35 @@ def seed() -> None:
     """Inserta los datos iniciales si aún no existen."""
     db = SessionLocal()
     try:
+        # --- Migración: cuentas creadas con los emails de la marca anterior ---
+        for legacy_email, new_email in LEGACY_EMAILS.items():
+            legacy = db.scalar(select(User).where(User.email == legacy_email))
+            already_migrated = db.scalar(
+                select(User).where(User.email == new_email)
+            )
+            if legacy is not None and already_migrated is None:
+                legacy.email = new_email
+                print(f"[seed] Cuenta {legacy_email} renombrada a {new_email}.")
+        db.flush()
+
+        # --- Rotación de las contraseñas que llegaron a ser públicas ---
+        seeded_emails = {ADMIN_EMAIL, JEFE_EMAIL} | {email for _, email, _, _ in AGENTS}
+        for user in db.scalars(select(User).where(User.email.in_(seeded_emails))):
+            if any(verify_password(p, user.password_hash) for p in PUBLISHED_PASSWORDS):
+                rotated = secrets.token_urlsafe(12)
+                user.password_hash = hash_password(rotated)
+                _NEW_CREDENTIALS.append((user.email, rotated))
+                print(f"[seed] Contraseña rotada para {user.email} (era pública).")
+
         # --- Usuario administrador (se garantiza el rol admin) ---
         admin = db.scalar(select(User).where(User.email == ADMIN_EMAIL))
         if admin is None:
             db.add(
                 User(
                     email=ADMIN_EMAIL,
-                    password_hash=hash_password(ADMIN_PASSWORD),
+                    password_hash=hash_password(
+                        _resolve_password("SEED_ADMIN_PASSWORD", ADMIN_EMAIL)
+                    ),
                     name="Administrador",
                     role=ROLE_ADMIN,
                 )
@@ -176,7 +251,9 @@ def seed() -> None:
             db.add(
                 User(
                     email=JEFE_EMAIL,
-                    password_hash=hash_password(JEFE_PASSWORD),
+                    password_hash=hash_password(
+                        _resolve_password("SEED_JEFE_PASSWORD", JEFE_EMAIL)
+                    ),
                     name="Jefe de Área QA",
                     role=ROLE_JEFE,
                 )
@@ -228,7 +305,9 @@ def seed() -> None:
                 db.add(
                     User(
                         email=email,
-                        password_hash=hash_password(ASESOR_PASSWORD),
+                        password_hash=hash_password(
+                            _resolve_password("SEED_ASESOR_PASSWORD", email)
+                        ),
                         name=name,
                         role=ROLE_ASESOR,
                         agent_id=agent.id,
@@ -251,6 +330,7 @@ def seed() -> None:
 
         db.commit()
         print("[seed] Datos iniciales cargados correctamente.")
+        _print_new_credentials()
     finally:
         db.close()
 

@@ -243,7 +243,7 @@ export default function SettingsPage() {
                 {dims.map((dim, i) => (
                   <div
                     key={dim.dimension_key ?? `new-${i}`}
-                    className="rounded-lg border border-border bg-bg-secondary p-3"
+                    className="rounded-card border border-border bg-bg-secondary p-3"
                   >
                     {/* Cabecera: nombre + peso + eliminar */}
                     <div className="mb-2 flex items-center gap-2">
@@ -271,7 +271,7 @@ export default function SettingsPage() {
                       <button
                         onClick={() => removeDimension(i)}
                         title="Eliminar categoría"
-                        className="rounded-md p-2 text-text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+                        className="rounded-control p-2 text-text-muted transition-colors hover:bg-danger/10 hover:text-danger"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -305,7 +305,7 @@ export default function SettingsPage() {
                           <button
                             onClick={() => removeCriterion(i, ci)}
                             title="Quitar subcategoría"
-                            className="rounded-md p-1.5 text-text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+                            className="rounded-control p-1.5 text-text-muted transition-colors hover:bg-danger/10 hover:text-danger"
                           >
                             <Trash2 size={14} />
                           </button>

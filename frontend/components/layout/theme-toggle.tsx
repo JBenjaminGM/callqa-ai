@@ -20,14 +20,14 @@ export function ThemeToggle() {
     const next = !isDark;
     setIsDark(next);
     document.documentElement.classList.toggle('dark', next);
-    localStorage.setItem('callqa-theme', next ? 'dark' : 'light');
+    localStorage.setItem('callaibrate-theme', next ? 'dark' : 'light');
   }
 
   return (
     <button
       onClick={toggle}
       aria-label="Cambiar modo claro/oscuro"
-      className="flex h-10 w-10 items-center justify-center rounded-lg
+      className="flex h-10 w-10 items-center justify-center rounded-control
                  text-text-primary transition-colors hover:bg-bg-accent/40"
     >
       {isDark ? <Sun size={20} /> : <Moon size={20} />}

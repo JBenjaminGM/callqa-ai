@@ -1,6 +1,48 @@
-# Changelog — CallQA AI
+# Changelog — CallAIbrate
 
 Cambios relevantes. Formato: descripción (commit). Lo más nuevo arriba.
+
+> Las entradas anteriores al rebrand se conservan tal cual: nombran el producto como
+> "CallQA AI" y la identidad Minsait porque así era entonces. Son historia, no estado.
+
+## Rebrand a CallAIbrate + reproductor, export CSV y seguridad
+- `Marca`: nueva identidad **CallAIbrate** con `docs/BRAND.md` como fuente de verdad.
+  Paleta **paper `#F5F1E8`** / **ink `#2A2420`** con acentos **rust `#B8441F`** y
+  **gold `#A67C27`**; tipografías **Manrope / Inter / IBM Plex Mono** vía
+  `next/font/google` (esta última **solo** para datos numéricos). Se retiran la paleta
+  Minsait, ForFuture Sans y los logos corporativos; `frontend/public/fonts` y
+  `public/brand` se **eliminan** (además, las woff2 eran tipografía con licencia).
+- `Formas`: la clase `.chamfer` (chaflán octogonal) se sustituye por radios de **8 px**
+  en contenedores (`rounded-card`) y **6 px** en controles (`rounded-control`). Los
+  círculos (avatares, puntos de estado, barras de progreso) se conservan.
+- `Wordmark`: `frontend/components/brand/logo.tsx` exporta `<Waveform />` y
+  `<Wordmark />` como SVG real; el fragmento "AI" siempre en rust. Nuevo `favicon.svg`.
+- `Copy`: titulares en caso frase (se retira `text-transform: lowercase`), conservando
+  el resalte `.hl` de una palabra clave, ahora en rust.
+- `Modo oscuro`: se mantiene, con paleta derivada documentada en el addendum de `BRAND.md`.
+- `Reproductor de audio sincronizado`: nuevo `GET /api/v1/calls/{id}/audio` (con el
+  mismo control de acceso que el detalle, y 404 explicativo si el almacenamiento perdió
+  el archivo) y `components/calls/transcript-player.tsx`, que resalta el segmento que
+  suena y salta al hacer clic. El audio se descarga como blob porque `<audio src>` no
+  puede enviar la cabecera `Authorization`.
+- `Exportación CSV`: nuevo `GET /api/v1/dashboard/report.csv` (solo admin/jefe), una
+  fila por ejecutivo con las 7 dimensiones, BOM UTF-8 para Excel, y botón en el
+  dashboard que respeta los filtros activos.
+- `Seguridad`: el seed **genera contraseñas aleatorias** (fijables con
+  `SEED_ADMIN_PASSWORD` / `SEED_JEFE_PASSWORD` / `SEED_ASESOR_PASSWORD`), las imprime
+  una sola vez, migra los emails `@callqa.com` a `@callaibrate.com` conservando la
+  cuenta, y **rota** cualquier cuenta sembrada que aún use una de las contraseñas que
+  llegaron a estar publicadas en el repo. Se retiran las credenciales literales de
+  README y docs.
+- `Seguridad`: guardarraíl que **aborta el arranque** si `APP_ENV=production` con el
+  `JWT_SECRET` de ejemplo.
+- `Corrección`: `datetime.utcnow()` (obsoleto) sustituido por un helper explícito en
+  `dashboard_service.py` que devuelve UTC *naive*, para poder comparar con las columnas
+  `DateTime` sin zona horaria.
+- `Docs`: `BRAND.md` y `COMPLIANCE_CHECKLIST.md` nuevos; `DESIGN.md` reescrito;
+  `CallQA_AI_Presentacion.pptx` eliminado (marca antigua + credenciales demo dentro).
+- `Tests`: 78 → **87** (audio: 200/404/403; CSV: contenido, filtro de campaña y 403 de
+  asesor; guardarraíl de `JWT_SECRET`).
 
 ## Auditoría de coherencia y limpieza
 - `Código muerto eliminado`: componente `kpi-card.tsx` (sustituido por `StatCard`),

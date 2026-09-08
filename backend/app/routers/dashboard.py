@@ -1,9 +1,12 @@
 """Endpoints del dashboard: KPIs agregados del equipo, alertas y por ejecutivo."""
 
+import csv
+import io
 from collections import defaultdict
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -183,6 +186,37 @@ def dashboard_by_campaign(
     thresholds = read_qa_thresholds(db)
     data = ds.by_campaign(db, start, end, thresholds["qa_red_call_threshold"])
     return [CampaignKpiOut(**row) for row in data]
+
+
+@router.get("/report.csv")
+def dashboard_report_csv(
+    period: str = Query(default="30d", pattern="^(7d|30d|90d)$"),
+    campaign: str | None = Query(default=None),
+    date_from: date | None = Query(default=None),
+    date_to: date | None = Query(default=None),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    """Descarga el reporte del equipo en CSV, con los mismos filtros del dashboard."""
+    start, end = ds.resolve_window(period, date_from, date_to)
+    thresholds = read_qa_thresholds(db)
+    header, rows = ds.team_report(
+        db, start, end, campaign, thresholds["qa_red_call_threshold"]
+    )
+
+    buffer = io.StringIO()
+    # BOM UTF-8: sin él, Excel en Windows abre las tildes como caracteres raros.
+    buffer.write("\ufeff")
+    writer = csv.writer(buffer, lineterminator="\r\n")
+    writer.writerow(header)
+    writer.writerows(rows)
+
+    filename = f"reporte-equipo-{date.today().isoformat()}.csv"
+    return Response(
+        content=buffer.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.get("/alerts", response_model=list[AlertOut])

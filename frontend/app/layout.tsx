@@ -1,19 +1,43 @@
 import type { Metadata } from 'next';
+import { IBM_Plex_Mono, Inter, Manrope } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 
+// Tipografías de marca (docs/BRAND.md). Se exponen como variables CSS para que
+// globals.css y tailwind.config.ts las consuman sin acoplarse a la clase.
+const manrope = Manrope({
+  subsets: ['latin'],
+  weight: ['500', '700', '800'],
+  display: 'swap',
+  variable: '--font-manrope',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
+  variable: '--font-plex-mono',
+});
+
 export const metadata: Metadata = {
-  title: 'CallQA AI · Minsait',
-  description:
-    'Quality Assurance automatizado con IA para call centers. Minsait — tech for impact.',
+  title: 'CallAIbrate',
+  description: 'Calibra la calidad de cada llamada con IA.',
+  icons: { icon: '/favicon.svg' },
 };
 
 // Script que aplica el modo claro/oscuro antes del render para evitar parpadeo.
-// Por defecto = modo CLARO Minsait (Gris Cerámica); oscuro solo si se elige.
+// Por defecto = modo CLARO (paper); oscuro solo si se elige.
 const themeScript = `
 (function () {
   try {
-    if (localStorage.getItem('callqa-theme') === 'dark') {
+    if (localStorage.getItem('callaibrate-theme') === 'dark') {
       document.documentElement.classList.add('dark');
     }
   } catch (e) {}
@@ -26,7 +50,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html
+      lang="es"
+      className={`${manrope.variable} ${inter.variable} ${plexMono.variable}`}
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

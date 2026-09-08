@@ -45,7 +45,7 @@ from app.services.transcription_service import (
 )
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger("callqa.tasks")
+logger = logging.getLogger("callaibrate.tasks")
 
 
 @celery_app.task(name="process_call")

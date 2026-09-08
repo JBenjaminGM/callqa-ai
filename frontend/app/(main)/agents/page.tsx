@@ -76,7 +76,7 @@ export default function AgentsPage() {
         </div>
 
         {successMsg && (
-          <div className="mb-5 rounded-lg border border-success/30 bg-success/10
+          <div className="mb-5 rounded-card border border-success/30 bg-success/10
                           px-4 py-3 text-body text-success">
             {successMsg}
           </div>
@@ -185,7 +185,7 @@ export default function AgentsPage() {
                     </p>
                   </div>
                   {!agent.active && (
-                    <span className="ml-auto rounded-md bg-danger/15 px-2 py-0.5 text-small text-danger">
+                    <span className="ml-auto rounded-control bg-danger/15 px-2 py-0.5 text-small text-danger">
                       Inactivo
                     </span>
                   )}

@@ -17,7 +17,7 @@ import httpx
 
 from app.config import settings
 
-logger = logging.getLogger("callqa.transcription")
+logger = logging.getLogger("callaibrate.transcription")
 
 # Pausa (en segundos) a partir de la cual se considera un cambio de hablante.
 SPEAKER_SWITCH_GAP = 1.5

@@ -38,7 +38,7 @@ export function CallsTrendChart({
   }));
   return (
     <Card>
-      <CardTitle className="mb-4">evolución de <span className="hl">llamadas</span> y score</CardTitle>
+      <CardTitle className="mb-4">Evolución de <span className="hl">llamadas</span> y score</CardTitle>
       <ResponsiveContainer width="100%" height={260}>
         <ComposedChart data={chartData} margin={{ top: 6, right: 8, left: -16, bottom: 0 }}>
           <defs>
@@ -102,7 +102,7 @@ export function CallsTrendChart({
             type="monotone"
             dataKey="avg_score"
             name="Score medio"
-            stroke="var(--fucsia)"
+            stroke="var(--rust)"
             strokeWidth={2.5}
             dot={false}
             connectNulls

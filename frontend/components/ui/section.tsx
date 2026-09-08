@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-/** Eyebrow: etiqueta superior breve en mayúsculas (dispositivo Minsait "destacado"). */
+/** Eyebrow: etiqueta superior breve en mayúsculas. */
 export function Eyebrow({
   children,
   className,
@@ -11,7 +11,7 @@ export function Eyebrow({
   return (
     <span
       className={cn(
-        'destacado text-[11px] text-accent-secondary dark:text-fucsia',
+        'destacado text-[11px] text-text-muted',
         className,
       )}
     >
@@ -21,8 +21,8 @@ export function Eyebrow({
 }
 
 /**
- * Encabezado de sección: eyebrow + título (minúscula, palabra clave en Fucsia con
- * `<span class="hl">`) + acción opcional a la derecha.
+ * Encabezado de sección: eyebrow + título (con una palabra clave opcional en Rust
+ * vía `<span class="hl">`) + acción opcional a la derecha.
  */
 export function SectionHeader({
   eyebrow,

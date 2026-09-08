@@ -50,7 +50,7 @@ def generate_call_report(call: Call) -> bytes:
     story: list = []
 
     # --- Encabezado ---
-    story.append(Paragraph("CallQA AI — Reporte de Llamada", styles["Title"]))
+    story.append(Paragraph("CallAIbrate — Reporte de llamada", styles["Title"]))
     story.append(Paragraph(
         "<i>Vista previa para evaluación. Documento generado automáticamente; "
         "no utilizar con datos reales de clientes sin aprobación de Compliance.</i>",
@@ -105,7 +105,7 @@ def generate_call_report(call: Call) -> bytes:
         dim_table = Table(dim_rows, colWidths=[8 * cm, 3 * cm, 5 * cm])
         dim_table.setStyle(TableStyle([
             ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#480e2a")),  # Pruno (marca Minsait)
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#b8441f")),  # Rust (acento de marca)
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
             ("FONTSIZE", (0, 0), (-1, -1), 9),
         ]))

@@ -62,7 +62,7 @@ export default function CampaignsPage() {
               >
                 <div className="flex items-start gap-3">
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control
                                bg-accent-primary/15 text-accent-primary"
                   >
                     <Megaphone size={20} />
@@ -73,7 +73,7 @@ export default function CampaignsPage() {
                         {c.name}
                       </CardTitle>
                       {!c.active && (
-                        <span className="rounded-md bg-danger/15 px-2 py-0.5 text-small text-danger">
+                        <span className="rounded-control bg-danger/15 px-2 py-0.5 text-small text-danger">
                           Inactiva
                         </span>
                       )}
