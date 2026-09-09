@@ -30,6 +30,9 @@ backend/data/
 data/
 *.mp3
 *.wav
+# ...salvo las grabaciones de demostracion, que si forman parte del repo:
+# son las que hacen que el panel no salga vacio al instalar.
+!backend/demo_audio/*.wav
 *.m4a
 *.ogg
 *.flac

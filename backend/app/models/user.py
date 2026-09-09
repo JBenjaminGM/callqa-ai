@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, false as sa_false, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -32,6 +32,11 @@ class User(Base):
     # llamadas y su rendimiento. Para admin/jefe es NULL.
     agent_id: Mapped[int | None] = mapped_column(
         ForeignKey("agents.id"), nullable=True, index=True
+    )
+    # Cuenta de solo lectura: puede ver toda la plataforma pero no modificar nada.
+    # Pensada para la cuenta de demostración pública.
+    is_readonly: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=sa_false(), nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     last_login: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

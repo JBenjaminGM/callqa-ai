@@ -39,6 +39,7 @@ services:
     command: >
       sh -c "alembic upgrade head &&
              python scripts/seed_data.py &&
+             python scripts/seed_demo.py &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2"
     ports:
       - '8000:8000'
@@ -47,6 +48,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://callqa:callqa@postgres:5432/callqa
       - REDIS_URL=redis://redis:6379/0
+      # Siembra 90 dias de llamadas de ejemplo para que el panel no salga vacio.
+      - SEED_DEMO=true
     volumes:
       - audios:/data/audios
     depends_on:

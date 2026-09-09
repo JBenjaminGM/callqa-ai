@@ -43,4 +43,4 @@ EXPOSE 8000
 # Arranque por defecto (usado por Render): migraciones + datos iniciales + servidor.
 # El puerto lo define el host con $PORT (8000 por defecto en local).
 # En docker-compose local este CMD se sobreescribe con su propio `command`.
-CMD ["sh", "-c", "alembic upgrade head && python scripts/seed_data.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "alembic upgrade head && python scripts/seed_data.py && python scripts/seed_demo.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

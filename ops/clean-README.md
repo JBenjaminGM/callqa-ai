@@ -1,36 +1,63 @@
 # CallAIbrate
 
-Plataforma web de **quality assurance automatizado** para call centers. Sube las
-grabaciones de tus llamadas y la plataforma las transcribe, identifica al ejecutivo,
-evalúa cada llamada contra una rúbrica configurable y te entrega paneles con
-indicadores, alertas accionables y un reporte por llamada.
+**Calibra la calidad de cada llamada con IA.**
 
-🌐 **Demo en vivo:** https://callaibrate.vercel.app · API: https://callaibrate-api.onrender.com/docs
+Un jefe de campaña sube las grabaciones de su equipo. CallAIbrate las transcribe, las
+evalúa contra una rúbrica configurable y devuelve una nota del 0 al 100 con
+recomendaciones concretas. Lo que antes exigía escuchar llamada por llamada —y en la
+práctica se hacía sobre el 1 o 2% de ellas— se hace sobre el 100%.
 
-## Características
+🌐 **Demo en vivo:** <https://callaibrate.vercel.app>
+Entra con **`demo@callaibrate.com`** / **`CallAIbrate-Demo-2026`** — cuenta de solo
+lectura, con 90 días de datos de ejemplo ya cargados.
 
-- **Transcripción y análisis automáticos** de cada llamada, con enmascarado
-  *best-effort* de datos sensibles antes del análisis.
-- **Rúbrica configurable** por dimensiones y subcriterios, con pesos.
-- **Dashboards e indicadores**: score del equipo con su tendencia, distribución de
-  scores, KPIs por campaña (con delta vs. periodo anterior), alertas accionables,
-  ranking de ejecutivos y métricas de conversación (ratio hablar/escuchar, % de
-  silencio, palabras por minuto, turnos).
-- **Roles**: administrador / jefe de área (gestión y analítica global) y asesor
-  (solo su propio rendimiento).
-- **Campañas con nota de producto**: define la oferta que el ejecutivo debe presentar;
-  la evaluación comprueba su cumplimiento (frases obligatorias, condiciones).
-- **Reporte PDF** por llamada.
+> El backend está en un plan gratuito y se duerme con la inactividad: la primera visita
+> puede tardar unos 50 segundos en responder.
 
-## Stack
+---
 
-- **Backend**: Python 3.11, FastAPI, SQLAlchemy 2.0, Alembic, PostgreSQL. Procesamiento
-  con Celery + Redis (o inline para despliegues sin worker).
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, TanStack Query, Recharts.
-- **Infra**: Docker Compose (stack completo en local); desplegable en Vercel (frontend)
-  y Render (backend + PostgreSQL).
+![Panel del jefe de campaña](capturas/01-dashboard.png)
 
-## Cómo correr en local
+## Qué hace
+
+**Escucha y puntúa.** Transcribe con Whisper, separa quién habla, enmascara datos
+sensibles y evalúa la llamada con un modelo de lenguaje contra siete criterios: saludo y
+protocolo, asertividad, oferta de producto, cumplimiento normativo, resolución, manejo de
+objeciones y sentimiento del cliente.
+
+**Explica la nota.** Cada llamada trae un resumen, la puntuación de cada criterio y
+recomendaciones accionables con su prioridad — no un número suelto.
+
+![Transcripción sincronizada con el audio](capturas/03-llamada.png)
+
+**Reproduce y sincroniza.** El audio se escucha mientras la transcripción resalta la
+frase que suena. Al hacer clic en cualquier segmento, la grabación salta a ese momento.
+
+**Vigila el cumplimiento.** Cada campaña define su nota de producto: qué se ofrece, con
+qué condiciones, qué frases son obligatorias y qué afirmaciones están prohibidas. Las
+llamadas que se salen del guion aparecen como alerta.
+
+**Mide cómo se habla.** Ratio de hablar/escuchar, porcentaje de silencio, monólogo más
+largo, palabras por minuto y turnos por minuto — calculado de los tiempos reales de la
+transcripción, sin IA de por medio.
+
+![Listado de llamadas](capturas/02-llamadas.png)
+
+**Separa lo que ve cada quien.** El jefe ve todo el equipo; el asesor solo su propio
+rendimiento, con su percentil anónimo dentro de la campaña.
+
+## Cómo está construido
+
+| | |
+|---|---|
+| **Backend** | Python 3.11 · FastAPI · SQLAlchemy 2.0 · Alembic · PostgreSQL |
+| **Frontend** | Next.js 14 (App Router) · TypeScript · Tailwind CSS · TanStack Query · Recharts |
+| **IA** | Groq (Whisper large v3 + modelo de lenguaje). Intercambiable por OpenAI, Claude o Azure con una variable |
+| **Procesamiento** | Celery + Redis, o en línea sin worker para despliegues pequeños |
+| **Infraestructura** | Docker Compose en local · Vercel (frontend) + Render (backend y base de datos) |
+| **Pruebas** | 90 tests de backend |
+
+## Correrlo en local
 
 Requisito: Docker.
 
@@ -38,14 +65,19 @@ Requisito: Docker.
 docker compose up -d --build
 ```
 
-- Frontend: http://localhost:3000
-- API + documentación: http://localhost:8000/docs
+- App: <http://localhost:3000>
+- API y documentación interactiva: <http://localhost:8000/docs>
 
-El arranque aplica las migraciones y crea usuarios de ejemplo (un administrador, un
-jefe de área y asesores) junto con datos de demostración.
+El arranque aplica las migraciones, crea las cuentas de ejemplo y **siembra 90 días de
+llamadas de demostración** con sus grabaciones y transcripciones, para que el panel no
+salga vacío. Las contraseñas de las cuentas se generan al azar y se imprimen una sola vez:
 
-Para el análisis necesitas una clave de proveedor en `backend/.env` (el proveedor es
-intercambiable: Groq, OpenAI, Claude o Azure):
+```bash
+docker compose logs api | grep -A 8 CREDENCIALES
+```
+
+Para que el análisis con IA funcione hace falta una clave de proveedor en `backend/.env`
+(los datos de demostración no la necesitan):
 
 ```
 AI_PROVIDER=groq
@@ -55,11 +87,12 @@ GROQ_API_KEY=...
 ## Estructura
 
 ```
-backend/    API FastAPI: modelos, servicios, pipeline de procesamiento, migraciones y tests
-frontend/   Aplicación Next.js: páginas, componentes y visualización de datos
+backend/     API FastAPI: modelos, servicios, pipeline de procesamiento, migraciones y tests
+frontend/    Aplicación Next.js: páginas, componentes y visualización de datos
+capturas/    Imágenes de este README
 ```
 
-## Tests
+## Pruebas
 
 ```bash
 cd backend && python -m pytest -q
@@ -67,8 +100,8 @@ cd backend && python -m pytest -q
 
 ## Despliegue
 
-`git push` a la rama principal → Vercel (frontend) y Render (backend + PostgreSQL)
-redespliegan automáticamente. La configuración vive en `render.yaml` y `docker-compose.yml`.
+`git push` a la rama principal y Vercel y Render redespliegan solos. La configuración vive
+en `render.yaml` y `docker-compose.yml`.
 
 ## Licencia
 

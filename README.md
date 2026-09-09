@@ -9,10 +9,15 @@ documentación.
 > la salvaguarda interna `X-Prototype-Notice`.)
 
 - 🌐 **En vivo:** https://callaibrate.vercel.app · API: https://callaibrate-api.onrender.com
-- 👤 **Cuentas:** el seed crea `admin@callaibrate.com`, `jefe@callaibrate.com` y un asesor por cada ejecutivo demo. **Las contraseñas se generan al azar y se imprimen una sola vez**: léelas con `docker compose logs api`.
+- 👀 **Demo sin instalar nada:** `demo@callaibrate.com` / `CallAIbrate-Demo-2026` (solo lectura, con 90 días de datos ya cargados).
+- 👤 **Cuentas de trabajo:** el seed crea `admin@callaibrate.com`, `jefe@callaibrate.com` y un asesor por cada ejecutivo demo. **Las contraseñas se generan al azar y se imprimen una sola vez**: léelas con `docker compose logs api`.
 - 🎨 **Identidad de marca:** **[`docs/BRAND.md`](docs/BRAND.md)** (fuente de verdad del color, tipografía y tono).
 - 🤖 **¿Eres una IA o un dev nuevo?** → **[`docs/AGENTS.md`](docs/AGENTS.md)** (guía completa).
 - 📚 **Toda la documentación está en [`docs/`](docs/)** (índice: [`docs/00_INDICE.md`](docs/00_INDICE.md)).
+
+![Panel del jefe de campaña](capturas/01-dashboard.png)
+
+![Transcripción sincronizada con el audio](capturas/03-llamada.png)
 
 ---
 
@@ -75,7 +80,7 @@ dimensión + score global ponderado + recomendaciones accionables + **reporte PD
 
 ## 🛠️ Desarrollo y despliegue
 
-- **Tests backend (87):** `cd backend && .venv\Scripts\python -m pytest -q`.
+- **Tests backend (90):** `cd backend && .venv\Scripts\python -m pytest -q`.
 - **Frontend en local:** `cd frontend && npm install && npm run dev`.
 - **Desplegar:** `git push origin main` → Vercel y Render redepliegan solos. Guía: **[`docs/DEPLOY_GRATIS.md`](docs/DEPLOY_GRATIS.md)**.
 

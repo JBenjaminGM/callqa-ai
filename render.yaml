@@ -29,6 +29,8 @@ services:
     envVars:
       - key: PROCESS_INLINE        # procesa sin worker Celery
         value: "true"
+      - key: SEED_DEMO             # datos de ejemplo para que la demo publica no salga vacia
+        value: "true"
       - key: AI_PROVIDER
         value: groq
       - key: WHISPER_PROVIDER

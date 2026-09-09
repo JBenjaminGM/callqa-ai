@@ -152,3 +152,69 @@ def test_qa_thresholds_default_and_update(client, auth_headers, asesor_headers):
         "/api/v1/config/settings", headers=asesor_headers, json={"qa_target_score": 70}
     )
     assert forbidden.status_code == 403
+
+
+# ---------------------------------------------------------------
+# Cuentas de solo lectura (la demostración pública)
+# ---------------------------------------------------------------
+def _usuario_solo_lectura(db_session):
+    """Crea un jefe marcado como solo lectura."""
+    from app.models.user import ROLE_JEFE, User
+    from app.utils.security import hash_password
+
+    user = User(
+        email="demo@test.com",
+        password_hash=hash_password("Demo123!"),
+        name="Invitado",
+        role=ROLE_JEFE,
+        is_readonly=True,
+    )
+    db_session.add(user)
+    db_session.commit()
+    return user
+
+
+def _headers_solo_lectura(client, db_session):
+    _usuario_solo_lectura(db_session)
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"email": "demo@test.com", "password": "Demo123!"},
+    )
+    return {"Authorization": f"Bearer {response.json()['access_token']}"}
+
+
+def test_solo_lectura_puede_consultar(client, db_session):
+    """Una cuenta de demostración navega la plataforma con normalidad."""
+    headers = _headers_solo_lectura(client, db_session)
+
+    assert client.get("/api/v1/calls", headers=headers).status_code == 200
+    assert client.get("/api/v1/agents", headers=headers).status_code == 200
+    assert client.get("/api/v1/dashboard/summary", headers=headers).status_code == 200
+
+
+def test_solo_lectura_no_puede_escribir(client, db_session):
+    """Cualquier método que modifique datos se rechaza con 403."""
+    headers = _headers_solo_lectura(client, db_session)
+
+    creacion = client.post(
+        "/api/v1/agents",
+        headers=headers,
+        json={"name": "Nuevo", "email": "nuevo@banco.com", "campaign": "Tarjetas"},
+    )
+    assert creacion.status_code == 403
+    assert "demostración" in creacion.json()["detail"]
+
+    assert client.delete("/api/v1/calls/1", headers=headers).status_code == 403
+    assert client.put(
+        "/api/v1/config/rubric", headers=headers, json={"dimensions": []}
+    ).status_code == 403
+
+
+def test_un_jefe_normal_si_puede_escribir(client, auth_headers):
+    """El guardarraíl solo afecta a las cuentas marcadas como solo lectura."""
+    response = client.post(
+        "/api/v1/agents",
+        headers=auth_headers,
+        json={"name": "Ana Torres", "email": "ana@banco.com", "campaign": "Tarjetas"},
+    )
+    assert response.status_code in (200, 201)

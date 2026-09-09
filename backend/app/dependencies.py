@@ -5,7 +5,7 @@ La principal es `get_current_user`, que valida el JWT del header
 Authorization y devuelve el usuario autenticado.
 """
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -16,8 +16,12 @@ from app.utils.security import decode_access_token
 # Esquema de autenticación tipo "Bearer <token>".
 bearer_scheme = HTTPBearer(auto_error=False)
 
+# Métodos que no cambian nada. Todo lo demás se considera escritura.
+METODOS_DE_LECTURA = {"GET", "HEAD", "OPTIONS"}
+
 
 def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
@@ -47,6 +51,19 @@ def get_current_user(
     user = db.get(User, user_id)
     if user is None:
         raise error
+
+    # Cuentas de solo lectura (la demo pública): pueden consultarlo todo, pero
+    # cualquier método que escriba se rechaza aquí. Al vivir en la dependencia
+    # que ya usan todos los endpoints autenticados, no hay forma de saltárselo
+    # olvidando un decorador en un endpoint nuevo.
+    if user.is_readonly and request.method not in METODOS_DE_LECTURA:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "Esta es una cuenta de demostración: puedes explorar toda la "
+                "plataforma, pero no modificar datos."
+            ),
+        )
 
     return user
 
