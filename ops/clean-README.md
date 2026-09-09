@@ -28,6 +28,14 @@ objeciones y sentimiento del cliente.
 **Explica la nota.** Cada llamada trae un resumen, la puntuación de cada criterio y
 recomendaciones accionables con su prioridad — no un número suelto.
 
+**Y calibra: comprueba que la IA puntúa bien.** Es lo que da nombre al producto y lo que
+casi ningún sistema de este tipo hace. El jefe puntúa una llamada **sin ver la nota de la
+IA** —la ceguera está en el servidor: el score ni siquiera se envía al navegador— y al
+guardar se revelan las dos. **La nota de la IA nunca se sobrescribe**: conviven, y de su
+diferencia sale un panel de acuerdo que dice en qué criterios discrepan más. Cuando uno
+se desvía mucho más que el resto, el problema casi nunca es la IA: es que ese criterio de
+la rúbrica admite dos lecturas. El sistema lo señala y enlaza a donde reescribirlo.
+
 ![Transcripción sincronizada con el audio](capturas/03-llamada.png)
 
 **Reproduce y sincroniza.** El audio se escucha mientras la transcripción resalta la
@@ -46,6 +54,12 @@ transcripción, sin IA de por medio.
 **Separa lo que ve cada quien.** El jefe ve todo el equipo; el asesor solo su propio
 rendimiento, con su percentil anónimo dentro de la campaña.
 
+**Cierra el ciclo.** La evaluación no es un monólogo: el asesor acusa recibo, cuenta su
+versión y puede pedir revisión de una nota; el jefe le responde. Y el panel del jefe no
+abre con medias, sino con **a quién escuchar hoy y por qué** — como mucho cinco llamadas,
+ordenadas por urgencia y no por nota, porque una llamada roja siempre puntuará menos que
+una recurrida, y detrás de la recurrida hay alguien esperando respuesta.
+
 ## Cómo está construido
 
 | | |
@@ -55,7 +69,7 @@ rendimiento, con su percentil anónimo dentro de la campaña.
 | **IA** | Groq (Whisper large v3 + modelo de lenguaje). Intercambiable por OpenAI, Claude o Azure con una variable |
 | **Procesamiento** | Celery + Redis, o en línea sin worker para despliegues pequeños |
 | **Infraestructura** | Docker Compose en local · Vercel (frontend) + Render (backend y base de datos) |
-| **Pruebas** | 90 tests de backend |
+| **Pruebas** | 127 tests de backend |
 
 ## Correrlo en local
 

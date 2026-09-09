@@ -1,7 +1,8 @@
 # CallAIbrate — Guía de marca
 
-> Fuente de verdad del rebrand. Reemplaza toda referencia a la identidad anterior
-> (CallQA AI / Minsait: púrpura, gris cerámica, fucsia, tipografía ForFuture Sans).
+> Fuente de verdad de la marca. Reemplaza toda referencia a las identidades
+> anteriores, que están retiradas y solo se describen en
+> [`HISTORIA.md`](HISTORIA.md).
 
 ## Nombre y concepto
 

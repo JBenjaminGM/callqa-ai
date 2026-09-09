@@ -3,15 +3,15 @@
 > **Lee esto primero si acabas de entrar al proyecto.** Es el traspaso entre sesiones:
 > dónde estamos, qué sigue y qué te va a hacer perder tiempo si no lo sabes.
 >
-> Última actualización: 9 sep 2026, al terminar la Fase 3.
+> Última actualización: 9 sep 2026, al terminar el plan de cinco fases.
 
 ---
 
 ## En una frase
 
 CallAIbrate es una plataforma de control de calidad de llamadas con IA. **El destino es
-un portafolio**, no vender el producto — eso decide todas las prioridades. Estamos
-ejecutando un plan de cinco fases; solo queda la documentación.
+un portafolio**, no vender el producto — eso decide todas las prioridades. Hemos
+ejecutado un plan de cinco fases nacido de una auditoría. **Están las cinco.**
 
 Antes de tocar nada, lee **[`ARQUITECTURA.md`](ARQUITECTURA.md)** (cómo funciona) y
 **[`ACUERDOS.md`](ACUERDOS.md)** (qué se decidió y qué costaría cambiarlo).
@@ -29,12 +29,15 @@ ahí, no desde la raíz del repositorio.
 
 | | |
 |---|---|
-| Último commit en `origin/main` | `7bece0f` — traspaso de la Fase 1 |
+| Rama | `claude/callqa-callibrate-redesign-036677` |
+| Último en `origin/main` | `7bece0f` — traspaso de la Fase 1 |
+| **Sin subir** | Fase 2, Fase 3 y Fase 4 |
 | Tests backend | **127**, todos en verde |
 | Migraciones | 0001–0010 |
 
 **Pregunta antes de hacer `git push`.** Las fases 0 y 1 ya están en `origin/main` y
-desplegadas; lo posterior se commitea en la rama y se sube cuando el usuario lo diga.
+desplegadas; las tres siguientes están commiteadas en la rama y esperan a que el usuario
+diga que se suben.
 
 ---
 
@@ -108,24 +111,45 @@ La evaluación era un monólogo y el panel abría con medias, que no dicen qué 
   **recientes y flojas** a propósito: fuera de los últimos 30 días no se verían en el
   panel, y nadie recurre un sobresaliente.
 
+### Fase 4 · Documentación coherente
+- **`HISTORIA.md`** absorbe la línea del tiempo (que se ha eliminado) y **las entradas del
+  changelog anteriores al rebrand**, movidas tal cual, sin reescribir una coma:
+  reescribirlas dejaría falsas frases que en su momento fueron ciertas.
+- El `CHANGELOG.md` vigente arranca en CallAIbrate y recoge ya las fases 0 a 3.
+- `ACUERDOS.md` se queda solo con acuerdos vigentes: fuera el que era historia con
+  formato de acuerdo, y dentro tres nuevos de las fases 2 y 3 (la nota de la IA no se
+  sobrescribe, el acuse lo firma quien fue evaluado, la sesión ciega lo es en el
+  servidor). Van del A-01 al A-20, sin huecos.
+- Cifras al día en `ARQUITECTURA.md`, `AGENTS.md` y `CLAUDE.md`: 127 tests, 10 tablas,
+  10 migraciones, 54 operaciones de API, 20.213 líneas.
+- **Objetivo comprobable, cumplido**: buscar el nombre o las identidades visuales
+  anteriores en todo el repositorio solo da resultados dentro de `HISTORIA.md`.
+
+  ```bash
+  grep -rn "Minsait\|ForFuture\|Pruno\|chamfer\|Aetheric\|CallQA AI" --include="*.md" --include="*.ts" --include="*.tsx" --include="*.py" --include="*.css" . | grep -v node_modules | grep -v HISTORIA.md
+  ```
+
 ---
 
 ## Lo que sigue
+
+**El plan de cinco fases está terminado.** No hay una fase 5 pendiente: lo que queda son
+las decisiones abiertas de [`ACUERDOS.md`](ACUERDOS.md), que son del usuario y no
+técnicas — sobre todo **D-1** (pasar Render a plan de pago, que resuelve de un golpe la
+caducidad de la base, el arranque lento y, con S3, la pérdida de audios).
+
+Si retomas el proyecto para añadir algo, dos avisos:
+
+- **La base de datos de producción vuelve a caducar a los 30 días.** Si al abrir la demo
+  no hay datos, es eso. Ver el punto 9 de los tropiezos.
+- **Antes de tocar la marca o la documentación**, lee [`HISTORIA.md`](HISTORIA.md): es el
+  único sitio donde se nombran el producto y las identidades visuales anteriores, y
+  conviene que siga siendo así.
 
 El plan completo, con el porqué de cada cosa, está en el artefacto
 <https://claude.ai/code/artifact/0736a828-5247-4c0a-911d-71bf3c405a4f>
 y la auditoría que lo originó en
 <https://claude.ai/code/artifact/fb1c7a81-572f-4eef-8aa2-624149103f2a>.
-
-### Fase 4 · Documentación coherente
-- **`HISTORIA.md`**: absorbe `LINEA_DEL_TIEMPO.md` (se solapan) y **las entradas del
-  changelog anteriores al rebrand**. Decisión del usuario: el `CHANGELOG.md` vigente
-  arranca en CallAIbrate; las entradas viejas **se mueven, no se reescriben** —
-  reescribirlas dejaría falsas frases como «identidad de marca Minsait en toda la app».
-- `ACUERDOS.md` se queda solo con acuerdos vigentes: fuera los que son historia
-  disfrazada, como el A-02 («la identidad anterior está retirada»).
-- Objetivo comprobable: buscar la marca anterior en todo el repo solo debe dar
-  resultados dentro de `HISTORIA.md`.
 
 ---
 

@@ -234,11 +234,9 @@ Identidad **CallAIbrate**. La fuente de verdad de la marca es
   numéricos), cargadas con `next/font/google`.
 - **Implementación canónica del color:** `frontend/app/globals.css` + `tailwind.config.ts`.
 
-> Nota histórica: iteraciones previas usaron la paleta corporativa púrpura de
-> Minsait (Pruno / Gris Cerámica / Fucsia con ForFuture Sans y contenedores
-> achaflanados), una paleta Electric Rose / Deep Plum y el sistema "Aetheric
-> Intelligence" con paleta Índigo/Slate; **todas quedaron obsoletas** al adoptar
-> la identidad CallAIbrate actual.
+> Nota histórica: hubo tres identidades visuales antes de esta y **todas quedaron
+> obsoletas** al adoptar la de CallAIbrate. Se describen en
+> [`HISTORIA.md`](HISTORIA.md).
 
 ---
 
@@ -404,7 +402,7 @@ caduca a los **90 días**.
 4. **Rediseño de flujo**: subida en lote, detección del ejecutivo por IA,
    matching difuso, asignación posterior, filtro por fecha (con tests adicionales).
 5. **Reestilo** a una identidad corporativa púrpura.
-6. **Reestilo** al sistema "Aetheric Intelligence" (glassmorphism, paleta Índigo/Slate).
+6. **Reestilo** a la segunda identidad visual del proyecto (ver `HISTORIA.md`).
 7. **Optimización**: frontend a modo producción (salida standalone) y
    reorganización en este **monorepo** con un único `docker-compose.yml`.
 8. **Migración a Groq** como proveedor por defecto (Whisper large v3 + Llama 3.3
@@ -418,9 +416,8 @@ caduca a los **90 días**.
 12. **Campañas con nota de producto** (migración `0004`): entidad `Campaign`,
     extracción de la oferta desde PDF (pypdf + LLM) y formulario con asistente IA;
     la nota se inyecta en el prompt de análisis.
-13. **Rebrand a la identidad oficial Minsait**: paleta Pruno / Gris Cerámica /
-    Fucsia, tipografía ForFuture Sans, logo oficial, contenedores achaflanados;
-    sustituye a "Aetheric Intelligence" / Índigo/Slate.
+13. **Rebrand a la identidad corporativa de entonces** (ver `HISTORIA.md`), que
+    sustituyó a la anterior. Hoy las dos están obsoletas.
 14. **Roles admin/jefe/asesor** (migración `0005`) con scoping, login de asesor,
     panel "Mi rendimiento" y **umbrales QA** configurables.
 15. **Limpieza de lenguaje a "vista previa para evaluación"** (se elimina el de

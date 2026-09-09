@@ -23,7 +23,7 @@ automatizado para call centers del sector banca. Desplegada en vivo:
 | **Entender cómo está construido** (sin saber programar) | **`ARQUITECTURA.md`** ⭐ |
 | **Entender y modificar el código** (dev o IA) | **`AGENTS.md`** ⭐ (empieza aquí) |
 | Ver qué decidimos y qué costaría cambiarlo | `ACUERDOS.md` |
-| Ver qué ha pasado, en orden y en lenguaje normal | `LINEA_DEL_TIEMPO.md` |
+| Ver de dónde viene el proyecto, en orden y en lenguaje normal | `HISTORIA.md` |
 | Ver el estado actual, casos de uso, reglas de negocio y lo pendiente | `ESTADO_DEL_PROYECTO.md` |
 | Ver el historial de cambios | `CHANGELOG.md` |
 | **Publicar / desplegar gratis** | `DEPLOY_GRATIS.md` |
@@ -45,7 +45,7 @@ automatizado para call centers del sector banca. Desplegada en vivo:
 - **`ACUERDOS.md`** — Las decisiones tomadas, el motivo de cada una y **qué costaría
   cambiarla**. Ninguna es inamovible; este documento existe para poder revisarlas con
   criterio. Incluye las decisiones aún abiertas.
-- **`LINEA_DEL_TIEMPO.md`** — Qué ha pasado en el proyecto, en orden y para humanos.
+- **`HISTORIA.md`** — De dónde viene el proyecto: la línea del tiempo y el registro de cambios anterior al rebrand.
 - **`AGENTS.md`** — **Guía maestra de desarrollo / orientación para IAs**: estado
   actual, arquitectura, mapa del repo, cómo correr/testear/desplegar, *gotchas* y cómo
   hacer cambios. **El más importante; el punto de entrada de un chat nuevo.**
@@ -67,9 +67,9 @@ automatizado para call centers del sector banca. Desplegada en vivo:
 
 > Los specs de origen numerados (`01`–`07`) y la guía de Railway se **consolidaron**
 > en los docs canónicos de arriba y se eliminaron para mantener `docs/` mínimo y
-> coherente. Toda referencia histórica a "CallQA AI", la identidad Minsait
-> (Pruno/Cerámica/Fucsia, ForFuture Sans), "Aetheric Intelligence", paleta
-> Índigo/Slate, Railway o "vista previa/prototipo" está **obsoleta** (ver `AGENTS.md`).
+> coherente. El nombre anterior del producto, las identidades visuales anteriores,
+> Railway y el lenguaje de "vista previa/prototipo" están **obsoletos**: qué fueron
+> exactamente se cuenta en `HISTORIA.md`, y solo ahí.
 >
 > La presentación `CallQA_AI_Presentacion.pptx` se **eliminó**: reflejaba la marca
 > anterior e incluía las credenciales demo antiguas.

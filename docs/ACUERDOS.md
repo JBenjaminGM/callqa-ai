@@ -27,23 +27,13 @@ resaltado en color `rust` en la interfaz. La fuente de verdad de la marca es
 instrumento de medición con precisión, que es literalmente lo que hace el producto.
 
 **Coste de cambio.** 🟡 Otro rebrand completo son unos días: tokens de color, tipografías,
-wordmark, copy y documentación. La infraestructura ya no habría que tocarla.
+wordmark, copy y documentación. La infraestructura ya no habría que tocarla. La identidad
+visual anterior está retirada; qué era y por qué se fue está en
+[`HISTORIA.md`](HISTORIA.md).
 
 ---
 
-### A-02 · La identidad Minsait está retirada
-**Qué acordamos.** Paleta Pruno/Cerámica/Fucsia, tipografía ForFuture Sans y contenedores
-achaflanados quedan **obsoletos**. Se mantienen las referencias de negocio al sector banca.
-
-**Por qué.** El producto dejó de presentarse bajo la marca del cliente. Además, las
-tipografías ForFuture Sans tenían licencia de Minsait: eliminarlas era también lo correcto
-legalmente.
-
-**Coste de cambio.** 🟡 Igual que A-01.
-
----
-
-### A-03 · La plataforma se presenta como terminada, no como prototipo
+### A-02 · La plataforma se presenta como terminada, no como prototipo
 **Qué acordamos.** El banner de "vista previa" se retiró de la interfaz. Se conservan dos
 salvaguardas internas que el usuario no ve: la cabecera HTTP `X-Prototype-Notice` y el campo
 `environment="evaluation"` en los registros.
@@ -58,7 +48,7 @@ cuando existan las tres firmas de [`COMPLIANCE_CHECKLIST.md`](COMPLIANCE_CHECKLI
 
 ## Tecnología
 
-### A-04 · El frontend sigue en Next.js, no migra a Astro
+### A-03 · El frontend sigue en Next.js, no migra a Astro
 **Qué acordamos.** Next.js 14 con React y TypeScript. **Revisado el 9 sep 2026 a petición
 tuya y confirmado.**
 
@@ -77,7 +67,7 @@ usuario no notaría nada.
 
 ---
 
-### A-05 · El proveedor de IA lo fija una variable de entorno, nunca la base de datos
+### A-04 · El proveedor de IA lo fija una variable de entorno, nunca la base de datos
 **Qué acordamos.** `AI_PROVIDER` y `WHISPER_PROVIDER` deciden qué IA se usa. Por defecto
 `groq`. El código está preparado para Claude, OpenAI y Azure sin tocar lógica.
 
@@ -89,7 +79,7 @@ Los de pago cuestan dinero por llamada; Groq cuesta $0.
 
 ---
 
-### A-06 · El modelo de análisis es `openai/gpt-oss-120b`
+### A-05 · El modelo de análisis es `openai/gpt-oss-120b`
 **Qué acordamos.** Ese modelo, servido por Groq, para puntuar las llamadas. Whisper large v3
 para transcribir.
 
@@ -102,7 +92,7 @@ Si vuelve a fallar con `404 model_not_found`, elegir otro de
 
 ---
 
-### A-07 · En producción las llamadas se procesan sin worker
+### A-06 · En producción las llamadas se procesan sin worker
 **Qué acordamos.** `PROCESS_INLINE=true` en Render: la propia API procesa la llamada en
 segundo plano. En local sí se usa Celery + Redis vía Docker.
 
@@ -116,7 +106,7 @@ procesando y las respuestas se harán lentas.
 
 ## Infraestructura y coste
 
-### A-08 · Todo vive en planes gratuitos
+### A-07 · Todo vive en planes gratuitos
 **Qué acordamos.** Vercel (frontend), Render (API + PostgreSQL), Groq (IA), GitHub (código).
 Coste total: **$0 al mes**.
 
@@ -132,7 +122,7 @@ problemas de golpe. **Es la decisión más importante que tienes pendiente.**
 
 ---
 
-### A-09 · Frontend en Vercel, backend en Render
+### A-08 · Frontend en Vercel, backend en Render
 **Qué acordamos.** Separados, no en el mismo sitio.
 
 **Por qué.** Vercel lo hacen los creadores de Next.js: se despliega sin configurar nada. Pero
@@ -143,7 +133,7 @@ base de datos gestionada. Render sí hace eso.
 
 ---
 
-### A-10 · La infraestructura se renombró a `callaibrate`
+### A-09 · La infraestructura se renombró a `callaibrate`
 **Qué acordamos.** Servicios `callaibrate-api` y `callaibrate-db`, dominios
 `callaibrate.vercel.app` y `callaibrate-api.onrender.com`, repositorio `callaibrate`. El
 dominio anterior redirige al nuevo.
@@ -160,7 +150,7 @@ migrar. En otro momento habría implicado downtime.
 
 ---
 
-### A-11 · Dos repositorios: uno privado y uno público
+### A-10 · Dos repositorios: uno privado y uno público
 **Qué acordamos.** `callaibrate` (privado, todo) y `callqa` (público, solo código limpio,
 con historial propio). El público se genera con `ops/publish-clean.ps1`.
 
@@ -172,7 +162,7 @@ con historial propio). El público se genera con `ops/publish-clean.ps1`.
 
 ## Seguridad y datos
 
-### A-12 · Ninguna contraseña ni clave vive en el código
+### A-11 · Ninguna contraseña ni clave vive en el código
 **Qué acordamos.** El seed genera contraseñas al azar y las muestra una sola vez. Las claves
 de API viven solo en el panel de Render (`sync: false`). El repositorio nunca las contiene.
 
@@ -183,7 +173,7 @@ de API viven solo en el panel de Render (`sync: false`). El repositorio nunca la
 
 ---
 
-### A-13 · No se reescribe el historial de git por la clave filtrada
+### A-12 · No se reescribe el historial de git por la clave filtrada
 **Qué acordamos.** La clave de Groq que se subió por error en junio sigue en el historial.
 **Está revocada** (verificado: responde 401).
 
@@ -194,7 +184,7 @@ cualquier copia del repositorio, a cambio de borrar una clave que ya no sirve pa
 
 ---
 
-### A-14 · Los audios se guardan en disco local, no en S3
+### A-13 · Los audios se guardan en disco local, no en S3
 **Qué acordamos.** `STORAGE_PROVIDER=local`. El código soporta S3 con solo cambiar la variable.
 
 **Por qué.** Simplicidad y coste cero.
@@ -207,7 +197,7 @@ unos céntimos al mes. **Recomendado antes de cualquier uso serio.**
 
 ---
 
-### A-15 · Sin aprobación de Compliance no entran datos reales
+### A-14 · Sin aprobación de Compliance no entran datos reales
 **Qué acordamos.** Nada de grabaciones reales de clientes hasta cerrar
 [`COMPLIANCE_CHECKLIST.md`](COMPLIANCE_CHECKLIST.md) con tres firmas: Compliance, DPO y
 Seguridad.
@@ -221,7 +211,7 @@ datos personales es *best-effort*, no una garantía.
 
 ## Cómo trabajamos
 
-### A-16 · El agente trabaja de forma autónoma
+### A-15 · El agente trabaja de forma autónoma
 **Qué acordamos.** Ejecuta lo necesario sin pedir confirmación paso a paso: git, docker,
 dependencias, migraciones, pruebas, despliegues. Se detiene solo ante algo que únicamente tú
 puedes dar.
@@ -230,7 +220,7 @@ puedes dar.
 
 ---
 
-### A-17 · El agente no introduce claves ni contraseñas en formularios
+### A-16 · El agente no introduce claves ni contraseñas en formularios
 **Qué acordamos.** Configurar servicios, diagnosticar, desplegar y verificar: sí. Escribir una
 API key o una contraseña en un campo: no. Eso lo haces tú.
 
@@ -241,7 +231,7 @@ pegues tú directamente es sencillamente más seguro.
 
 ---
 
-### A-18 · Nada se da por bueno sin verificarlo de verdad
+### A-17 · Nada se da por bueno sin verificarlo de verdad
 **Qué acordamos.** Nada se reporta como funcionando sin probarlo contra el sistema real:
 pruebas automáticas, la pantalla abierta, la llamada procesada de punta a punta.
 
@@ -249,6 +239,45 @@ pruebas automáticas, la pantalla abierta, la llamada procesada de punta a punta
 borrada, la sesión que se cerraba al recargar y el modelo de Groq retirado.
 
 **Coste de cambio.** 🟢 Puedes pedir que vaya más rápido y verifique menos. No te lo recomiendo.
+
+---
+
+### A-18 · La nota de la IA nunca se sobrescribe
+**Qué acordamos.** Cuando una persona corrige la puntuación de una llamada se crea un
+registro aparte (`reviews`). El `Analysis` de la IA queda intacto y el detalle muestra las
+dos notas con su diferencia.
+
+**Por qué.** Es la condición para que se pueda medir el acuerdo entre ambas, que es de lo
+que trata calibrar. Si el humano pisara la nota, a la semana siguiente nadie podría decir
+en qué criterios discrepa la IA — y ese es el dato que hace útil el producto.
+
+**Coste de cambio.** 🔴 Sobrescribir destruiría el histórico de comparación, que no se
+puede reconstruir. El panel de acuerdo dejaría de tener sentido.
+
+---
+
+### A-19 · El acuse de recibo lo firma quien fue evaluado
+**Qué acordamos.** Solo el asesor asignado a la llamada puede acusar recibo de su
+evaluación y pedir revisión. Un jefe no puede hacerlo en su nombre; sí puede responderle.
+
+**Por qué.** Un acuse de recibo firmado por otro no significa nada. Si el registro no
+prueba que la persona vio su evaluación, no sirve ni para el asesor ni para auditoría.
+
+**Coste de cambio.** 🟢 Es una comprobación en un endpoint. Pero abrirla vacía el
+significado del registro.
+
+---
+
+### A-20 · La sesión de calibración es ciega en el servidor, no en la interfaz
+**Qué acordamos.** El endpoint de la sesión a ciegas devuelve audio y transcripción sin el
+análisis de la IA. El score no viaja al navegador.
+
+**Por qué.** Ocultarlo con CSS o con estado de React no es ceguera: está a un clic en las
+herramientas de desarrollo, y bastaría un refactor distraído para enseñarlo. Si el dato no
+sale del servidor, no hay forma de filtrarlo.
+
+**Coste de cambio.** 🟢 Barato de romper y difícil de notar: por eso hay un test que
+comprueba que el score no aparece en la respuesta.
 
 ---
 
@@ -260,5 +289,5 @@ Cosas que aún no hemos decidido y que tarde o temprano habrá que decidir:
 |---|---|---|
 | **D-1** | ¿Pasamos Render a plan de pago? | Resuelve de un golpe la caducidad de la base, el arranque lento y —con S3— los audios. |
 | **D-2** | ¿Activamos S3 para los audios? | Hoy se borran en cada despliegue. |
-| **D-3** | ¿Web pública de CallAIbrate? | Si la hay, ahí sí tiene sentido Astro (ver A-04). |
+| **D-3** | ¿Web pública de CallAIbrate? | Si la hay, ahí sí tiene sentido Astro (ver A-03). |
 | **D-4** | ¿Quién usa esto de verdad, y cuándo? | Define si hay que cerrar el checklist de Compliance o sigue siendo una demo. |

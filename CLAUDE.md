@@ -6,12 +6,13 @@
 
 El producto se llama **CallAIbrate** ("Calibra la calidad de cada llamada con IA").
 
-Estado: plataforma **funcional y desplegada**; **Fase 2** (analítica de alto impacto:
-métricas de conversación, KPIs por campaña, alertas, percentil de asesor), **rediseño
-premium de indicadores** (`components/dashboard/viz.tsx`) y **rebrand a CallAIbrate**
-ya implementados, más el **reproductor de audio sincronizado** y la **exportación CSV**
-del reporte de equipo. Es una plataforma **terminada** (el banner de "prototipo/vista
-previa" se **retiró** de la UI; solo queda el header interno `X-Prototype-Notice`).
+Estado: plataforma **funcional y desplegada**, y **terminada** (el banner de
+"prototipo/vista previa" se **retiró** de la UI; solo queda el header interno
+`X-Prototype-Notice`). Además de la analítica y el reproductor sincronizado, ya
+**calibra**: revisión humana que **no pisa la nota de la IA**, sesión de puntuación a
+ciegas y panel de acuerdo IA-humano (`/calibracion`); y **cierra el ciclo**: el asesor
+responde a su evaluación y puede pedir revisión, y el panel del jefe abre con «a quién
+escuchar hoy y por qué». El traspaso entre sesiones vive en **`docs/CONTINUAR.md`**.
 
 Esenciales:
 - **IA = Groq por defecto** (`AI_PROVIDER=groq`): Whisper large v3 + Llama 3.3 70B, gratis.
@@ -23,7 +24,7 @@ Esenciales:
   `is_manager` / `require_manager` protegen lo de gestión.
 - **Campañas con nota de producto:** entidad `Campaign` (9 campos); se inyecta en el prompt.
 - **Trabajar en `C:\Users\Benja\Documents\callqa-ai`** (NO la copia de OneDrive).
-- **Tests:** desde `backend/`, `.\.venv\Scripts\python.exe -m pytest -q` (87 tests). Migraciones 0001–0007.
+- **Tests:** desde `backend/`, `.\.venv\Scripts\python.exe -m pytest -q` (127 tests). Migraciones 0001–0010.
 - **Desplegar:** `git push origin main` → Vercel + Render redepliegan solos. **`GROQ_API_KEY`
   en prod vive en el dashboard de Render (`sync: false`), no en el repo.**
 - **Dos repos:** privado `callqa-ai` (completo) + público `callqa` (código limpio). Publicar
@@ -34,8 +35,9 @@ Esenciales:
 - **Diseño = identidad CallAIbrate.** Fuente de verdad de la marca: **`docs/BRAND.md`**
   (paper + ink, acentos rust y gold; Manrope / Inter / IBM Plex Mono; radios 8/6 px).
   Implementación canónica del color: `frontend/app/globals.css` + `tailwind.config.ts`.
-  (Minsait —Pruno/Cerámica/Fucsia, ForFuture Sans, `.chamfer`—, Índigo/Slate,
-  "Aetheric Intelligence" y glassmorphism están OBSOLETOS.)
+  **Las identidades visuales anteriores están OBSOLETAS**: cuáles fueron y qué
+  colores, tipografías y clases traían está en `docs/HISTORIA.md`. Si encuentras
+  algo de eso en el código, es deuda; corrígelo contra `BRAND.md`.
 - **Infra renombrada** (septiembre 2026): Render sirve `callaibrate-api` +
   `callaibrate-db`. Se pudo hacer sin migrar nada porque la PostgreSQL del plan
   gratuito **había caducado** y los datos de producción ya se habían perdido.

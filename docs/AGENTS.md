@@ -94,9 +94,11 @@ backend/
     dependencies.py    get_current_user (valida el JWT), require_manager (admin/jefe),
                        is_manager (helper de rol)
     models/            SQLAlchemy: user (role + agent_id), agent, campaign, call, transcription,
-                       analysis, settings.py (RubricConfig con `criteria` JSON + AppSettings)
-    schemas/           DTOs Pydantic: auth, agent, campaign, call, analysis, dashboard, config
-    routers/           auth, agents, campaigns, calls, dashboard, config
+                       analysis, review (nota humana), acknowledgement (respuesta del asesor),
+                       settings.py (RubricConfig con `criteria` JSON + AppSettings)
+    schemas/           DTOs Pydantic: auth, agent, campaign, call, analysis, dashboard, config,
+                       review, coaching
+    routers/           auth, agents, campaigns, calls, dashboard, config, calibration, coaching
     services/          analysis_service.py  → factory IA (ClaudeProvider/OpenAIProvider/
                                                GroqLLMProvider(=OpenAI compatible)/Azure) + calculate_global_score
                        transcription_service.py → factory STT (Groq/local/azure) +
@@ -109,6 +111,8 @@ backend/
                                                conversación (talk-ratio, silencio, WPM, turnos)
                        compliance_service.py → cobertura de frases obligatorias / claims prohibidos
                        dashboard_service.py  → KPIs por campaña, alertas, recomendaciones, percentil
+                       review_service.py     → score humano ponderado + acuerdo IA-humano por dimensión
+                       coaching_service.py   → a quién escuchar hoy + peticiones de revisión abiertas
                        call_service.py, agent_service.py, auth_service.py,
                        storage_service.py (local/s3), pdf_service.py
     tasks/
@@ -121,10 +125,13 @@ backend/
     utils/             security.py (JWT/bcrypt), audio.py (validación de archivos)
   alembic/versions/    0001 esquema, 0002 detección ejecutivo, 0003 rubric_config.criteria,
                        0004 campañas, 0005 roles de usuario, 0006 conversation_metrics,
-                       0007 server_default de users.role → 'jefe'
+                       0007 server_default de users.role → 'jefe', 0008 usuarios de solo
+                       lectura, 0009 revisiones humanas, 0010 acuses de recibo
   scripts/seed_data.py admin + jefe + asesores + rúbrica (subcriterios) + settings (umbrales QA) +
                        3 ejecutivos demo + 3 campañas demo (NO imprime contraseñas)
-  tests/               78 tests (conftest = SQLite en memoria, todo lo externo mockeado)
+  scripts/seed_demo.py 67 llamadas en 90 días + 22 revisiones humanas + 6 respuestas de
+                       asesores. Sin IA y con semilla fija: siempre da lo mismo y cuesta $0
+  tests/               127 tests (conftest = SQLite en memoria, todo lo externo mockeado)
   Dockerfile           multi-stage. CMD = alembic upgrade + seed + uvicorn (lo usa Render)
   .env / .env.example  (.env está gitignorado)
 frontend/
@@ -185,7 +192,7 @@ analítica global; helper `is_manager`); **asesor** solo ve **su propio rendimie
   (5 servicios: postgres, redis, api, worker, frontend)
   → app http://localhost:3000 · API http://localhost:8000/docs · login `admin@callaibrate.com` con la contraseña que imprime el seed (`docker compose logs api`).
   Apagar: `docker compose down`.
-- **Tests backend (61):** desde `backend/`, `.\.venv\Scripts\python.exe -m pytest -q`
+- **Tests backend (127):** desde `backend/`, `.\.venv\Scripts\python.exe -m pytest -q`
   (el venv ya tiene `requirements.txt`; SQLite en memoria, sin red).
 - **Build frontend:** desde `frontend/`, `npm run build`.
 - **Desplegar:** `git push origin main` (Vercel + Render redepliegan solos).
@@ -217,21 +224,21 @@ analítica global; helper `is_manager`); **asesor** solo ve **su propio rendimie
 - **Diarización (quién habla):** la hace el **LLM por contenido**; la heurística de pausas es solo fallback. Es aproximada en turnos ambiguos. Fiable de verdad = speaker-ID acústico (Azure Speech / pyannote).
 - **Rúbrica DINÁMICA:** editable con subcriterios activables y **categorías que se pueden añadir/eliminar**. `PUT /config/rubric` es **reemplazo completo** (crea/actualiza/borra; genera la clave con slug). El prompt construye `dimension_scores` con las claves reales → las categorías nuevas se puntúan solas. En el frontend, `dimensionLabel()` (lib/utils.ts) humaniza claves desconocidas.
 - **Dashboard:** filtros campaña/ejecutivo/fechas/periodo; endpoint `/dashboard/campaigns`. Las fechas se comparan con `datetime.utcnow()` (naïve) porque la BD guarda timestamps naïve — NO usar `datetime.now(timezone.utc)` ahí (rompía con un `TypeError`).
-- **Colores = identidad CallAIbrate:** la fuente de verdad de la **marca** es `docs/BRAND.md`; la **implementación** canónica es `frontend/app/globals.css` + `tailwind.config.ts`. `DESIGN.md` explica cómo se aplica. **La identidad Minsait (Pruno/Cerámica/Fucsia, ForFuture Sans, `.chamfer`) y "Aetheric Intelligence" (Índigo/Slate) están OBSOLETAS.**
+- **Colores = identidad CallAIbrate:** la fuente de verdad de la **marca** es `docs/BRAND.md`; la **implementación** canónica es `frontend/app/globals.css` + `tailwind.config.ts`. `DESIGN.md` explica cómo se aplica. **Las identidades visuales anteriores están OBSOLETAS** (cuáles fueron, en `docs/HISTORIA.md`): si aparece una de sus paletas, tipografías o clases en el código, es deuda.
 - **Despliegue:** el arranque (migraciones+seed+uvicorn) vive en el **CMD del Dockerfile** (no en `render.yaml`) para evitar que Render parta mal el comando con comillas (daba exit 127).
 - **Cold-start:** ver §3 (keepalive + resiliencia en `lib/api.ts`).
 
 ## 11. Diseño = identidad CallAIbrate
 
-UI rebrandeada a **CallAIbrate**. Las identidades anteriores (**Minsait**
-Pruno/Cerámica/Fucsia con ForFuture Sans, y "Aetheric Intelligence" Índigo/Slate)
-quedaron **obsoletas**.
+UI rebrandeada a **CallAIbrate**. Las identidades visuales anteriores quedaron
+**obsoletas**; qué eran se cuenta en [`HISTORIA.md`](HISTORIA.md), que es el único
+sitio del repositorio donde se nombran.
 
 - **Fuente de verdad de la marca:** **`docs/BRAND.md`**. Cualquier cambio visual empieza ahí.
 - **Paleta:** **paper `#F5F1E8`** + **ink `#2A2420`** dominan; **rust `#B8441F`** es el acento de marca y **gold `#A67C27`** el secundario. `success`/`danger` son funcionales, no decorativos.
 - **Tipografía:** **Manrope** (titulares), **Inter** (cuerpo/UI), **IBM Plex Mono** (solo datos numéricos), vía `next/font/google`.
 - **Wordmark:** `frontend/components/brand/logo.tsx` (`<Waveform />`, `<Wordmark />`). El fragmento "AI" siempre en rust.
-- **Radios:** `rounded-card` (8px) en contenedores, `rounded-control` (6px) en controles. `rounded-full` solo en avatares, puntos y barras. **La clase `.chamfer` ya no existe.**
+- **Radios:** `rounded-card` (8px) en contenedores, `rounded-control` (6px) en controles. `rounded-full` solo en avatares, puntos y barras. Las clases de forma de la identidad anterior ya no existen.
 - **Titulares en caso frase** con una palabra clave opcional en rust (`<span class="hl">`).
 - **Modo claro por defecto** + **modo oscuro derivado** (ver addendum de `BRAND.md`).
 - **Sidebar** siempre en ink (color literal, porque el token se invierte en oscuro), con el wordmark en negativo.
@@ -279,11 +286,14 @@ activable); `app_settings` (clave-valor: idioma + **umbrales QA `qa_*`**).
 
 ## 14. Tests
 
-78 tests en `backend/tests/` (pytest, SQLite en memoria, externos mockeados). Cubren
+127 tests en `backend/tests/` (pytest, SQLite en memoria, externos mockeados). Cubren
 auth, **roles y scoping (admin/jefe/asesor)**, agentes, **campañas**, cálculo de score,
 enmascarado, matching difuso, **idempotencia del reintento**, **modo inline**, **umbrales
-QA**, **creación del login del asesor** y la **analítica de la Fase 2** (métricas de
-conversación, compliance de nota de producto y endpoints de dashboard con scoping). **No**
+QA**, **creación del login del asesor**, la **analítica** (métricas de conversación,
+compliance de nota de producto y endpoints de dashboard con scoping), la **calibración**
+(que la nota de la IA no se pisa, que la sesión a ciegas no filtra el score, y que el
+informe de acuerdo distingue sesgo de desviación media) y el **cierre del ciclo** (quién
+puede firmar un acuse, reapertura de peticiones y orden de «a quién escuchar hoy»). **No**
 cubren el end-to-end real con APIs (eso se valida con audios reales). Correr antes de cada cambio.
 
 ## 15. Mapa de documentación
@@ -302,7 +312,7 @@ en estos y se eliminaron):
 | **`DEPLOY_GRATIS.md`** | Despliegue Vercel+Render gratis | ✅ |
 | **`ARQUITECTURA.md`** | Cómo está construido, en lenguaje normal (para no técnicos) | ✅ |
 | **`ACUERDOS.md`** | Decisiones tomadas, motivo y coste de cambiarlas | ✅ |
-| **`LINEA_DEL_TIEMPO.md`** | Historia del proyecto, para humanos | ✅ |
+| **`HISTORIA.md`** | De dónde viene el proyecto: línea del tiempo y changelog anterior al rebrand | ✅ |
 | **`BRAND.md`** | **Fuente de verdad de la marca CallAIbrate** | ✅ canónico |
 | **`DESIGN.md`** | Cómo se implementa `BRAND.md` en la app | ✅ |
 | **`COMPLIANCE_CHECKLIST.md`** | Validaciones de Compliance/DPO/Seguridad previas a producción real | ✅ |

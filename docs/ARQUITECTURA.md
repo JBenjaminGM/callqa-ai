@@ -18,10 +18,10 @@ recomendaciones concretas. Antes eso lo hacía una persona escuchando llamada po
 | | |
 |---|---|
 | Programas | 2 (frontend + backend) |
-| Líneas de código | 12.634 |
-| Funciones de la API | 40 |
-| Tablas de datos | 8 |
-| Pruebas automáticas | 87 |
+| Líneas de código | 20.213 |
+| Funciones de la API | 54 |
+| Tablas de datos | 10 |
+| Pruebas automáticas | 127 |
 | Coste mensual | $0 |
 
 ---
@@ -44,7 +44,7 @@ backend.
 | Estilos | Tailwind CSS |
 | Gráficas | Recharts |
 | Alojado en | Vercel |
-| Tamaño | 6.520 líneas · 41 archivos |
+| Tamaño | 9.012 líneas · 50 archivos |
 
 ### El backend — lo que decide
 
@@ -58,7 +58,7 @@ llamada, cuándo se llama a la IA. **Se ejecuta en un servidor**, nunca en el na
 | Base de datos | PostgreSQL, vía SQLAlchemy |
 | Seguridad | JWT (sesiones) + bcrypt (contraseñas) |
 | Alojado en | Render, dentro de un contenedor Docker |
-| Tamaño | 6.114 líneas · 56 archivos |
+| Tamaño | 11.201 líneas · 87 archivos |
 
 ---
 
@@ -104,6 +104,35 @@ Compliance tendrá que aprobar antes de usar grabaciones reales — ver
 
 ---
 
+## Lo que hace distinta a la aplicación: calibrar
+
+Que una IA puntúe llamadas es el punto de partida, no el producto. La pregunta que
+sigue —y que casi nadie responde— es **¿y quién dice que la IA puntúa bien?**
+
+Aquí eso se responde midiéndolo:
+
+| | Qué pasa | Dónde queda |
+|---|---|---|
+| 1 | La IA puntúa la llamada | Tabla `analyses` |
+| 2 | El jefe la puntúa **sin ver la nota de la IA** | Tabla `reviews` |
+| 3 | Se comparan las dos, dimensión a dimensión | Panel de acuerdo |
+| 4 | El asesor responde y puede pedir revisión | Tabla `acknowledgements` |
+
+**Las dos notas conviven; la de la IA no se sobrescribe nunca.** Es la condición para
+que el paso 3 sea posible: si el humano pisara la nota, a la semana siguiente nadie
+podría decir en qué criterios discrepan.
+
+La sesión del paso 2 es ciega **en el servidor**: el endpoint que sirve la llamada no
+incluye el análisis, así que el score ni siquiera llega al navegador. Ocultarlo en la
+interfaz no serviría — estaría a un clic en las herramientas de desarrollo.
+
+Y lo que sale del paso 3 no es una nota más, sino un diagnóstico de la **rúbrica**: si
+un criterio concreto discrepa mucho más que los demás, lo normal no es que la IA falle,
+sino que ese criterio esté redactado de forma que admite dos lecturas. El panel lo
+señala y enlaza a la pantalla donde reescribirlo.
+
+---
+
 ## Dónde está alojado cada cosa y por qué
 
 | Servicio | Qué hace aquí | Por qué ese |
@@ -135,10 +164,10 @@ Pasar Render a plan de pago resuelve las tres. Ver decisión **D-1** en
 | **Frontend** | La parte que se ve y se toca. Vive en el navegador. |
 | **Backend** | La parte que decide y recuerda. Vive en un servidor. Nadie la ve. |
 | **Framework** | Un esqueleto con las piezas comunes ya resueltas, para no escribir todo desde cero. Next.js es el del frontend; FastAPI el del backend. |
-| **API** | El menú de cosas que el backend sabe hacer. El frontend pide por ese menú. Aquí hay 40 platos. |
+| **API** | El menú de cosas que el backend sabe hacer. El frontend pide por ese menú. Aquí hay 54 platos. |
 | **Endpoint** | Cada plato concreto. `/calls/12/audio` devuelve el audio de la llamada 12. |
-| **Base de datos** | El archivador. Ocho tablas: usuarios, llamadas, transcripciones… |
-| **Migración** | Una instrucción para cambiar la forma del archivador sin perder lo guardado. Aquí van siete, numeradas. |
+| **Base de datos** | El archivador. Diez tablas: usuarios, llamadas, transcripciones… |
+| **Migración** | Una instrucción para cambiar la forma del archivador sin perder lo guardado. Aquí van diez, numeradas. |
 | **Despliegue** | Publicar una versión nueva. Aquí ocurre solo: subes el cambio a GitHub y en dos minutos está en vivo. |
 
 ---
@@ -147,11 +176,11 @@ Pasar Render a plan de pago resuelve las tres. Ver decisión **D-1** en
 
 ```
 backend/          Python — la lógica y los datos
-  app/routers/    Las 40 funciones de la API, agrupadas por tema
-  app/services/   Las reglas de negocio (analizar, transcribir, puntuar)
-  app/models/     Las 8 tablas de la base de datos
-  alembic/        Las 7 migraciones, en orden
-  tests/          Las 87 pruebas automáticas
+  app/routers/    Las 54 funciones de la API, agrupadas por tema
+  app/services/   Las reglas de negocio (analizar, transcribir, puntuar, calibrar)
+  app/models/     Las 10 tablas de la base de datos
+  alembic/        Las 10 migraciones, en orden
+  tests/          Las 127 pruebas automáticas
 
 frontend/         TypeScript — lo que se ve
   app/            Una carpeta por pantalla (dashboard, llamadas, campañas…)
@@ -167,6 +196,6 @@ docs/             Toda la documentación
 ## Para seguir leyendo
 
 - **[`ACUERDOS.md`](ACUERDOS.md)** — qué decidimos, por qué, y qué costaría cambiarlo.
-- **[`LINEA_DEL_TIEMPO.md`](LINEA_DEL_TIEMPO.md)** — qué ha pasado, en orden.
+- **[`HISTORIA.md`](HISTORIA.md)** — de dónde viene el proyecto, en orden.
 - **[`BRAND.md`](BRAND.md)** — la identidad visual.
 - **[`AGENTS.md`](AGENTS.md)** — el detalle técnico, para quien vaya a tocar el código.

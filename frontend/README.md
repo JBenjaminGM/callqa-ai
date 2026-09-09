@@ -162,8 +162,8 @@ mapeadas a Tailwind en `tailwind.config.ts`.
   (`rounded-control`). Sombras sutiles, sin glassmorphism ni gradientes.
 - Scores con color semántico: verde (80-100), ámbar (60-79), rojo (0-59).
 
-> Las identidades anteriores (Minsait Pruno/Cerámica/Fucsia con ForFuture Sans,
-> Índigo/Slate "Aetheric Intelligence") están **obsoletas**.
+> Las identidades visuales anteriores están **obsoletas**; se describen en
+> `docs/HISTORIA.md`.
 
 ---
 

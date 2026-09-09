@@ -105,11 +105,10 @@ personas: seria, legible, nada estridente.
 > **Fuente de verdad de la marca: [`BRAND.md`](BRAND.md).** Este documento describe
 > cómo se implementa en la app. Si los dos se contradicen, manda `BRAND.md`.
 
-> ⚠️ Identidades **OBSOLETAS**: la de **Minsait** (Pruno `#480e2a` + Gris Cerámica
-> `#e3e2da` + Fucsia `#ff0054`, tipografía ForFuture Sans, contenedores achaflanados
-> `.chamfer`, titulares en minúscula, "tech for impact") y la anterior **"Aetheric
-> Intelligence"** (Índigo/Slate, glassmorphism). Cualquier referencia a esos colores,
-> fuentes o clases debe ignorarse y corregirse.
+> ⚠️ Las dos identidades visuales anteriores están **OBSOLETAS**. Sus colores,
+> tipografías y clases de forma se describen en [`HISTORIA.md`](HISTORIA.md) y en
+> ningún otro sitio: si aparece alguno en el código o en otro documento, es deuda y
+> hay que corregirlo contra `BRAND.md`.
 
 El estilo visual es **plano**: superficies sólidas con borde de 1px y sombra sutil,
 radios pequeños (8px en contenedores, 6px en controles), sin glassmorphism ni
@@ -213,7 +212,7 @@ anillo de foco rust (`--glow`), aplicado vía `*:focus-visible`.
 | Botones, inputs, selects, chips, badges | `rounded-control` | 6px |
 | Avatares, puntos de estado, spinners, barras de progreso | `rounded-full` | círculo |
 
-La clase `.chamfer` y la variable `--chamfer` de la identidad anterior **ya no existen**.
+Las clases y variables de forma de la identidad anterior **ya no existen**.
 
 ## Componentes
 
