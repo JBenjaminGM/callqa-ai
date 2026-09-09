@@ -15,7 +15,6 @@ import type {
   AppSettings,
   CallDetail,
   CallList,
-  CallStatusInfo,
   Campaign,
   CampaignAssistResult,
   CampaignDraft,
@@ -129,12 +128,22 @@ export interface CallFilters {
   page_size?: number;
 }
 
+/** Estados en los que una llamada todavía está procesándose. */
+const EN_PROCESO = ['QUEUED', 'TRANSCRIBING', 'ANALYZING'];
+
 export function useCalls(filters: CallFilters) {
   return useQuery({
     queryKey: ['calls', filters],
     queryFn: async () => {
       const { data } = await api.get<CallList>('/calls', { params: filters });
       return data;
+    },
+    // Mientras quede alguna llamada procesándose, la lista se refresca sola:
+    // subes un lote y ves cómo van pasando a "Listo" sin tocar nada. Cuando
+    // todas terminan, el sondeo se detiene y deja de gastar peticiones.
+    refetchInterval: (query) => {
+      const items = query.state.data?.items ?? [];
+      return items.some((c) => EN_PROCESO.includes(c.status)) ? 4000 : false;
     },
   });
 }
@@ -156,18 +165,27 @@ export function useCall(id: number, pollWhileProcessing = false) {
   });
 }
 
-export function useCallStatus(id: number, enabled: boolean) {
-  return useQuery({
-    queryKey: ['call-status', id],
-    queryFn: async () => {
-      const { data } = await api.get<CallStatusInfo>(`/calls/${id}/status`);
-      return data;
+/** Asigna varias llamadas al mismo ejecutivo de una sola vez. */
+export function useBulkAssign() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (vars: { call_ids: number[]; agent_id: number }) => {
+      const { data } = await api.post('/calls/bulk/assign', vars);
+      return data as { affected: number; skipped: number };
     },
-    enabled,
-    refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      return status === 'DONE' || status === 'ERROR' ? false : 5000;
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['calls'] }),
+  });
+}
+
+/** Elimina varias llamadas de una sola vez. */
+export function useBulkDelete() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (call_ids: number[]) => {
+      const { data } = await api.post('/calls/bulk/delete', { call_ids });
+      return data as { affected: number; skipped: number };
     },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['calls'] }),
   });
 }
 

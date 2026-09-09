@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Phone, RefreshCw, UploadCloud } from 'lucide-react';
-import { useAgents, useCalls } from '@/lib/queries';
+import { Phone, RefreshCw, Trash2, UploadCloud, X } from 'lucide-react';
+import { useAgents, useBulkAssign, useBulkDelete, useCalls } from '@/lib/queries';
 import { getErrorMessage } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
@@ -33,6 +33,44 @@ export default function CallsPage() {
     page,
     page_size: 20,
   });
+
+  // Selección múltiple: sin esto, asignar veinte llamadas son veinte pantallas.
+  const [seleccion, setSeleccion] = useState<Set<number>>(new Set());
+  const [accionMsg, setAccionMsg] = useState<string | null>(null);
+  const bulkAssign = useBulkAssign();
+  const bulkDelete = useBulkDelete();
+
+  const visibles = data?.items ?? [];
+  const todasSeleccionadas =
+    visibles.length > 0 && visibles.every((c) => seleccion.has(c.id));
+
+  function alternar(id: number) {
+    setSeleccion((prev) => {
+      const s = new Set(prev);
+      if (s.has(id)) s.delete(id);
+      else s.add(id);
+      return s;
+    });
+  }
+
+  function alternarTodas() {
+    setSeleccion(todasSeleccionadas ? new Set() : new Set(visibles.map((c) => c.id)));
+  }
+
+  async function asignarSeleccion(agentId: number) {
+    const r = await bulkAssign.mutateAsync({
+      call_ids: [...seleccion],
+      agent_id: agentId,
+    });
+    setAccionMsg(`${r.affected} llamada(s) asignadas.`);
+    setSeleccion(new Set());
+  }
+
+  async function borrarSeleccion() {
+    const r = await bulkDelete.mutateAsync([...seleccion]);
+    setAccionMsg(`${r.affected} llamada(s) eliminadas.`);
+    setSeleccion(new Set());
+  }
 
   function resetPage<T>(setter: (v: T) => void) {
     return (v: T) => {
@@ -154,11 +192,60 @@ export default function CallsPage() {
           />
         )}
 
+        {seleccion.size > 0 && (
+          <Card className="mb-4 flex flex-wrap items-center gap-3 !py-3">
+            <span className="text-body font-semibold text-text-primary">
+              {seleccion.size} seleccionada{seleccion.size > 1 ? 's' : ''}
+            </span>
+            <Select
+              aria-label="Asignar las llamadas seleccionadas a un ejecutivo"
+              className="w-auto min-w-[190px]"
+              value=""
+              onChange={(e) => {
+                if (e.target.value) asignarSeleccion(Number(e.target.value));
+              }}
+            >
+              <option value="">Asignar a un ejecutivo…</option>
+              {agents?.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </Select>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={borrarSeleccion}
+              disabled={bulkDelete.isPending}
+            >
+              <Trash2 size={16} />
+              Eliminar
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setSeleccion(new Set())}>
+              <X size={16} />
+              Quitar selección
+            </Button>
+          </Card>
+        )}
+
+        {accionMsg && (
+          <p className="mb-4 text-small text-success">{accionMsg}</p>
+        )}
+
         {data && data.items.length > 0 && (
           <Card className="overflow-hidden !p-0">
             <table className="w-full text-body">
               <thead>
                 <tr className="border-b border-border bg-bg-accent/40 text-left">
+                  <th className="w-10 px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={todasSeleccionadas}
+                      onChange={alternarTodas}
+                      aria-label="Seleccionar todas las llamadas de la página"
+                      className="accent-[var(--rust)]"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-small text-text-secondary">
                     Ejecutivo
                   </th>
@@ -184,6 +271,15 @@ export default function CallsPage() {
                     className="cursor-pointer border-b border-border
                                transition-colors last:border-0 hover:bg-bg-accent/30"
                   >
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={seleccion.has(call.id)}
+                        onChange={() => alternar(call.id)}
+                        aria-label={`Seleccionar la llamada ${call.id}`}
+                        className="accent-[var(--rust)]"
+                      />
+                    </td>
                     <td className="px-4 py-3 text-text-primary">
                       <span className="flex items-center gap-2">
                         {callAgentName(call)}

@@ -12,7 +12,7 @@ from collections import defaultdict
 from datetime import date, datetime, time, timedelta, timezone
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.models.agent import Agent
 from app.models.analysis import Analysis
@@ -80,6 +80,14 @@ def done_analyses(
     query = (
         select(Call, Analysis)
         .join(Analysis, Analysis.call_id == Call.id)
+        # Sin esto, cada acceso posterior a call.campaign o call.transcription
+        # (las alertas de compliance recorren hasta 200 llamadas) dispara una
+        # consulta suelta: cientos de viajes a la base por cada carga del panel.
+        .options(
+            selectinload(Call.agent),
+            selectinload(Call.campaign),
+            selectinload(Call.transcription),
+        )
         .where(Call.status == CallStatus.DONE, Call.created_at >= start)
     )
     if end is not None:

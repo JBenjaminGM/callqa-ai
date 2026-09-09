@@ -1,14 +1,13 @@
 """Lógica de negocio de llamadas: creación, listado y consultas."""
 
 import logging
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, time, timedelta, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.analysis import Analysis
 from app.models.call import Call, CallStatus
-from app.models.settings import RubricConfig
 
 logger = logging.getLogger("callaibrate.calls")
 
@@ -20,6 +19,40 @@ STATUS_PROGRESS = {
     CallStatus.DONE: 100,
     CallStatus.ERROR: 100,
 }
+
+
+# Tiempo máximo que puede tardar una llamada en procesarse. Pasado ese margen se
+# da por perdida: si el proveedor de IA no responde o el proceso muere a medias,
+# la llamada se quedaría en "Transcribiendo" para siempre sin avisar a nadie.
+MINUTOS_MAXIMOS_DE_PROCESO = 20
+
+ESTADOS_EN_PROCESO = (CallStatus.QUEUED, CallStatus.TRANSCRIBING, CallStatus.ANALYZING)
+
+
+def rescatar_atascadas(db: Session) -> int:
+    """
+    Marca como error las llamadas que llevan demasiado tiempo procesándose.
+
+    Devuelve cuántas ha rescatado. Es una sola UPDATE sobre una columna indexada,
+    así que sale gratis llamarla al abrir el listado.
+    """
+    ahora = datetime.now(timezone.utc).replace(tzinfo=None)  # las columnas son naive
+    limite = ahora - timedelta(minutes=MINUTOS_MAXIMOS_DE_PROCESO)
+    resultado = db.execute(
+        update(Call)
+        .where(Call.status.in_(ESTADOS_EN_PROCESO), Call.created_at < limite)
+        .values(
+            status=CallStatus.ERROR,
+            error_message=(
+                f"El procesamiento superó los {MINUTOS_MAXIMOS_DE_PROCESO} minutos "
+                "y se dio por perdido. Vuelve a intentarlo."
+            ),
+        )
+    )
+    if resultado.rowcount:
+        db.commit()
+        logger.warning("Rescatadas %s llamadas atascadas.", resultado.rowcount)
+    return resultado.rowcount or 0
 
 
 def get_call(db: Session, call_id: int) -> Call | None:
@@ -102,13 +135,6 @@ def list_calls(
     query = query.offset((page - 1) * page_size).limit(page_size)
     items = list(db.scalars(query).all())
     return items, total
-
-
-def get_rubric_weights(db: Session) -> dict[str, float]:
-    """Devuelve un dict {dimension_key: weight} con la rúbrica actual."""
-    rows = db.scalars(select(RubricConfig)).all()
-    return {r.dimension_key: float(r.weight) for r in rows}
-
 
 def get_team_average(db: Session) -> dict[str, float]:
     """

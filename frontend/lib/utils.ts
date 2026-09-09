@@ -108,9 +108,3 @@ export function callAgentName(call: {
   return 'Sin identificar';
 }
 
-/** True si la llamada tiene nombre detectado pero no ejecutivo registrado. */
-export function isUnassigned(call: {
-  agent?: { name: string } | null;
-}): boolean {
-  return !call.agent;
-}

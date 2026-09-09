@@ -16,6 +16,7 @@ from fastapi import (
     status,
 )
 from fastapi.responses import Response
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -29,6 +30,9 @@ from app.schemas.call import (
     AgentRef,
     AssignAgentRequest,
     BatchCreatedOut,
+    BulkAssignRequest,
+    BulkDeleteRequest,
+    BulkResultOut,
     CallCreatedOut,
     CallDetailOut,
     CallListItem,
@@ -245,6 +249,10 @@ def list_calls(
     current_user: User = Depends(get_current_user),
 ):
     """Listado paginado de llamadas con filtros (incluye filtro por fecha de subida)."""
+    # Antes de listar se rescatan las que llevan demasiado tiempo procesándose:
+    # es la pantalla donde se notaría, y así ninguna queda colgada para siempre.
+    call_service.rescatar_atascadas(db)
+
     # El asesor solo ve sus propias llamadas (se ignora cualquier agent_id pedido).
     if not current_user.is_manager:
         agent_id = current_user.agent_id
@@ -285,6 +293,64 @@ def list_calls(
         page_size=page_size,
         total_pages=total_pages,
     )
+
+
+@router.post("/bulk/assign", response_model=BulkResultOut)
+def bulk_assign(
+    payload: BulkAssignRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    """
+    Asigna varias llamadas al mismo ejecutivo.
+
+    Existe porque hacerlo de una en una no es viable con volumen real: veinte
+    llamadas sin asignar son veinte pantallas.
+    """
+    agent = db.get(Agent, payload.agent_id)
+    if agent is None:
+        raise HTTPException(status_code=404, detail="Ejecutivo no encontrado.")
+    if not payload.call_ids:
+        return {"affected": 0, "skipped": 0}
+
+    encontradas = db.scalars(
+        select(Call).where(Call.id.in_(payload.call_ids))
+    ).all()
+    for call in encontradas:
+        call.agent_id = agent.id
+    db.commit()
+    return {
+        "affected": len(encontradas),
+        "skipped": len(set(payload.call_ids)) - len(encontradas),
+    }
+
+
+@router.post("/bulk/delete", response_model=BulkResultOut)
+def bulk_delete(
+    payload: BulkDeleteRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_manager),
+):
+    """Elimina varias llamadas y sus audios."""
+    if not payload.call_ids:
+        return {"affected": 0, "skipped": 0}
+
+    encontradas = db.scalars(
+        select(Call).where(Call.id.in_(payload.call_ids))
+    ).all()
+    almacen = get_storage_provider()
+    for call in encontradas:
+        # Si el audio ya no está, el borrado del registro sigue adelante.
+        try:
+            almacen.delete(call.audio_url)
+        except Exception:  # noqa: BLE001
+            pass
+        db.delete(call)
+    db.commit()
+    return {
+        "affected": len(encontradas),
+        "skipped": len(set(payload.call_ids)) - len(encontradas),
+    }
 
 
 @router.get("/{call_id}", response_model=CallDetailOut)

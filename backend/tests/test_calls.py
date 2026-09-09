@@ -356,3 +356,93 @@ def test_get_call_audio_prohibido_para_un_asesor_ajeno(
     response = client.get(f"/api/v1/calls/{call_id}/audio", headers=asesor_headers)
 
     assert response.status_code == 403
+
+
+# ---------------------------------------------------------------
+# Acciones en lote
+# ---------------------------------------------------------------
+def test_asignacion_en_lote(client, auth_headers, monkeypatch, db_session, sample_agent):
+    """Varias llamadas se asignan al mismo ejecutivo en una sola petición."""
+    ids = [_subir_audio(client, auth_headers, monkeypatch) for _ in range(3)]
+
+    response = client.post(
+        "/api/v1/calls/bulk/assign",
+        headers=auth_headers,
+        json={"call_ids": ids, "agent_id": sample_agent.id},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"affected": 3, "skipped": 0}
+
+    from app.models.call import Call
+
+    for call_id in ids:
+        assert db_session.get(Call, call_id).agent_id == sample_agent.id
+
+
+def test_asignacion_en_lote_cuenta_las_que_no_existen(
+    client, auth_headers, monkeypatch, sample_agent
+):
+    """Los ids inexistentes se informan como omitidos, no rompen la operación."""
+    real = _subir_audio(client, auth_headers, monkeypatch)
+
+    response = client.post(
+        "/api/v1/calls/bulk/assign",
+        headers=auth_headers,
+        json={"call_ids": [real, 99998, 99999], "agent_id": sample_agent.id},
+    )
+
+    assert response.json() == {"affected": 1, "skipped": 2}
+
+
+def test_borrado_en_lote(client, auth_headers, monkeypatch):
+    """El borrado múltiple elimina las llamadas indicadas."""
+    ids = [_subir_audio(client, auth_headers, monkeypatch) for _ in range(2)]
+
+    response = client.post(
+        "/api/v1/calls/bulk/delete", headers=auth_headers, json={"call_ids": ids}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["affected"] == 2
+    assert client.get(f"/api/v1/calls/{ids[0]}", headers=auth_headers).status_code == 404
+
+
+def test_acciones_en_lote_prohibidas_para_asesor(client, asesor_headers, sample_agent):
+    """Las acciones en lote son de gestión: un asesor no puede usarlas."""
+    assert client.post(
+        "/api/v1/calls/bulk/assign",
+        headers=asesor_headers,
+        json={"call_ids": [1], "agent_id": sample_agent.id},
+    ).status_code == 403
+    assert client.post(
+        "/api/v1/calls/bulk/delete", headers=asesor_headers, json={"call_ids": [1]}
+    ).status_code == 403
+
+
+def test_rescate_de_llamadas_atascadas(client, auth_headers, db_session, admin_user):
+    """Una llamada que lleva demasiado tiempo procesándose se marca como error."""
+    from datetime import datetime, timedelta, timezone
+
+    from app.models.call import Call, CallStatus
+    from app.services.call_service import MINUTOS_MAXIMOS_DE_PROCESO
+
+    vieja = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(
+        minutes=MINUTOS_MAXIMOS_DE_PROCESO + 5
+    )
+    call = Call(
+        uploaded_by=admin_user.id,
+        audio_url="x",
+        status=CallStatus.TRANSCRIBING,
+        created_at=vieja,
+    )
+    db_session.add(call)
+    db_session.commit()
+
+    # Basta con abrir el listado: es donde se rescatan.
+    client.get("/api/v1/calls", headers=auth_headers)
+
+    db_session.expire_all()
+    recuperada = db_session.get(Call, call.id)
+    assert recuperada.status == CallStatus.ERROR
+    assert "20 minutos" in recuperada.error_message

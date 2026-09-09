@@ -51,6 +51,26 @@ class AssignAgentRequest(BaseModel):
     apply_to_same_name: bool = False
 
 
+class BulkAssignRequest(BaseModel):
+    """Asigna varias llamadas al mismo ejecutivo de una vez."""
+
+    call_ids: list[int]
+    agent_id: int
+
+
+class BulkDeleteRequest(BaseModel):
+    """Elimina varias llamadas de una vez."""
+
+    call_ids: list[int]
+
+
+class BulkResultOut(BaseModel):
+    """Resultado de una acción en lote."""
+
+    affected: int
+    skipped: int = 0
+
+
 class ConversationMetricsOut(BaseModel):
     """Métricas deterministas de la conversación (derivadas de los segmentos)."""
 

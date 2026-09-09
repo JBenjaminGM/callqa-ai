@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Save, Trash2 } from 'lucide-react';
+import { Lock, Plus, Save, Scale, Trash2, Unlock } from 'lucide-react';
 import {
   useRubric,
   useSettings,
@@ -24,6 +24,73 @@ const LANGUAGES = [
   { code: 'pt', label: 'Portugués' },
   { code: 'fr', label: 'Francés' },
 ];
+
+/**
+ * Reparte 100 puntos entre las categorías tras mover una de ellas.
+ *
+ * Los pesos son relativos: el jefe dice «el saludo me importa el doble», no
+ * «reparte cien puntos». Al subir uno, las demás ceden espacio manteniendo su
+ * proporción entre sí; las que estén bloqueadas no se tocan.
+ */
+function repartir(
+  dims: RubricDimensionInput[],
+  indice: number,
+  pesoPedido: number,
+  bloqueadas: Set<number>,
+): RubricDimensionInput[] {
+  const fijo = dims.reduce(
+    (acc, d, i) =>
+      i !== indice && bloqueadas.has(i) ? acc + (Number(d.weight) || 0) : acc,
+    0,
+  );
+  const disponible = Math.max(0, 100 - fijo);
+  const peso = Math.min(Math.max(0, pesoPedido), disponible);
+  const resto = disponible - peso;
+
+  const ajustables = dims
+    .map((_, i) => i)
+    .filter((i) => i !== indice && !bloqueadas.has(i));
+  const sumaAjustables = ajustables.reduce(
+    (a, i) => a + (Number(dims[i].weight) || 0),
+    0,
+  );
+
+  const repartidas = dims.map((d, i) => {
+    if (i === indice) return { ...d, weight: peso };
+    if (bloqueadas.has(i) || !ajustables.includes(i)) return d;
+    // Sin nada que repartir proporcionalmente, se reparte a partes iguales.
+    const cuota =
+      sumaAjustables > 0
+        ? (Number(d.weight) || 0) / sumaAjustables
+        : 1 / ajustables.length;
+    return { ...d, weight: resto * cuota };
+  });
+
+  return cuadrar(repartidas, ajustables.length ? ajustables : [indice]);
+}
+
+/** Redondea a dos decimales y deja la diferencia en la categoría más grande. */
+function cuadrar(
+  dims: RubricDimensionInput[],
+  candidatas: number[],
+): RubricDimensionInput[] {
+  const redondeadas = dims.map((d) => ({
+    ...d,
+    weight: Math.round((Number(d.weight) || 0) * 100) / 100,
+  }));
+  const suma = redondeadas.reduce((a, d) => a + d.weight, 0);
+  const sobra = Math.round((100 - suma) * 100) / 100;
+  if (sobra === 0 || candidatas.length === 0) return redondeadas;
+
+  const destino = candidatas.reduce((mejor, i) =>
+    redondeadas[i].weight > redondeadas[mejor].weight ? i : mejor,
+  );
+  redondeadas[destino] = {
+    ...redondeadas[destino],
+    weight: Math.round((redondeadas[destino].weight + sobra) * 100) / 100,
+  };
+  return redondeadas;
+}
 
 /** Umbrales de QA configurables (coinciden con app_settings del backend). */
 const QA_FIELDS = [
@@ -115,6 +182,32 @@ export default function SettingsPage() {
 
   const total = dims.reduce((a, d) => a + (Number(d.weight) || 0), 0);
 
+  // Categorías cuyo peso el jefe quiere congelar mientras ajusta las demás.
+  const [bloqueadas, setBloqueadas] = useState<Set<number>>(new Set());
+
+  function alternarBloqueo(i: number) {
+    setBloqueadas((prev) => {
+      const siguiente = new Set(prev);
+      if (siguiente.has(i)) siguiente.delete(i);
+      else siguiente.add(i);
+      return siguiente;
+    });
+  }
+
+  /** Cambia el peso de una categoría y reparte el resto entre las demás. */
+  function cambiarPeso(i: number, valor: number) {
+    setDims((ds) => repartir(ds, i, valor, bloqueadas));
+  }
+
+  function repartirPorIgual() {
+    setDims((ds) => {
+      if (ds.length === 0) return ds;
+      const iguales = ds.map((d) => ({ ...d, weight: 100 / ds.length }));
+      return cuadrar(iguales, ds.map((_, i) => i));
+    });
+    setBloqueadas(new Set());
+  }
+
   // --- Helpers de edición ---
   function patchDim(i: number, patch: Partial<RubricDimensionInput>) {
     setDims((ds) => ds.map((d, j) => (j === i ? { ...d, ...patch } : d)));
@@ -156,13 +249,25 @@ export default function SettingsPage() {
     );
   }
   function addDimension() {
-    setDims((ds) => [
-      ...ds,
-      { dimension_name: '', description: '', weight: 0, criteria: [] },
-    ]);
+    // La nueva entra con el peso medio y el resto cede espacio proporcionalmente,
+    // para no dejar nunca la suma descuadrada.
+    setDims((ds) => {
+      const conNueva = [
+        ...ds,
+        { dimension_name: '', description: '', weight: 0, criteria: [] },
+      ];
+      const pesoInicial = conNueva.length > 1 ? 100 / conNueva.length : 100;
+      return repartir(conNueva, conNueva.length - 1, pesoInicial, new Set());
+    });
   }
   function removeDimension(i: number) {
-    setDims((ds) => ds.filter((_, j) => j !== i));
+    setDims((ds) => {
+      const restantes = ds.filter((_, j) => j !== i);
+      if (restantes.length === 0) return restantes;
+      // El peso que se va se reparte entre las que quedan.
+      return repartir(restantes, 0, Number(restantes[0].weight) || 0, new Set());
+    });
+    setBloqueadas(new Set());
   }
 
   async function saveRubric() {
@@ -170,12 +275,6 @@ export default function SettingsPage() {
     setRubricErr(null);
     if (dims.some((d) => !d.dimension_name.trim())) {
       setRubricErr('Todas las categorías deben tener nombre.');
-      return;
-    }
-    if (Math.abs(total - 100) > 0.5) {
-      setRubricErr(
-        `Los pesos deben sumar 100%. Suma actual: ${total.toFixed(2)}%.`,
-      );
       return;
     }
     const payload: RubricDimensionInput[] = dims.map((d) => ({
@@ -226,7 +325,8 @@ export default function SettingsPage() {
             <p className="mb-4 text-small text-text-secondary">
               Define las categorías (con su peso %) y las subcategorías que la IA
               tendrá en cuenta. Activa/desactiva subcategorías, añade las tuyas o
-              crea categorías nuevas. La suma de pesos debe ser 100%.
+              crea categorías nuevas. Mueve un peso y el resto se recoloca solo;
+              usa el candado para fijar el que no quieras que cambie.
             </p>
 
             {rubricLoading && (
@@ -245,7 +345,7 @@ export default function SettingsPage() {
                     key={dim.dimension_key ?? `new-${i}`}
                     className="rounded-card border border-border bg-bg-secondary p-3"
                   >
-                    {/* Cabecera: nombre + peso + eliminar */}
+                    {/* Cabecera: nombre + peso + candado + eliminar */}
                     <div className="mb-2 flex items-center gap-2">
                       <Input
                         value={dim.dimension_name}
@@ -255,19 +355,36 @@ export default function SettingsPage() {
                         }
                         className="flex-1 font-semibold"
                       />
-                      <div className="flex w-24 items-center gap-1">
+                      <div className="flex w-[86px] items-center gap-1">
                         <Input
                           type="number"
                           min={0}
                           max={100}
-                          step="0.01"
-                          value={dim.weight}
-                          onChange={(e) =>
-                            patchDim(i, { weight: Number(e.target.value) })
-                          }
+                          step="1"
+                          value={Number(dim.weight).toFixed(
+                            Number.isInteger(Number(dim.weight)) ? 0 : 2,
+                          )}
+                          onChange={(e) => cambiarPeso(i, Number(e.target.value))}
+                          aria-label={`Peso de ${dim.dimension_name || 'la categoría'}`}
                         />
                         <span className="text-small text-text-muted">%</span>
                       </div>
+                      <button
+                        onClick={() => alternarBloqueo(i)}
+                        title={
+                          bloqueadas.has(i)
+                            ? 'Peso fijo: no cambia al mover los demás'
+                            : 'Fijar este peso'
+                        }
+                        aria-pressed={bloqueadas.has(i)}
+                        className={
+                          bloqueadas.has(i)
+                            ? 'rounded-control p-2 text-rust transition-colors hover:bg-rust/10'
+                            : 'rounded-control p-2 text-text-muted transition-colors hover:bg-bg-accent'
+                        }
+                      >
+                        {bloqueadas.has(i) ? <Lock size={16} /> : <Unlock size={16} />}
+                      </button>
                       <button
                         onClick={() => removeDimension(i)}
                         title="Eliminar categoría"
@@ -276,6 +393,19 @@ export default function SettingsPage() {
                         <Trash2 size={16} />
                       </button>
                     </div>
+
+                    {/* Deslizador: mueve uno y los demás ceden espacio solos. */}
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={Number(dim.weight)}
+                      onChange={(e) => cambiarPeso(i, Number(e.target.value))}
+                      disabled={bloqueadas.has(i)}
+                      aria-label={`Ajustar el peso de ${dim.dimension_name || 'la categoría'}`}
+                      className="mb-3 w-full accent-[var(--rust)] disabled:opacity-40"
+                    />
 
                     {/* Subcategorías */}
                     <div className="flex flex-col gap-1.5 pl-1">
@@ -327,18 +457,16 @@ export default function SettingsPage() {
                   Añadir categoría
                 </Button>
 
-                <div className="flex items-center justify-between border-t border-border pt-3">
-                  <span className="text-body font-semibold text-text-primary">
-                    Total de pesos
-                  </span>
-                  <span
-                    className={
-                      Math.abs(total - 100) > 0.5
-                        ? 'text-body font-bold text-danger'
-                        : 'text-body font-bold text-success'
-                    }
-                  >
-                    {total.toFixed(2)}%
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+                  <Button variant="ghost" size="sm" onClick={repartirPorIgual}>
+                    <Scale size={16} />
+                    Repartir por igual
+                  </Button>
+                  <span className="text-small text-text-muted">
+                    Los pesos se reajustan solos para sumar{' '}
+                    <span className="font-mono font-semibold text-success">
+                      {total.toFixed(total % 1 === 0 ? 0 : 2)}%
+                    </span>
                   </span>
                 </div>
 
