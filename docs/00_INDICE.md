@@ -19,6 +19,7 @@ automatizado para call centers del sector banca. Desplegada en vivo:
 
 | Quiero… | Lee |
 |---|---|
+| **Retomar el trabajo en un chat nuevo** | **`CONTINUAR.md`** ⭐ (empieza aquí) |
 | **Entender cómo está construido** (sin saber programar) | **`ARQUITECTURA.md`** ⭐ |
 | **Entender y modificar el código** (dev o IA) | **`AGENTS.md`** ⭐ (empieza aquí) |
 | Ver qué decidimos y qué costaría cambiarlo | `ACUERDOS.md` |
@@ -35,6 +36,9 @@ automatizado para call centers del sector banca. Desplegada en vivo:
 
 ## Todos los documentos (vigentes)
 
+- **`CONTINUAR.md`** — **Traspaso entre sesiones**: dónde estamos, qué sigue, cómo
+  verificar que todo funciona y qué te hará perder tiempo si no lo sabes. Es lo primero
+  que debe leer quien retome el proyecto.
 - **`ARQUITECTURA.md`** — **Cómo está construida la aplicación, en lenguaje normal**: las dos
   mitades, el viaje de una llamada, dónde vive cada pieza y por qué, y un glosario de ocho
   palabras. Pensado para leerse sin saber programar.
