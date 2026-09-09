@@ -15,6 +15,8 @@ Qué genera:
 - Revisiones humanas sobre parte de esas llamadas, con una discrepancia
   deliberada en un criterio concreto: el panel de calibración abre señalando
   algo real en vez de vacío.
+- Respuestas de los asesores a sus evaluaciones, alguna con petición de revisión
+  abierta, para que «a quién escuchar hoy» tenga algo urgente que proponer.
 
 No llama a la IA: funciona sin clave y sin coste, y siempre produce lo mismo
 (la semilla del azar es fija).
@@ -40,6 +42,7 @@ from app.models.agent import Agent  # noqa: E402
 from app.models.analysis import Analysis  # noqa: E402
 from app.models.call import Call, CallStatus  # noqa: E402
 from app.models.campaign import Campaign  # noqa: E402
+from app.models.acknowledgement import Acknowledgement  # noqa: E402
 from app.models.review import Review  # noqa: E402
 from app.models.transcription import Transcription  # noqa: E402
 from app.models.user import ROLE_JEFE, User  # noqa: E402
@@ -59,6 +62,9 @@ DIAS_DE_HISTORIAL = 90
 LLAMADAS_OBJETIVO = 70
 # Cuántas de esas llamadas llevan además revisión humana.
 REVISIONES_OBJETIVO = 22
+# Ventana en la que caen las peticiones de revisión de los asesores. Tiene que
+# ser menor que el periodo con el que abre el panel (30 días) o no se verían.
+DIAS_RECIENTES_PARA_ACUSE = 25
 CARPETA_AUDIO = Path(__file__).resolve().parent.parent / "demo_audio"
 
 # Cómo evoluciona cada ejecutivo a lo largo de los 90 días. El número es la
@@ -241,6 +247,84 @@ def sembrar_revisiones(db, rng, pesos: dict[str, float]) -> int:
     return creadas
 
 
+# Lo que responden los asesores. Los dos primeros piden revisión: son los que
+# hacen que «a quién escuchar hoy» abra con alguien esperando respuesta.
+RESPUESTAS_DE_ASESORES = [
+    ("El cliente ya era titular, el guion de captación no aplicaba aquí.", True),
+    ("Rebatí la objeción en el minuto 3, creo que no se ha tenido en cuenta.", True),
+    ("Recibido. Tengo que cerrar antes, se me va el cliente en el trámite.", False),
+    ("De acuerdo con la evaluación, trabajo el cierre esta semana.", False),
+    ("Anotado lo de confirmar la cuota. No volverá a pasar.", False),
+    ("Visto.", False),
+]
+
+
+def sembrar_acuses(db, rng) -> int:
+    """
+    Añade respuestas de los asesores a algunas de sus evaluaciones.
+
+    Sin esto el panel del asesor abre sin nada que hacer y «a quién escuchar
+    hoy» solo puede proponer llamadas rojas: falta justo el caso que mejor
+    explica la funcion, el de alguien esperando una respuesta.
+    """
+    if db.scalar(select(Acknowledgement).limit(1)) is not None:
+        return 0
+
+    # Solo llamadas asignadas a un ejecutivo: el acuse lo firma quien fue
+    # evaluado, y una llamada sin asignar no tiene a quién.
+    llamadas = [
+        c
+        for c in db.scalars(
+            select(Call).where(Call.status == CallStatus.DONE).order_by(Call.id)
+        )
+        if c.agent_id is not None
+    ]
+    if not llamadas:
+        return 0
+
+    # Cada asesor responde desde su propia cuenta, si la tiene creada.
+    usuarios_por_agente = {
+        u.agent_id: u
+        for u in db.scalars(select(User).where(User.agent_id.is_not(None)))
+    }
+
+    # Dos condiciones para que las peticiones de revisión se vean:
+    #
+    # - **recientes**: el panel abre con los últimos 30 días, y una petición más
+    #   antigua no aparecería por ningún lado;
+    # - **de las llamadas peor puntuadas**: nadie recurre un sobresaliente. Con
+    #   un reparto al azar acababa habiendo un asesor discutiendo un 98.
+    rng.shuffle(llamadas)
+    limite = date.today() - timedelta(days=DIAS_RECIENTES_PARA_ACUSE)
+    recientes = sorted(
+        (c for c in llamadas if c.call_date and c.call_date >= limite),
+        key=lambda c: c.analysis.global_score if c.analysis else 100,
+    )
+    piden = [r for r in RESPUESTAS_DE_ASESORES if r[1]]
+    conformes = [r for r in RESPUESTAS_DE_ASESORES if not r[1]]
+
+    usadas = {c.id for c in recientes[: len(piden)]}
+    resto = [c for c in llamadas if c.id not in usadas]
+    reparto = list(zip(piden, recientes)) + list(zip(conformes, resto))
+
+    creados = 0
+    for (comentario, pide_revision), llamada in reparto:
+        usuario = usuarios_por_agente.get(llamada.agent_id)
+        db.add(
+            Acknowledgement(
+                call_id=llamada.id,
+                user_id=usuario.id if usuario else None,
+                comment=comentario,
+                review_requested=pide_revision,
+                created_at=llamada.processed_at,
+            )
+        )
+        creados += 1
+
+    db.commit()
+    return creados
+
+
 def sembrar() -> None:
     rng = random.Random(20260909)     # semilla fija: siempre el mismo resultado
     db = SessionLocal()
@@ -265,6 +349,9 @@ def sembrar() -> None:
             revisadas = sembrar_revisiones(db, rng, pesos)
             if revisadas:
                 print(f"[demo] {revisadas} revisiones humanas añadidas.")
+            acuses = sembrar_acuses(db, rng)
+            if acuses:
+                print(f"[demo] {acuses} respuestas de asesores añadidas.")
             return
 
         admin = db.scalar(select(User).order_by(User.id))
@@ -356,6 +443,13 @@ def sembrar() -> None:
             print(
                 f"[demo] {revisadas} revisiones humanas creadas. El panel de "
                 "calibración señala «Manejo de objeciones» como peor calibrado."
+            )
+
+        acuses = sembrar_acuses(db, rng)
+        if acuses:
+            print(
+                f"[demo] {acuses} respuestas de asesores creadas, dos con "
+                "petición de revisión abierta."
             )
     finally:
         db.close()

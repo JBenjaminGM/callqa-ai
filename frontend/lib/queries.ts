@@ -7,6 +7,8 @@ import {
 } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type {
+  Acknowledgement,
+  AcknowledgementInput,
   Agent,
   Agreement,
   AgentDashboard,
@@ -25,6 +27,8 @@ import type {
   CampaignKpi,
   DashboardAlert,
   DashboardSummary,
+  ListenSuggestion,
+  PendingCall,
   RecommendationStat,
   Review,
   ReviewInput,
@@ -568,6 +572,91 @@ export function useAgreement(filters: AgreementFilters) {
       const { data } = await api.get<Agreement>('/calibration/agreement', {
         params: filters,
       });
+      return data;
+    },
+  });
+}
+
+/* ------------------------- Cierre del ciclo ---------------------------- */
+
+/** El asesor acusa recibo de una evaluación y, si quiere, pide revisión. */
+export function useSaveAcknowledgement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      callId,
+      ...payload
+    }: AcknowledgementInput & { callId: number }) => {
+      const { data } = await api.put<Acknowledgement>(
+        `/calls/${callId}/acknowledgement`,
+        payload,
+      );
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['call', vars.callId] });
+      qc.invalidateQueries({ queryKey: ['my-pending'] });
+      qc.invalidateQueries({ queryKey: ['coaching-pending'] });
+      qc.invalidateQueries({ queryKey: ['who-to-listen'] });
+    },
+  });
+}
+
+/** El jefe contesta a la petición de revisión y con eso la cierra. */
+export function useReplyAcknowledgement() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ callId, reply }: { callId: number; reply: string }) => {
+      const { data } = await api.post<Acknowledgement>(
+        `/calls/${callId}/acknowledgement/reply`,
+        { reply },
+      );
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['call', vars.callId] });
+      qc.invalidateQueries({ queryKey: ['coaching-pending'] });
+      qc.invalidateQueries({ queryKey: ['who-to-listen'] });
+    },
+  });
+}
+
+/** Peticiones de revisión abiertas (para el jefe). */
+export function usePendingRequests() {
+  return useQuery({
+    queryKey: ['coaching-pending'],
+    queryFn: async () => {
+      const { data } = await api.get<Acknowledgement[]>('/coaching/pending');
+      return data;
+    },
+  });
+}
+
+/** Evaluaciones que el asesor todavía no ha leído. */
+export function useMyPending(enabled = true) {
+  return useQuery({
+    queryKey: ['my-pending'],
+    queryFn: async () => {
+      const { data } = await api.get<PendingCall[]>('/coaching/my-pending');
+      return data;
+    },
+    enabled,
+  });
+}
+
+export interface ListenFilters extends DashboardFilters {
+  limit?: number;
+}
+
+/** Qué llamadas escuchar ahora y por qué. Es con lo que abre el panel. */
+export function useWhoToListen(filters: ListenFilters) {
+  return useQuery({
+    queryKey: ['who-to-listen', filters],
+    queryFn: async () => {
+      const { data } = await api.get<ListenSuggestion[]>(
+        '/coaching/who-to-listen',
+        { params: filters },
+      );
       return data;
     },
   });

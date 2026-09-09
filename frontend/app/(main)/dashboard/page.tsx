@@ -30,6 +30,7 @@ import {
   TeamRadar,
   TopProblems,
 } from '@/components/dashboard/insights';
+import { WhoToListen } from '@/components/coaching/who-to-listen';
 import { ScoreBadge } from '@/components/ui/badge';
 import { EmptyState, ErrorState, Skeleton } from '@/components/ui/feedback';
 import { cn, formatDuration } from '@/lib/utils';
@@ -208,6 +209,15 @@ export default function DashboardPage() {
 
         {data && data.total_calls > 0 && (
           <div className="flex flex-col gap-8">
+            {/* ---------- Lo primero: qué hacer hoy ---------- */}
+            <section className="flex flex-col gap-3">
+              <SectionHeader
+                eyebrow="por dónde empezar"
+                title={<>A quién <span className="hl">escuchar</span> hoy</>}
+              />
+              <WhoToListen filters={dateFilters} />
+            </section>
+
             {/* ---------- Resumen ---------- */}
             <section className="flex flex-col gap-3">
               <SectionHeader eyebrow="visión general" title={<>Calidad con <span className="hl">impacto</span></>} />

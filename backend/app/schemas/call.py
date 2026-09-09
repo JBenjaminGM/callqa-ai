@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from app.models.call import CallStatus
 from app.schemas.analysis import AnalysisOut, TranscriptionOut
+from app.schemas.coaching import AcknowledgementOut
 from app.schemas.review import ReviewOut
 
 
@@ -153,5 +154,7 @@ class CallDetailOut(BaseModel):
     # Revisión humana de la nota, si alguien ya la corrigió. La de la IA
     # (`analysis`) sigue intacta al lado.
     review: ReviewOut | None = None
+    # Lo que respondió el asesor a la evaluación, y lo que le contestó el jefe.
+    acknowledgement: AcknowledgementOut | None = None
 
     model_config = {"from_attributes": True}

@@ -3,7 +3,7 @@
 > **Lee esto primero si acabas de entrar al proyecto.** Es el traspaso entre sesiones:
 > dónde estamos, qué sigue y qué te va a hacer perder tiempo si no lo sabes.
 >
-> Última actualización: 9 sep 2026, al terminar la Fase 2.
+> Última actualización: 9 sep 2026, al terminar la Fase 3.
 
 ---
 
@@ -11,7 +11,7 @@
 
 CallAIbrate es una plataforma de control de calidad de llamadas con IA. **El destino es
 un portafolio**, no vender el producto — eso decide todas las prioridades. Estamos
-ejecutando un plan de cinco fases; las tres primeras están hechas.
+ejecutando un plan de cinco fases; solo queda la documentación.
 
 Antes de tocar nada, lee **[`ARQUITECTURA.md`](ARQUITECTURA.md)** (cómo funciona) y
 **[`ACUERDOS.md`](ACUERDOS.md)** (qué se decidió y qué costaría cambiarlo).
@@ -30,8 +30,8 @@ ahí, no desde la raíz del repositorio.
 | | |
 |---|---|
 | Último commit en `origin/main` | `7bece0f` — traspaso de la Fase 1 |
-| Tests backend | **113**, todos en verde |
-| Migraciones | 0001–0009 |
+| Tests backend | **127**, todos en verde |
+| Migraciones | 0001–0010 |
 
 **Pregunta antes de hacer `git push`.** Las fases 0 y 1 ya están en `origin/main` y
 desplegadas; lo posterior se commitea en la rama y se sube cuando el usuario lo diga.
@@ -85,6 +85,29 @@ sobre todo, una forma de medir en qué se diferencian.
   `/calibracion` (guardado en `auth-guard.tsx` y con `require_manager` en la API), pero sí
   ve la revisión de sus propias llamadas.
 
+### Fase 3 · Cerrar el ciclo
+La evaluación era un monólogo y el panel abría con medias, que no dicen qué hacer.
+
+- **El asesor responde** (`acknowledgements`, migración 0010). Da la evaluación por leída,
+  se explica y —si la nota no le parece justa— pide revisión; el jefe contesta en el mismo
+  sitio. Lo firma **quien fue evaluado**: un jefe no puede acusar recibo en su nombre, y
+  hay un test que lo fija. Reabrir una petición borra la respuesta anterior, para que no
+  pase por contestada sin que nadie haya leído lo nuevo.
+- **El panel abre con «a quién escuchar hoy»**: como mucho cinco llamadas, cada una con
+  su motivo. Cuatro motivos en orden de urgencia — petición de revisión abierta, banda
+  roja sin escuchar, muy por debajo de la media del propio asesor, y asesor del que nadie
+  ha escuchado nada. **Manda el motivo, no la nota**: una roja siempre puntuará menos que
+  una llamada recurrida, y ordenar por nota colaría la roja por delante de una persona
+  esperando respuesta. Cada llamada sale **una sola vez**, con su motivo más fuerte.
+- **El panel del asesor abre con lo que tiene sin leer**, antes que su promedio.
+- **Subir una carpeta entera arrastrándola**, a cualquier profundidad. `readEntries`
+  devuelve los hijos por tandas: hay que insistir hasta que conteste vacío o una carpeta
+  con muchas grabaciones llega cortada. Hay también un botón «elegir una carpeta» para
+  navegadores sin arrastre de directorios.
+- El seed siembra seis respuestas de asesores, dos con petición abierta. Van a llamadas
+  **recientes y flojas** a propósito: fuera de los últimos 30 días no se verían en el
+  panel, y nadie recurre un sobresaliente.
+
 ---
 
 ## Lo que sigue
@@ -93,12 +116,6 @@ El plan completo, con el porqué de cada cosa, está en el artefacto
 <https://claude.ai/code/artifact/0736a828-5247-4c0a-911d-71bf3c405a4f>
 y la auditoría que lo originó en
 <https://claude.ai/code/artifact/fb1c7a81-572f-4eef-8aa2-624149103f2a>.
-
-### Fase 3 · Cerrar el ciclo
-- El asesor puede acusar recibo, comentar una evaluación y pedir revisión. Hoy su panel
-  tiene **un solo botón**: ve su nota y no puede hacer nada con ella.
-- El panel abre con «a quién escuchar hoy y por qué» en vez de con medias.
-- Subir una carpeta entera arrastrándola.
 
 ### Fase 4 · Documentación coherente
 - **`HISTORIA.md`**: absorbe `LINEA_DEL_TIEMPO.md` (se solapan) y **las entradas del

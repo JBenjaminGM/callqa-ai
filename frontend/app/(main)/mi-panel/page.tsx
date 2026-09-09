@@ -32,6 +32,7 @@ import {
 } from '@/components/dashboard/insights';
 import { ScoreGauge, DeltaPill } from '@/components/dashboard/viz';
 import { StatCard } from '@/components/dashboard/stat-card';
+import { MyPendingEvaluations } from '@/components/coaching/my-pending';
 import { dimensionLabel, scoreLabel } from '@/lib/utils';
 
 /** Panel personal del asesor: su rendimiento, comparativa y puntos de mejora. */
@@ -87,6 +88,11 @@ export default function MyPanelPage() {
               </Button>
             </Link>
           </div>
+        </div>
+
+        {/* Lo primero: lo que tiene sin leer. Su media puede esperar. */}
+        <div className="mb-6">
+          <MyPendingEvaluations enabled={Boolean(user.agent_id)} />
         </div>
 
         {isLoading && <Skeleton className="h-28" />}

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UploadCloud, FileAudio, X } from 'lucide-react';
+import { UploadCloud, FileAudio, FolderOpen, X } from 'lucide-react';
 import { api, getErrorMessage } from '@/lib/api';
 import { useCampaignList } from '@/lib/queries';
 import { useAuthStore } from '@/lib/auth';
@@ -14,10 +14,50 @@ import { Input, Textarea } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Spinner, ErrorState } from '@/components/ui/feedback';
+import { cn } from '@/lib/utils';
 
 const ALLOWED = ['.mp3', '.wav', '.m4a', '.ogg', '.flac'];
 const MAX_MB = 100;
 const MAX_FILES = 20;
+
+/** True si el nombre acaba en una de las extensiones de audio admitidas. */
+function esAudio(name: string): boolean {
+  return ALLOWED.includes('.' + (name.split('.').pop() ?? '').toLowerCase());
+}
+
+/**
+ * Recorre una carpeta soltada y devuelve los audios que contiene, a cualquier
+ * profundidad.
+ *
+ * Al arrastrar una carpeta el navegador no entrega archivos, sino una entrada
+ * de directorio que hay que recorrer a mano. `readEntries` además devuelve los
+ * hijos por tandas, no todos de golpe: hay que seguir llamándolo hasta que
+ * conteste vacío, o una carpeta con muchas grabaciones llegaría cortada.
+ */
+async function leerCarpeta(entry: FileSystemEntry, out: File[]): Promise<void> {
+  if (out.length >= MAX_FILES) return;
+
+  if (entry.isFile) {
+    const file = await new Promise<File>((resolve, reject) =>
+      (entry as FileSystemFileEntry).file(resolve, reject),
+    );
+    if (esAudio(file.name)) out.push(file);
+    return;
+  }
+
+  if (entry.isDirectory) {
+    const reader = (entry as FileSystemDirectoryEntry).createReader();
+    for (;;) {
+      const lote = await new Promise<FileSystemEntry[]>((resolve, reject) =>
+        reader.readEntries(resolve, reject),
+      );
+      if (lote.length === 0) break;
+      for (const hijo of lote) {
+        await leerCarpeta(hijo, out);
+      }
+    }
+  }
+}
 
 /**
  * Subida de un grupo de llamadas.
@@ -37,6 +77,9 @@ export default function NewCallPage() {
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   function validateFile(f: File): string | null {
     const ext = '.' + (f.name.split('.').pop() ?? '').toLowerCase();
@@ -60,6 +103,69 @@ export default function NewCallPage() {
     const combined = [...files, ...selected].slice(0, MAX_FILES);
     setFiles(combined);
     e.target.value = '';
+  }
+
+  /**
+   * Añade archivos ya obtenidos (de una carpeta o del selector), avisando si
+   * alguno no vale o si el lote se queda corto por el máximo.
+   */
+  function addFiles(nuevos: File[]) {
+    if (nuevos.length === 0) {
+      setError('La carpeta no contiene ningún audio en un formato admitido.');
+      return;
+    }
+    for (const f of nuevos) {
+      const err = validateFile(f);
+      if (err) {
+        setError(err);
+        return;
+      }
+    }
+    const combinados = [...files, ...nuevos];
+    setFiles(combinados.slice(0, MAX_FILES));
+    setError(
+      combinados.length > MAX_FILES
+        ? `Se han añadido los primeros ${MAX_FILES} audios; el resto se ha descartado.`
+        : null,
+    );
+  }
+
+  /** Audios seleccionados con el botón «elegir carpeta» (input webkitdirectory). */
+  function onFolderChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setError(null);
+    addFiles(Array.from(e.target.files ?? []).filter((f) => esAudio(f.name)));
+    e.target.value = '';
+  }
+
+  /** Carpeta (o archivos) soltados sobre la zona de subida. */
+  async function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragging(false);
+    if (uploading) return;
+    setError(null);
+
+    const items = Array.from(e.dataTransfer.items)
+      .map((i) => i.webkitGetAsEntry?.())
+      .filter((entry): entry is FileSystemEntry => Boolean(entry));
+
+    // Navegador sin API de directorios: al menos los archivos sueltos entran.
+    if (items.length === 0) {
+      addFiles(Array.from(e.dataTransfer.files).filter((f) => esAudio(f.name)));
+      return;
+    }
+
+    setScanning(true);
+    try {
+      const encontrados: File[] = [];
+      for (const entry of items) {
+        await leerCarpeta(entry, encontrados);
+      }
+      addFiles(encontrados);
+    } catch {
+      setError('No se pudo leer la carpeta. Prueba a seleccionar los archivos.');
+    } finally {
+      setScanning(false);
+    }
   }
 
   function removeFile(index: number) {
@@ -117,17 +223,34 @@ export default function NewCallPage() {
             <div>
               <Label>Archivos de audio (hasta {MAX_FILES})</Label>
               <label
-                className="flex cursor-pointer flex-col items-center justify-center
-                           gap-2 rounded-card border-2 border-dashed border-border
-                           bg-bg-secondary px-4 py-8 text-center transition-colors
-                           hover:border-accent-primary"
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (!uploading) setDragging(true);
+                }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={onDrop}
+                className={cn(
+                  `flex cursor-pointer flex-col items-center justify-center gap-2
+                   rounded-card border-2 border-dashed bg-bg-secondary px-4 py-8
+                   text-center transition-colors`,
+                  dragging
+                    ? 'border-accent-primary bg-bg-accent'
+                    : 'border-border hover:border-accent-primary',
+                )}
               >
-                <UploadCloud size={32} className="text-text-muted" />
+                {scanning ? (
+                  <Spinner className="h-8 w-8 text-accent-primary" />
+                ) : (
+                  <UploadCloud size={32} className="text-text-muted" />
+                )}
                 <span className="text-body text-text-secondary">
-                  Haz clic para seleccionar uno o varios archivos
+                  {scanning
+                    ? 'Buscando audios en la carpeta…'
+                    : 'Arrastra aquí una carpeta entera, o haz clic para elegir archivos'}
                 </span>
                 <span className="text-small text-text-muted">
-                  {ALLOWED.join(', ')} — máx. {MAX_MB} MB por archivo
+                  {ALLOWED.join(', ')} — máx. {MAX_MB} MB por archivo, {MAX_FILES}{' '}
+                  por lote
                 </span>
                 <input
                   type="file"
@@ -138,6 +261,37 @@ export default function NewCallPage() {
                   disabled={uploading}
                 />
               </label>
+
+              {/* Salida para navegadores sin arrastre de carpetas, y para quien
+                  prefiera el diálogo del sistema. */}
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => folderInputRef.current?.click()}
+                  disabled={uploading || scanning}
+                >
+                  <FolderOpen size={16} />
+                  Elegir una carpeta
+                </Button>
+                {files.length > 0 && (
+                  <span className="text-small text-text-muted">
+                    {files.length} de {MAX_FILES} seleccionados
+                  </span>
+                )}
+              </div>
+              <input
+                ref={folderInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={onFolderChange}
+                disabled={uploading}
+                // `webkitdirectory` no está en los tipos de React pero lo
+                // entienden todos los navegadores de escritorio.
+                {...({ webkitdirectory: '' } as Record<string, string>)}
+              />
 
               {/* Lista de archivos seleccionados */}
               {files.length > 0 && (

@@ -23,6 +23,7 @@ from app.routers import (
     auth,
     calibration,
     calls,
+    coaching,
     campaigns,
     config,
     dashboard,
@@ -160,3 +161,4 @@ app.include_router(calls.router, prefix=API_PREFIX)
 app.include_router(dashboard.router, prefix=API_PREFIX)
 app.include_router(config.router, prefix=API_PREFIX)
 app.include_router(calibration.router, prefix=API_PREFIX)
+app.include_router(coaching.router, prefix=API_PREFIX)

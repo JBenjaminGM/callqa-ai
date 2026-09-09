@@ -85,3 +85,7 @@ class Call(Base):
     review: Mapped["Review | None"] = relationship(  # noqa: F821
         back_populates="call", uselist=False, cascade="all, delete-orphan"
     )
+    # Lo que el asesor responde a la evaluación (y lo que le contesta el jefe).
+    acknowledgement: Mapped["Acknowledgement | None"] = relationship(  # noqa: F821
+        back_populates="call", uselist=False, cascade="all, delete-orphan"
+    )

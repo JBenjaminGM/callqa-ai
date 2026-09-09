@@ -189,6 +189,8 @@ export interface CallDetail {
   analysis?: Analysis | null;
   /** Revisión humana de la nota. Convive con `analysis`, no lo reemplaza. */
   review?: Review | null;
+  /** Lo que respondió el asesor a la evaluación, y lo que le contestó el jefe. */
+  acknowledgement?: Acknowledgement | null;
 }
 
 /* ----------------------------- Calibración ----------------------------- */
@@ -269,6 +271,58 @@ export interface Agreement {
   agreement_pct?: number | null;
   dimensions: DimensionAgreement[];
   worst_dimension?: string | null;
+}
+
+/* ------------------------- Cierre del ciclo ---------------------------- */
+
+/** Lo que el asesor responde a la evaluación de una de sus llamadas. */
+export interface Acknowledgement {
+  id: number;
+  call_id: number;
+  user_id?: number | null;
+  user_name?: string | null;
+  comment?: string | null;
+  review_requested: boolean;
+  manager_reply?: string | null;
+  replied_by_name?: string | null;
+  replied_at?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+  /** True mientras pidió revisión y nadie ha contestado. */
+  pending_review: boolean;
+}
+
+export interface AcknowledgementInput {
+  comment?: string | null;
+  review_requested?: boolean;
+}
+
+/** Una llamada que merece escucharse, con el motivo por el que sale. */
+export interface ListenSuggestion {
+  call_id: number;
+  agent_id?: number | null;
+  agent_name?: string | null;
+  campaign?: string | null;
+  score?: number | null;
+  call_date?: string | null;
+  reason:
+    | 'review_requested'
+    | 'red_unreviewed'
+    | 'below_own_average'
+    | 'never_reviewed_agent'
+    | string;
+  priority: 'high' | 'medium' | 'low' | string;
+  title: string;
+  description: string;
+}
+
+/** Una evaluación de la que el asesor todavía no ha acusado recibo. */
+export interface PendingCall {
+  call_id: number;
+  global_score: number;
+  call_date?: string | null;
+  campaign?: string | null;
+  created_at: string;
 }
 
 export interface CallStatusInfo {
