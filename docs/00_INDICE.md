@@ -19,7 +19,10 @@ automatizado para call centers del sector banca. Desplegada en vivo:
 
 | Quiero… | Lee |
 |---|---|
+| **Entender cómo está construido** (sin saber programar) | **`ARQUITECTURA.md`** ⭐ |
 | **Entender y modificar el código** (dev o IA) | **`AGENTS.md`** ⭐ (empieza aquí) |
+| Ver qué decidimos y qué costaría cambiarlo | `ACUERDOS.md` |
+| Ver qué ha pasado, en orden y en lenguaje normal | `LINEA_DEL_TIEMPO.md` |
 | Ver el estado actual, casos de uso, reglas de negocio y lo pendiente | `ESTADO_DEL_PROYECTO.md` |
 | Ver el historial de cambios | `CHANGELOG.md` |
 | **Publicar / desplegar gratis** | `DEPLOY_GRATIS.md` |
@@ -32,6 +35,13 @@ automatizado para call centers del sector banca. Desplegada en vivo:
 
 ## Todos los documentos (vigentes)
 
+- **`ARQUITECTURA.md`** — **Cómo está construida la aplicación, en lenguaje normal**: las dos
+  mitades, el viaje de una llamada, dónde vive cada pieza y por qué, y un glosario de ocho
+  palabras. Pensado para leerse sin saber programar.
+- **`ACUERDOS.md`** — Las decisiones tomadas, el motivo de cada una y **qué costaría
+  cambiarla**. Ninguna es inamovible; este documento existe para poder revisarlas con
+  criterio. Incluye las decisiones aún abiertas.
+- **`LINEA_DEL_TIEMPO.md`** — Qué ha pasado en el proyecto, en orden y para humanos.
 - **`AGENTS.md`** — **Guía maestra de desarrollo / orientación para IAs**: estado
   actual, arquitectura, mapa del repo, cómo correr/testear/desplegar, *gotchas* y cómo
   hacer cambios. **El más importante; el punto de entrada de un chat nuevo.**

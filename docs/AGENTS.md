@@ -300,6 +300,9 @@ en estos y se eliminaron):
 | **`ESTADO_DEL_PROYECTO.md`** | Memoria del proyecto + casos de uso, reglas de negocio y gobernanza | ✅ |
 | **`CHANGELOG.md`** | Historial de cambios | ✅ |
 | **`DEPLOY_GRATIS.md`** | Despliegue Vercel+Render gratis | ✅ |
+| **`ARQUITECTURA.md`** | Cómo está construido, en lenguaje normal (para no técnicos) | ✅ |
+| **`ACUERDOS.md`** | Decisiones tomadas, motivo y coste de cambiarlas | ✅ |
+| **`LINEA_DEL_TIEMPO.md`** | Historia del proyecto, para humanos | ✅ |
 | **`BRAND.md`** | **Fuente de verdad de la marca CallAIbrate** | ✅ canónico |
 | **`DESIGN.md`** | Cómo se implementa `BRAND.md` en la app | ✅ |
 | **`COMPLIANCE_CHECKLIST.md`** | Validaciones de Compliance/DPO/Seguridad previas a producción real | ✅ |
