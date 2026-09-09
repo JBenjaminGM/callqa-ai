@@ -12,6 +12,7 @@ from app.models.campaign import Campaign
 from app.models.call import Call, CallStatus
 from app.models.transcription import Transcription
 from app.models.analysis import Analysis
+from app.models.review import Review
 from app.models.settings import AppSettings, RubricConfig
 
 __all__ = [
@@ -23,6 +24,7 @@ __all__ = [
     "CallStatus",
     "Transcription",
     "Analysis",
+    "Review",
     "AppSettings",
     "RubricConfig",
 ]

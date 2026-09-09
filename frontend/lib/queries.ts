@@ -8,11 +8,14 @@ import {
 import { api } from '@/lib/api';
 import type {
   Agent,
+  Agreement,
   AgentDashboard,
   AgentDetail,
   AgentPercentile,
   AgentRecommendations,
   AppSettings,
+  BlindCall,
+  CalibrationCall,
   CallDetail,
   CallList,
   Campaign,
@@ -23,6 +26,8 @@ import type {
   DashboardAlert,
   DashboardSummary,
   RecommendationStat,
+  Review,
+  ReviewInput,
   RubricDimension,
   RubricDimensionInput,
   User,
@@ -477,6 +482,92 @@ export function useAssistCampaign() {
         '/campaigns/assist',
         payload,
       );
+      return data;
+    },
+  });
+}
+
+/* ----------------------------- Calibración ----------------------------- */
+
+/**
+ * Guarda (o corrige) la revisión humana de una llamada.
+ *
+ * El score global no se envía: lo pondera el backend con la rúbrica vigente,
+ * la misma fórmula con la que se calculó la nota de la IA. Si cada lado usara
+ * la suya, la comparación entre ambas no significaría nada.
+ */
+export function useSaveReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ callId, ...payload }: ReviewInput & { callId: number }) => {
+      const { data } = await api.put<Review>(`/calls/${callId}/review`, payload);
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['call', vars.callId] });
+      qc.invalidateQueries({ queryKey: ['calibration-queue'] });
+      qc.invalidateQueries({ queryKey: ['agreement'] });
+    },
+  });
+}
+
+/** Retira la revisión humana. La nota de la IA queda intacta. */
+export function useDeleteReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (callId: number) => {
+      await api.delete(`/calls/${callId}/review`);
+    },
+    onSuccess: (_, callId) => {
+      qc.invalidateQueries({ queryKey: ['call', callId] });
+      qc.invalidateQueries({ queryKey: ['calibration-queue'] });
+      qc.invalidateQueries({ queryKey: ['agreement'] });
+    },
+  });
+}
+
+/** Llamadas ya analizadas que todavía nadie ha revisado. */
+export function useCalibrationQueue(limit = 20) {
+  return useQuery({
+    queryKey: ['calibration-queue', limit],
+    queryFn: async () => {
+      const { data } = await api.get<CalibrationCall[]>('/calibration/queue', {
+        params: { limit },
+      });
+      return data;
+    },
+  });
+}
+
+/** Una llamada servida sin el análisis de la IA, para puntuarla a ciegas. */
+export function useBlindCall(id: number | null) {
+  return useQuery({
+    queryKey: ['blind-call', id],
+    queryFn: async () => {
+      const { data } = await api.get<BlindCall>(`/calibration/calls/${id}`);
+      return data;
+    },
+    enabled: id != null && Number.isFinite(id),
+    // Sin caché entre llamadas: cada sesión debe partir de datos frescos.
+    gcTime: 0,
+  });
+}
+
+export interface AgreementFilters {
+  period?: string;
+  campaign?: string;
+  blind_only?: boolean;
+  tolerance?: number;
+}
+
+/** Acuerdo IA-humano, global y por dimensión. */
+export function useAgreement(filters: AgreementFilters) {
+  return useQuery({
+    queryKey: ['agreement', filters],
+    queryFn: async () => {
+      const { data } = await api.get<Agreement>('/calibration/agreement', {
+        params: filters,
+      });
       return data;
     },
   });

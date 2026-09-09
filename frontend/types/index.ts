@@ -187,6 +187,88 @@ export interface CallDetail {
   conversation_metrics?: ConversationMetrics | null;
   transcription?: Transcription | null;
   analysis?: Analysis | null;
+  /** Revisión humana de la nota. Convive con `analysis`, no lo reemplaza. */
+  review?: Review | null;
+}
+
+/* ----------------------------- Calibración ----------------------------- */
+
+/** Puntuación humana de una llamada, con la de la IA al lado para comparar. */
+export interface Review {
+  id: number;
+  call_id: number;
+  reviewer_id?: number | null;
+  reviewer_name?: string | null;
+  global_score: number;
+  dimension_scores: Record<string, number>;
+  comment?: string | null;
+  /** True si se puntuó sin ver la nota de la IA (sesión de calibración). */
+  blind: boolean;
+  created_at: string;
+  updated_at?: string | null;
+  ai_global_score?: number | null;
+  ai_dimension_scores?: Record<string, number> | null;
+  /** Diferencia humano − IA. */
+  global_delta?: number | null;
+  dimension_deltas?: Record<string, number> | null;
+}
+
+/** Lo que se envía al guardar una revisión. El global lo calcula el backend. */
+export interface ReviewInput {
+  dimension_scores: Record<string, number>;
+  comment?: string | null;
+  blind?: boolean;
+}
+
+/** Una llamada pendiente de calibrar. */
+export interface CalibrationCall {
+  id: number;
+  agent_name?: string | null;
+  campaign?: string | null;
+  call_date?: string | null;
+  duration_seconds?: number | null;
+  created_at: string;
+}
+
+/**
+ * Una llamada para puntuar a ciegas. No trae el análisis de la IA: el score
+ * no llega al navegador, así la sesión es ciega de verdad.
+ */
+export interface BlindCall {
+  id: number;
+  agent_name?: string | null;
+  campaign?: string | null;
+  call_date?: string | null;
+  duration_seconds?: number | null;
+  audio_filename?: string | null;
+  transcription?: Transcription | null;
+}
+
+/** Acuerdo IA-humano en una dimensión concreta. */
+export interface DimensionAgreement {
+  dimension_key: string;
+  dimension_name: string;
+  count: number;
+  human_avg?: number | null;
+  ai_avg?: number | null;
+  /** Sesgo (humano − IA): negativo = la IA puntúa más alto. */
+  bias?: number | null;
+  /** Desviación media absoluta: cuánto se separan sin cancelarse. */
+  mean_abs_diff: number;
+  agreement_pct?: number | null;
+}
+
+export interface Agreement {
+  reviews_count: number;
+  blind_only: boolean;
+  tolerance: number;
+  human_avg?: number | null;
+  ai_avg?: number | null;
+  bias?: number | null;
+  mean_abs_diff: number;
+  agreement_pct?: number | null;
+  dimensions: DimensionAgreement[];
+  worst_dimension?: string | null;
 }
 
 export interface CallStatusInfo {

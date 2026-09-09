@@ -81,3 +81,7 @@ class Call(Base):
     analysis: Mapped["Analysis | None"] = relationship(  # noqa: F821
         back_populates="call", uselist=False, cascade="all, delete-orphan"
     )
+    # Revisión humana de la nota. Convive con `analysis`, no lo reemplaza.
+    review: Mapped["Review | None"] = relationship(  # noqa: F821
+        back_populates="call", uselist=False, cascade="all, delete-orphan"
+    )

@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user, require_manager
+from app.routers.calibration import build_review_out
 from app.models.agent import Agent
 from app.models.call import Call, CallStatus
 from app.models.user import User
@@ -406,6 +407,9 @@ def get_call(
         analysis = AnalysisOut.model_validate(call.analysis)
         analysis.team_average = call_service.get_team_average(db)
         detail.analysis = analysis
+
+    if call.review is not None:
+        detail.review = build_review_out(call, call.review)
 
     return detail
 

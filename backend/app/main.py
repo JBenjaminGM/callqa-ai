@@ -18,7 +18,15 @@ from slowapi.errors import RateLimitExceeded
 
 from app.config import settings
 from app.limiter import limiter
-from app.routers import agents, auth, calls, campaigns, config, dashboard
+from app.routers import (
+    agents,
+    auth,
+    calibration,
+    calls,
+    campaigns,
+    config,
+    dashboard,
+)
 
 # Salvaguarda interna: recuerda que el entorno es de evaluación.
 PROTOTYPE_NOTICE = "Evaluation environment - Do not use with real customer data"
@@ -151,3 +159,4 @@ app.include_router(campaigns.router, prefix=API_PREFIX)
 app.include_router(calls.router, prefix=API_PREFIX)
 app.include_router(dashboard.router, prefix=API_PREFIX)
 app.include_router(config.router, prefix=API_PREFIX)
+app.include_router(calibration.router, prefix=API_PREFIX)

@@ -7,7 +7,14 @@ import { Spinner } from '@/components/ui/feedback';
 
 // Rutas reservadas a roles de gestión (admin / jefe). El asesor que intente
 // entrar se redirige a su panel personal.
-const MANAGER_ONLY = ['/dashboard', '/agents', '/campaigns', '/settings', '/calls/new'];
+const MANAGER_ONLY = [
+  '/dashboard',
+  '/agents',
+  '/campaigns',
+  '/settings',
+  '/calls/new',
+  '/calibracion',
+];
 
 function isManagerOnly(path: string): boolean {
   return MANAGER_ONLY.some((p) => path === p || path.startsWith(p + '/'));

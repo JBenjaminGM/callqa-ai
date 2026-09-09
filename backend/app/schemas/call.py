@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from app.models.call import CallStatus
 from app.schemas.analysis import AnalysisOut, TranscriptionOut
+from app.schemas.review import ReviewOut
 
 
 class AgentRef(BaseModel):
@@ -149,5 +150,8 @@ class CallDetailOut(BaseModel):
     conversation_metrics: ConversationMetricsOut | None = None
     transcription: TranscriptionOut | None = None
     analysis: AnalysisOut | None = None
+    # Revisión humana de la nota, si alguien ya la corrigió. La de la IA
+    # (`analysis`) sigue intacta al lado.
+    review: ReviewOut | None = None
 
     model_config = {"from_attributes": True}

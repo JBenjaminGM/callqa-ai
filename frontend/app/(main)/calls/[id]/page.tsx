@@ -21,6 +21,7 @@ import { api, getErrorMessage } from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Card, CardTitle } from '@/components/ui/card';
 import { TranscriptPlayer } from '@/components/calls/transcript-player';
+import { ReviewCard } from '@/components/calibration/review-card';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { PriorityBadge, ScoreBadge, StatusBadge } from '@/components/ui/badge';
@@ -308,6 +309,9 @@ export default function CallDetailPage() {
                 )}
               </>
             )}
+
+            {/* Revisión humana de la nota (no sustituye a la de la IA) */}
+            {call.analysis && <ReviewCard call={call} />}
 
             {/* Dinámica de la conversación (métricas deterministas) */}
             {call.conversation_metrics && (

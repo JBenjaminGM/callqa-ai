@@ -10,6 +10,7 @@ import {
   Settings,
   UploadCloud,
   Gauge,
+  Scale,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isManager, useAuthStore } from '@/lib/auth';
@@ -20,6 +21,7 @@ const MANAGER_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/calls', label: 'Llamadas', icon: Phone },
   { href: '/calls/new', label: 'Nueva llamada', icon: UploadCloud },
+  { href: '/calibracion', label: 'Calibración', icon: Scale },
   { href: '/agents', label: 'Ejecutivos', icon: Users },
   { href: '/campaigns', label: 'Campañas', icon: Megaphone },
   { href: '/settings', label: 'Configuración', icon: Settings },

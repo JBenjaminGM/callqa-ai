@@ -12,6 +12,9 @@ Qué genera:
   variación pequeña por llamada para que las gráficas no salgan planas.
 - Tendencias con intención: María mejora, Lucía empeora y Carlos se mantiene.
   Así el ranking, las alertas y la evolución temporal cuentan algo.
+- Revisiones humanas sobre parte de esas llamadas, con una discrepancia
+  deliberada en un criterio concreto: el panel de calibración abre señalando
+  algo real en vez de vacío.
 
 No llama a la IA: funciona sin clave y sin coste, y siempre produce lo mismo
 (la semilla del azar es fija).
@@ -37,6 +40,7 @@ from app.models.agent import Agent  # noqa: E402
 from app.models.analysis import Analysis  # noqa: E402
 from app.models.call import Call, CallStatus  # noqa: E402
 from app.models.campaign import Campaign  # noqa: E402
+from app.models.review import Review  # noqa: E402
 from app.models.transcription import Transcription  # noqa: E402
 from app.models.user import ROLE_JEFE, User  # noqa: E402
 from app.services.conversation_metrics_service import (  # noqa: E402
@@ -53,6 +57,8 @@ DEMO_PASSWORD = os.getenv("SEED_DEMO_PASSWORD", "CallAIbrate-Demo-2026")
 
 DIAS_DE_HISTORIAL = 90
 LLAMADAS_OBJETIVO = 70
+# Cuántas de esas llamadas llevan además revisión humana.
+REVISIONES_OBJETIVO = 22
 CARPETA_AUDIO = Path(__file__).resolve().parent.parent / "demo_audio"
 
 # Cómo evoluciona cada ejecutivo a lo largo de los 90 días. El número es la
@@ -154,6 +160,87 @@ def _score_global(notas: dict[str, int], pesos: dict[str, float]) -> int:
     return int(round(acumulado / total_peso))
 
 
+# Cómo se desvía la persona respecto a la IA en cada dimensión: (sesgo, ruido).
+#
+# La gracia está en que las tres filas cuentan historias distintas y el panel
+# sabe distinguirlas:
+#
+# - `objections`: la persona puntúa sistemáticamente mucho más bajo. Sesgo
+#   grande y desviación grande: el criterio está mal escrito y hay que
+#   reescribirlo. Es el caso que el panel destaca arriba.
+# - `assertiveness`: unas veces arriba y otras abajo, sin desviarse a ningún
+#   lado. El sesgo se cancela pero la desviación no: también está mal
+#   calibrado, y solo mirando el sesgo no se vería.
+# - El resto: acuerdo razonable, ruido de un par de puntos.
+DESVIACION_HUMANA = {
+    "objections": (-19.0, 5.0),
+    "assertiveness": (0.0, 11.0),
+}
+DESVIACION_POR_DEFECTO = (0.5, 2.5)
+
+MOTIVOS = [
+    "La objeción de precio se despachó sin argumentar; para mí no es un 80.",
+    "Cumple el guion, pero no confirmó el importe de la cuota antes de cerrar.",
+    "Buen manejo general. Bajo objeciones: no rebatió, solo repitió la oferta.",
+    "El cierre fue correcto; el tono, algo plano para una venta en frío.",
+    "Coincido casi del todo con la nota automática.",
+    "Rebatió tarde y sin datos concretos. El resto, correcto.",
+]
+
+
+def sembrar_revisiones(db, rng, pesos: dict[str, float]) -> int:
+    """
+    Añade revisiones humanas sobre una parte de las llamadas ya creadas.
+
+    Sin esto el panel de calibración abre vacío, que es la peor manera de
+    enseñar precisamente la función que da nombre al producto.
+    """
+    if db.scalar(select(Review).limit(1)) is not None:
+        return 0
+
+    # El revisor es el jefe de área. La cuenta de demostración también tiene rol
+    # jefe, pero es de solo lectura: firmar revisiones con ella sería incoherente.
+    revisor = db.scalar(
+        select(User).where(User.role == ROLE_JEFE, User.is_readonly.is_(False))
+    ) or db.scalar(select(User).order_by(User.id))
+    if revisor is None:
+        return 0
+
+    llamadas = list(
+        db.scalars(select(Call).where(Call.status == CallStatus.DONE).order_by(Call.id))
+    )
+    rng.shuffle(llamadas)
+
+    creadas = 0
+    for i, llamada in enumerate(llamadas[:REVISIONES_OBJETIVO]):
+        if llamada.analysis is None:
+            continue
+        ia = llamada.analysis.dimension_scores or {}
+        humanas = {}
+        for clave, nota in ia.items():
+            sesgo, ruido = DESVIACION_HUMANA.get(clave, DESVIACION_POR_DEFECTO)
+            humanas[clave] = max(0, min(100, round(nota + sesgo + rng.gauss(0, ruido))))
+
+        db.add(
+            Review(
+                call_id=llamada.id,
+                reviewer_id=revisor.id,
+                global_score=_score_global(humanas, pesos),
+                dimension_scores=humanas,
+                comment=rng.choice(MOTIVOS),
+                # Dos de cada tres se puntuaron en sesión a ciegas: son las
+                # únicas comparables sin sesgo de anclaje, y el panel permite
+                # filtrar por ellas.
+                blind=(i % 3 != 0),
+                created_at=llamada.processed_at,
+            )
+        )
+        creadas += 1
+
+    db.commit()
+    return creadas
+
+
 def sembrar() -> None:
     rng = random.Random(20260909)     # semilla fija: siempre el mismo resultado
     db = SessionLocal()
@@ -162,8 +249,22 @@ def sembrar() -> None:
     try:
         crear_usuario_demo(db)
 
+        # Los pesos de la rúbrica se leen de la base: si el jefe los cambió,
+        # los scores de la demo siguen siendo coherentes con su configuración.
+        from app.models.settings import RubricConfig
+        pesos = {
+            r.dimension_key: float(r.weight)
+            for r in db.scalars(select(RubricConfig))
+        }
+
         if db.scalar(select(Call).limit(1)) is not None:
-            print("[demo] Ya hay llamadas en la base de datos. No se toca nada.")
+            print("[demo] Ya hay llamadas en la base de datos. No se crean más.")
+            # Las llamadas no se tocan, pero las revisiones sí pueden faltar:
+            # una base sembrada antes de que existiera la calibración abriría el
+            # panel vacío. Se rellenan sin duplicar nada.
+            revisadas = sembrar_revisiones(db, rng, pesos)
+            if revisadas:
+                print(f"[demo] {revisadas} revisiones humanas añadidas.")
             return
 
         admin = db.scalar(select(User).order_by(User.id))
@@ -177,14 +278,6 @@ def sembrar() -> None:
         if faltan:
             print(f"[demo] Faltan ejecutivos: {', '.join(sorted(faltan))}. Ejecuta seed_data.py.")
             return
-
-        # Los pesos de la rúbrica se leen de la base: si el jefe los cambió,
-        # los scores de la demo siguen siendo coherentes con su configuración.
-        from app.models.settings import RubricConfig
-        pesos = {
-            r.dimension_key: float(r.weight)
-            for r in db.scalars(select(RubricConfig))
-        }
 
         # El audio se copia una sola vez al almacenamiento y se reutiliza: son
         # seis grabaciones para setenta llamadas, y ocupan seis veces menos.
@@ -257,6 +350,13 @@ def sembrar() -> None:
         db.commit()
         print(f"[demo] {creadas} llamadas de demostración creadas en {DIAS_DE_HISTORIAL} días.")
         print("[demo] Tendencias: María mejora · Carlos estable · Lucía se deteriora.")
+
+        revisadas = sembrar_revisiones(db, rng, pesos)
+        if revisadas:
+            print(
+                f"[demo] {revisadas} revisiones humanas creadas. El panel de "
+                "calibración señala «Manejo de objeciones» como peor calibrado."
+            )
     finally:
         db.close()
 
