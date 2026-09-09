@@ -5,6 +5,17 @@ Cambios relevantes. Formato: descripción (commit). Lo más nuevo arriba.
 > Las entradas anteriores al rebrand se conservan tal cual: nombran el producto como
 > "CallQA AI" y la identidad Minsait porque así era entonces. Son historia, no estado.
 
+## Modelo de IA actualizado (Groq)
+
+- `Fix`: el analisis fallaba en produccion con `404 model_not_found`. Groq dejo de dar
+  acceso a `llama-3.3-70b-versatile` para esta cuenta, aunque su documentacion seguia
+  listandolo como modelo de produccion. Pasa a **`openai/gpt-oss-120b`** en
+  `render.yaml`, `config.py`, los `.env(.example)` y `AGENTS.md`.
+- `Verificado de punta a punta en produccion`: se sintetizo una llamada de venta en
+  espanol, se subio, Whisper la transcribio en 11 segmentos correctos y el modelo la
+  puntuo (79/100) detectando que el ejecutivo esquivo la pregunta sobre intereses.
+- La transcripcion (Whisper) nunca estuvo afectada: el fallo era solo del LLM.
+
 ## Reconstruccion de produccion, vigilancia y arreglo de sesion
 
 - `Infraestructura`: la PostgreSQL del plan gratuito de Render **caducó y fue

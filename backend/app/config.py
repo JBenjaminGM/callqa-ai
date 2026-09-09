@@ -43,7 +43,10 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     ai_model_claude: str = "claude-sonnet-5"
     ai_model_openai: str = "gpt-4o"
-    ai_model_groq: str = "llama-3.3-70b-versatile"  # LLM gratis de Groq para análisis
+    # LLM gratis de Groq para el análisis. Ojo: el catálogo de Groq cambia y no
+    # todas las cuentas tienen acceso a todos los modelos; si la API responde
+    # 404 "model_not_found", hay que elegir otro de https://console.groq.com/docs/models.
+    ai_model_groq: str = "openai/gpt-oss-120b"
 
     # --- Azure (migración futura) ---
     azure_openai_endpoint: str = ""

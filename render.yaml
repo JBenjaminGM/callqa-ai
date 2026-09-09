@@ -34,7 +34,7 @@ services:
       - key: WHISPER_PROVIDER
         value: groq
       - key: AI_MODEL_GROQ
-        value: llama-3.3-70b-versatile
+        value: openai/gpt-oss-120b
       - key: STORAGE_PROVIDER
         value: local
       - key: STORAGE_PATH

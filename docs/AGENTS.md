@@ -197,7 +197,7 @@ analítica global; helper `is_manager`); **asesor** solo ve **su propio rendimie
 |---|---|---|
 | `GROQ_API_KEY` | `gsk_...` | Transcripción **y** análisis (gratis) |
 | `AI_PROVIDER` | `groq` | factory: `groq` \| `claude` \| `openai` \| `azure` |
-| `AI_MODEL_GROQ` | `llama-3.3-70b-versatile` | |
+| `AI_MODEL_GROQ` | `openai/gpt-oss-120b` | El catálogo de Groq cambia; si da 404 `model_not_found`, elegir otro modelo de producción |
 | `WHISPER_PROVIDER` | `groq` | |
 | `PROCESS_INLINE` | `false` local / `true` en Render | Sin worker Celery cuando es `true` |
 | `DATABASE_URL` | postgres… | Se normaliza `postgres://`→`postgresql://` |

@@ -58,11 +58,20 @@ se aprovechó para dejar la infraestructura coherente con el nombre nuevo.
 - **No había backup.** Antes de volver a meter datos que importen, hace falta un volcado
   programado (`pg_dump`) fuera de Render.
 - **El almacenamiento de audios sigue siendo efímero** (`STORAGE_PROVIDER=local` sobre el
-  disco del contenedor): se pierde en cada redespliegue. Para uso real hay que pasar a S3.
-  Está anotado en [`COMPLIANCE_CHECKLIST.md`](COMPLIANCE_CHECKLIST.md).
+  disco del contenedor): se pierde en cada redespliegue. **Comprobado en vivo:** al
+  cambiar una variable de entorno, el redespliegue vació `/data/audios/` y reintentar
+  una llamada ya subida falló con `No such file or directory`. Para uso real hay que
+  pasar a S3; está anotado en [`COMPLIANCE_CHECKLIST.md`](COMPLIANCE_CHECKLIST.md).
+- **El catálogo de modelos de Groq cambia sin aviso.** `llama-3.3-70b-versatile` dejó de
+  estar disponible para esta cuenta (`404 model_not_found`) aunque la documentación de
+  Groq seguía listándolo como modelo de producción. El vigente es `openai/gpt-oss-120b`.
+  Si el análisis vuelve a fallar con 404, elegir otro de
+  https://console.groq.com/docs/models y cambiarlo en `render.yaml` **y** en la variable
+  `AI_MODEL_GROQ` del panel de Render.
 - El servicio parecía **"Active"** en el panel de Render aunque llevaba semanas sin
   servir una sola petición. El estado del panel no es un health check: el `keepalive` de
-  GitHub Actions hacía ping con `|| true`, así que tampoco avisaba de nada.
+  GitHub Actions hacía ping con `|| true`, así que tampoco avisaba de nada. **Ya
+  corregido:** ahora reintenta 3 veces y falla con diagnóstico.
 
 ---
 
