@@ -7,6 +7,7 @@
  * Todo usa variables CSS de globals.css para tema claro/oscuro automático.
  */
 
+import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 import { scoreLevel } from '@/lib/utils';
 
 /** Color de marca para un score 0-100 (semántico). Devuelve un `var(--…)`. */
@@ -285,13 +286,18 @@ export function DeltaPill({
   const flat = delta === 0;
   const good = flat ? neutralIsGood : up;
   const cls = good ? 'text-success bg-success/10' : 'text-danger bg-danger/10';
-  const arrow = flat ? '→' : up ? '↑' : '↓';
+  // Icono dibujado, no un glifo unicode. El resto de la aplicación usa lucide:
+  // una flecha de texto hereda la métrica de la fuente y se alinea distinto en
+  // cada plataforma, que es justo el detalle que delata el atajo.
+  const Icono = flat ? Minus : up ? ArrowUp : ArrowDown;
+  const lado = size === 'xs' ? 12 : 14;
   const pad = size === 'xs' ? 'px-1.5 py-0.5 text-[11px]' : 'px-2 py-0.5 text-small';
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-control font-mono font-semibold tabular-nums ${pad} ${cls}`}
     >
-      {arrow} {Math.abs(delta).toFixed(1)}
+      <Icono size={lado} aria-hidden className="shrink-0" />
+      {Math.abs(delta).toFixed(1)}
       {suffix}
     </span>
   );

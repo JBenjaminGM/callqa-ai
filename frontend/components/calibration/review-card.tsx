@@ -145,7 +145,7 @@ function ReviewComparison({
       <div className="mb-5 grid grid-cols-3 gap-3">
         <ScoreBox etiqueta="IA" valor={review.ai_global_score ?? null} />
         <ScoreBox etiqueta="Humano" valor={review.global_score} />
-        <div className="flex flex-col items-center justify-center rounded-card border border-border bg-bg-secondary p-3">
+        <div className="flex flex-col items-center justify-center rounded-card bg-bg-secondary p-3">
           <span className="destacado text-[11px] text-text-muted">
             diferencia
           </span>
@@ -216,7 +216,7 @@ function ReviewComparison({
       </div>
 
       {review.comment && (
-        <div className="mt-4 rounded-card border border-border bg-bg-secondary p-3">
+        <div className="mt-4 rounded-card bg-bg-secondary p-3">
           <p className="destacado mb-1 text-[11px] text-text-muted">
             motivo de la corrección
           </p>
@@ -229,7 +229,7 @@ function ReviewComparison({
 
 function ScoreBox({ etiqueta, valor }: { etiqueta: string; valor: number | null }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-card border border-border bg-bg-secondary p-3">
+    <div className="flex flex-col items-center justify-center rounded-card bg-bg-secondary p-3">
       <span className="destacado text-[11px] text-text-muted">{etiqueta}</span>
       <span
         className="font-mono text-h2 font-semibold tabular-nums"

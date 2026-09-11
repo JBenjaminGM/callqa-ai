@@ -3,7 +3,7 @@
 > **Lee esto primero si acabas de entrar al proyecto.** Es el traspaso entre sesiones:
 > dónde estamos, qué sigue y qué te va a hacer perder tiempo si no lo sabes.
 >
-> Última actualización: 9 sep 2026, al terminar el plan de cinco fases.
+> Última actualización: 11 sep 2026, tras la pasada de diseño.
 
 ---
 
@@ -31,7 +31,7 @@ ahí, no desde la raíz del repositorio.
 |---|---|
 | Rama | `claude/callqa-callibrate-redesign-036677` |
 | Último en `origin/main` | `7bece0f` — traspaso de la Fase 1 |
-| **Sin subir** | Fase 2, Fase 3 y Fase 4 |
+| **Sin subir** | Fases 2, 3 y 4, más la pasada de diseño |
 | Tests backend | **127**, todos en verde |
 | Migraciones | 0001–0010 |
 
@@ -128,6 +128,20 @@ La evaluación era un monólogo y el panel abría con medias, que no dicen qué 
   ```bash
   grep -rn "Minsait\|ForFuture\|Pruno\|chamfer\|Aetheric\|CallQA AI" --include="*.md" --include="*.ts" --include="*.tsx" --include="*.py" --include="*.css" . | grep -v node_modules | grep -v HISTORIA.md
   ```
+
+### Pasada de diseño (11 sep)
+Dos revisiones con skills de terceros sobre la interfaz ya terminada, sin tocar lógica.
+El detalle está en el `CHANGELOG.md`. Lo que conviene saber para no deshacerlo:
+
+- **Las duraciones y curvas salen de `globals.css`**, no se escriben a mano. Si añades
+  movimiento, usa `--ease-out` / `--duration-*` o las utilidades `duration-ui`,
+  `ease-out-strong`.
+- **La `Card` no lleva sombra ni animación de entrada, a propósito.** La elevación se
+  declara una sola vez (el borde) y la entrada va en el contenedor de la pantalla.
+- **Los contenedores dentro de una tarjeta no llevan borde**: el fondo `bg-bg-secondary`
+  ya los separa.
+- **`hoverOnlyWhenSupported` está activo** en Tailwind: todos los `hover:` compilan
+  dentro de `(hover: hover) and (pointer: fine)`. No hace falta envolverlos a mano.
 
 ---
 

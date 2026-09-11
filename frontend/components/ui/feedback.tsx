@@ -1,11 +1,18 @@
 import { cn } from '@/lib/utils';
 
-/** Spinner de carga circular. */
+/**
+ * Spinner de carga circular.
+ *
+ * Gira en 700 ms y no en el segundo que trae Tailwind por defecto: un spinner
+ * más rápido hace que la espera parezca más corta aunque el backend tarde
+ * exactamente lo mismo. La percepción de velocidad cuenta tanto como la
+ * velocidad real, y aquí el backend gratuito puede tardar ~50 s en despertar.
+ */
 export function Spinner({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        'inline-block h-5 w-5 animate-spin rounded-full',
+        'inline-block h-5 w-5 animate-spin rounded-full [animation-duration:700ms]',
         'border-2 border-current border-t-transparent',
         className,
       )}

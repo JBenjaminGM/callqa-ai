@@ -289,7 +289,7 @@ export default function CallDetailPage() {
                       {call.analysis.recommendations.map((rec, i) => (
                         <div
                           key={i}
-                          className="rounded-card border border-border bg-bg-secondary p-3"
+                          className="rounded-card bg-bg-secondary p-3"
                         >
                           <div className="mb-1 flex items-center gap-2">
                             <PriorityBadge priority={rec.priority} />

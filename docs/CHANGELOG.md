@@ -6,6 +6,55 @@ Cambios relevantes. Formato: descripción (commit). Lo más nuevo arriba.
 > [`HISTORIA.md`](HISTORIA.md), movido tal cual: nombra el producto y la identidad
 > visual de entonces porque así era. Es historia, no estado.
 
+## Pasada de diseño: capa de movimiento y suelo de calidad
+
+Dos revisiones con skills de terceros, sobre el frontend ya terminado. Ninguna tocó
+lógica: son 14 arreglos de interfaz.
+
+**Movimiento** (skill de design engineering de Emil Kowalski):
+
+- `Tokens de movimiento`: no existían. Cada componente escribía su duración y su curva
+  (0.2s, 0.28s, 0.7s, 0.9s, `duration-200`). Ahora hay dos curvas y tres duraciones en
+  `globals.css`, expuestas como utilidades en `tailwind.config.ts`.
+- `:active` **no aparecía ni una vez en todo el frontend**: ningún botón respondía al
+  pulsarlo. `.press-feedback` los baja a 0.97 en 160 ms.
+- `transition: all` retirado de input, textarea y select — animaba también layout y paint.
+- La **tarjeta deja de animarse sola**. Con quince por pantalla, el panel parpadeaba en
+  cada visita; la entrada pasa al contenedor, donde sí cumple su propósito.
+- El **anillo del score barre desde vacío en el primer pintado**. Tenía una transición,
+  pero una transición no se dispara al montar: aparecía relleno la primera vez y solo se
+  animaba al cambiar de filtro, justo al revés de lo útil.
+- Gauge, donut y barras bajan de 700–900 ms a 450: se repiten en cada cambio de filtro.
+- `hoverOnlyWhenSupported` en Tailwind mete los 13 `hover:` interactivos dentro de
+  `(hover: hover) and (pointer: fine)`: dejan de dispararse al tocar en pantalla táctil.
+- Las **pestañas de calibración** tienen subrayado deslizante; antes el color transicionaba
+  pero la línea saltaba de sitio.
+- La **revelación de la sesión a ciegas** entra escalonada y el remate —la diferencia—
+  llega el último, cuando los anillos ya han barrido. Era un cambio instantáneo.
+- `prefers-reduced-motion` retira desplazamiento y escala conservando opacidad y color,
+  en vez de cubrir solo un fade.
+- El spinner gira en 700 ms y no en 1 s: la espera parece más corta aunque el backend
+  tarde lo mismo, que con un plan gratuito que despierta en ~50 s no es poco.
+
+**Suelo de calidad** (skill IMPECCABLE, `pbakaus/impeccable`):
+
+- `Tarjeta fantasma` resuelta: la tarjeta declaraba borde **y** sombra, dos sistemas de
+  profundidad discutiendo. Se queda el borde, que es lo que pide un mundo paper+ink.
+- `Tarjetas anidadas` retiradas: doce contenedores internos llevaban borde propio dentro
+  de una tarjeta. El fondo ya los separa.
+- `Bordes de color de más de 1px` (franja de severidad de 3 px, `border-l-4` del estado
+  vacío, `border-l-2` del segmento activo y de la cita) reducidos a 1 px o eliminados
+  cuando el icono o el fondo ya llevaban el color.
+- `Glifos unicode como iconos`: `DeltaPill` usaba ↑ ↓ →, que heredan la métrica de la
+  fuente y se alinean distinto en cada plataforma. Ahora son iconos de lucide, como el
+  resto de la aplicación.
+- `Superficies del navegador` tematizadas: `::selection`, `caret-color` y el desplazamiento
+  del subrayado de los enlaces venían con los valores por defecto del navegador, que no
+  pertenecen a ninguna identidad.
+
+Un hallazgo de la skill **no** se aplicó: prohíbe el *eyebrow* sobre los titulares. Aquí
+lo define `BRAND.md`, y la propia skill dice que el brief manda sobre sus reglas.
+
 ## Fase 3 — Cerrar el ciclo de coaching
 - `El asesor responde`: tabla `acknowledgements` (**migración 0010**). Da la evaluación
   por leída, se explica y puede **pedir revisión**; el jefe contesta en el mismo

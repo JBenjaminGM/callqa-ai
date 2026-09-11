@@ -144,6 +144,24 @@ input:-webkit-autofill:focus {
   caret-color: var(--text-primary);
 }
 
+/* --- Superficies que pinta el navegador ------------------------------------
+   Selección, cursor de texto, subrayado de enlaces y scrollbar vienen con los
+   valores por defecto del navegador, que no pertenecen a ninguna identidad. Es
+   lo más barato de tematizar y lo que más se olvida.                         */
+::selection {
+  background: var(--rust-soft);
+  color: var(--text-primary);
+}
+
+html { caret-color: var(--rust); }
+
+/* El subrayado pegado a la base de la letra es el defecto del navegador; 
+   separarlo un poco es lo que distingue un enlace compuesto de uno heredado. */
+a {
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
 /* Scrollbar discreta */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }

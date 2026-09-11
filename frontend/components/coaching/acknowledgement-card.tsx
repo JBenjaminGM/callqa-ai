@@ -65,7 +65,7 @@ export function AcknowledgementCard({ call }: { call: CallDetail }) {
 function Conversacion({ ack }: { ack: NonNullable<CallDetail['acknowledgement']> }) {
   return (
     <div className="mb-4 mt-3 flex flex-col gap-3">
-      <div className="rounded-card border border-border bg-bg-secondary p-3">
+      <div className="rounded-card bg-bg-secondary p-3">
         <p className="destacado mb-1 text-[11px] text-text-muted">
           {ack.user_name ?? 'El asesor'} ·{' '}
           {formatDateTime(ack.updated_at ?? ack.created_at)}

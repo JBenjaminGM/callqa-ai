@@ -36,9 +36,8 @@ export function MyPendingEvaluations({ enabled = true }: { enabled?: boolean }) 
           <li key={c.call_id}>
             <Link
               href={`/calls/${c.call_id}`}
-              className="flex items-center gap-3 rounded-card border border-border
-                         bg-bg-secondary px-3 py-2.5 transition-colors
-                         hover:border-accent-primary"
+              className="flex items-center gap-3 rounded-card bg-bg-secondary
+                         px-3 py-2.5 transition-colors hover:bg-bg-accent"
             >
               <span className="font-mono text-small text-text-muted">
                 #{c.call_id}

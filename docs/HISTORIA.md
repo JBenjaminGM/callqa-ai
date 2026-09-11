@@ -55,6 +55,7 @@
 | **9 sep** | **Se quitan las fricciones** que se notaban en los primeros minutos: los pesos de la rúbrica se reajustan solos, la lista de llamadas se refresca sola y aparecen las acciones en lote. |
 | **9 sep** | **El producto empieza a calibrar.** Hasta aquí la IA puntuaba y su palabra era definitiva. Ahora una persona puede revisar la nota —sin pisar la de la IA—, puntuar a ciegas y ver en qué criterios discrepan más. Es lo que da sentido al nombre. |
 | **9 sep** | **Se cierra el ciclo.** El asesor puede responder a su evaluación y pedir revisión; el panel del jefe abre con «a quién escuchar hoy y por qué» en vez de con medias. |
+| **11 sep** | **Pasada de diseño.** Dos revisiones con skills de terceros sobre la interfaz ya terminada. Aparecen dos cosas que llevaban ahí desde el principio y nadie había visto: no existía una capa de tokens de movimiento —cada componente inventaba su duración— y **ningún botón de la aplicación respondía al pulsarlo**. Se corrigen esas y doce cosas más, ninguna de lógica. |
 
 ---
 

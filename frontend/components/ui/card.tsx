@@ -16,8 +16,11 @@ export function Card({
   return (
     <div
       className={cn(
+        // Elevación declarada UNA vez: el borde. Llevaba borde y sombra a la
+        // vez, que es la "tarjeta fantasma" — dos sistemas de profundidad
+        // discutiendo. El borde gana porque el mundo es paper+ink, plano.
         'rounded-card border border-border bg-bg-card p-5',
-        'text-text-primary shadow-sm',
+        'text-text-primary',
         className,
       )}
       {...props}

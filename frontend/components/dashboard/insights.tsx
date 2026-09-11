@@ -57,7 +57,7 @@ const SEV_COLOR: Record<string, string> = {
 export function AlertsPanel({ alerts }: { alerts: DashboardAlert[] }) {
   if (alerts.length === 0) {
     return (
-      <Card className="flex items-center gap-3 border-l-4 border-l-success">
+      <Card className="flex items-center gap-3">
         <CheckCircle2 size={22} className="shrink-0 text-success" />
         <div>
           <p className="text-body font-semibold text-text-primary">
@@ -124,7 +124,7 @@ export function AlertsPanel({ alerts }: { alerts: DashboardAlert[] }) {
           return (
             <li
               key={i}
-              className="border-l-[3px]"
+              className="border-l"
               style={{ borderColor: SEV_COLOR[a.severity] ?? 'var(--info)' }}
             >
               {href ? <Link href={href}>{body}</Link> : body}
@@ -247,7 +247,7 @@ export function TopProblems({
       </CardTitle>
       <ul className="flex flex-col gap-3">
         {items.map((it, i) => (
-          <li key={i} className="rounded-card border border-border bg-bg-secondary p-3">
+          <li key={i} className="rounded-card bg-bg-secondary p-3">
             <div className="mb-1.5 flex flex-wrap items-center gap-2">
               <PriorityBadge
                 priority={(it.priority as 'high' | 'medium' | 'low') ?? 'medium'}
@@ -269,7 +269,7 @@ export function TopProblems({
               <p className="text-small text-text-secondary">{it.sample_description}</p>
             )}
             {'evidence' in it && it.evidence && (
-              <p className="mt-1.5 border-l-2 border-accent-secondary/50 pl-2 text-small italic text-text-muted">
+              <p className="mt-1.5 border-l border-accent-secondary/60 pl-2.5 text-small italic text-text-muted">
                 «{it.evidence}»
               </p>
             )}
@@ -496,7 +496,7 @@ export function AgentCampaignBreakdownList({ items }: { items: AgentCampaignBrea
       <CardTitle className="mb-4">Mi desempeño por <span className="hl">campaña</span></CardTitle>
       <div className="flex flex-col gap-3">
         {items.map((c) => (
-          <div key={c.campaign} className="rounded-card border border-border bg-bg-secondary p-3.5">
+          <div key={c.campaign} className="rounded-card bg-bg-secondary p-3.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-body font-semibold text-text-primary">{c.campaign}</span>
               <span className="flex items-center gap-2">

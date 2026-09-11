@@ -122,10 +122,8 @@ export function TranscriptPlayer({
                 disabled={!audioUrl}
                 title={audioUrl ? 'Saltar a este momento' : undefined}
                 className={cn(
-                  'flex gap-3 rounded-control border-l-2 px-2 py-1.5 text-left transition-colors',
-                  active
-                    ? 'border-rust bg-rust-soft'
-                    : 'border-transparent hover:bg-bg-accent',
+                  'flex gap-3 rounded-control px-2 py-1.5 text-left transition-colors',
+                  active ? 'bg-rust-soft' : 'hover:bg-bg-accent',
                   audioUrl ? 'cursor-pointer' : 'cursor-default',
                 )}
               >

@@ -61,8 +61,8 @@ function SuggestionRow({
     <li>
       <Link
         href={`/calls/${s.call_id}`}
-        className="flex items-start gap-3 rounded-card border border-border
-                   bg-bg-secondary p-3 transition-colors hover:border-accent-primary"
+        className="flex items-start gap-3 rounded-card bg-bg-secondary p-3
+                   transition-colors hover:bg-bg-accent"
       >
         <span
           className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center
