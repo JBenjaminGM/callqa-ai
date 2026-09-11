@@ -30,14 +30,15 @@ ahí, no desde la raíz del repositorio.
 | | |
 |---|---|
 | Rama | `claude/callqa-callibrate-redesign-036677` |
-| Último en `origin/main` | `7bece0f` — traspaso de la Fase 1 |
-| **Sin subir** | Fases 2, 3 y 4, más la pasada de diseño |
+| Último en `origin/main` | `d50afb8` — suelo de calidad (IMPECCABLE) |
+| Sin subir | nada: **las cinco fases y las dos pasadas de diseño están desplegadas** |
 | Tests backend | **127**, todos en verde |
-| Migraciones | 0001–0010 |
+| Migraciones | 0001–0010, aplicadas en producción |
 
-**Pregunta antes de hacer `git push`.** Las fases 0 y 1 ya están en `origin/main` y
-desplegadas; las tres siguientes están commiteadas en la rama y esperan a que el usuario
-diga que se suben.
+**Pregunta antes de hacer `git push`.** Subir a `main` despliega solo: Vercel reconstruye
+el frontend y Render aplica las migraciones y vuelve a sembrar. Verificado el 11 sep:
+las 67 llamadas siguen ahí, las 22 revisiones y los 6 acuses se sembraron sobre los datos
+existentes, y las nueve rutas nuevas responden.
 
 ---
 
