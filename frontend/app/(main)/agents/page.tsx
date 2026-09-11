@@ -162,7 +162,7 @@ export default function AgentsPage() {
               <Card
                 key={agent.id}
                 onClick={() => router.push(`/agents/${agent.id}`)}
-                className="cursor-pointer transition-transform hover:-translate-y-0.5"
+                className="lift-on-hover cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div

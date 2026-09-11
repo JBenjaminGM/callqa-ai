@@ -64,7 +64,16 @@ export function ScoreGauge({
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={offset}
-          style={{ transition: 'stroke-dashoffset 0.9s cubic-bezier(0.22,1,0.36,1)' }}
+          // `gauge-sweep` (globals.css) lo hace barrer desde vacío en el primer
+          // pintado; la transición se encarga de los cambios posteriores.
+          className="gauge-sweep"
+          style={
+            {
+              transition:
+                'stroke-dashoffset var(--duration-reveal) var(--ease-out)',
+              '--gauge-circumference': c,
+            } as React.CSSProperties
+          }
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -197,7 +206,10 @@ export function Donut({
                 strokeWidth={stroke}
                 strokeDasharray={`${dash} ${c - dash}`}
                 strokeDashoffset={-acc}
-                style={{ transition: 'stroke-dasharray 0.8s ease' }}
+                style={{
+                  transition:
+                    'stroke-dasharray var(--duration-reveal) var(--ease-out)',
+                }}
               />
             );
             acc += dash;
@@ -245,7 +257,7 @@ export function MiniProgress({
         style={{
           width: `${v}%`,
           background: color ?? scoreVar(v),
-          transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
+          transition: 'width var(--duration-reveal) var(--ease-out)',
         }}
       />
     </div>

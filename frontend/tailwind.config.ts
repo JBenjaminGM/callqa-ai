@@ -11,6 +11,12 @@ import type { Config } from 'tailwindcss';
 const config: Config = {
   content: ['./app/**/*.{js,ts,jsx,tsx}', './components/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
+  future: {
+    // Compila `hover:` dentro de `@media (hover: hover)`. En una pantalla táctil
+    // el hover se queda pegado tras el toque; así deja de ocurrir en toda la
+    // aplicación de una vez, sin envolver cada regla a mano.
+    hoverOnlyWhenSupported: true,
+  },
   theme: {
     extend: {
       colors: {
@@ -64,6 +70,17 @@ const config: Config = {
         // 8px en contenedores, 6px en controles (docs/BRAND.md).
         card: '8px',
         control: '6px',
+      },
+      // Movimiento: las mismas curvas y duraciones que globals.css, para poder
+      // escribir `duration-ui ease-out-strong` en vez de números sueltos.
+      transitionTimingFunction: {
+        'out-strong': 'var(--ease-out)',
+        'in-out-strong': 'var(--ease-in-out)',
+      },
+      transitionDuration: {
+        press: 'var(--duration-press)',
+        ui: 'var(--duration-ui)',
+        reveal: 'var(--duration-reveal)',
       },
     },
   },

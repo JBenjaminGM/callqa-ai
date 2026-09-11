@@ -46,6 +46,23 @@
   /* Radios: 8px en contenedores, 6px en controles. */
   --radius-card: 8px;
   --radius-control: 6px;
+
+  /* --- Movimiento ---------------------------------------------------------
+     Una sola fuente para curvas y duraciones. Antes cada componente escribía
+     las suyas (0.2s, 0.28s, 0.7s, 0.9s…) y el conjunto no sonaba afinado.
+
+     Las curvas nativas de CSS son flojas: `ease-out` llega sin fuerza, y
+     `ease-in` arranca lento justo en el instante que el usuario más mira, así
+     que la interfaz parece lenta aunque dure lo mismo. Estas dos tienen más
+     carácter y son las únicas que debe usar la aplicación.
+
+     No se invierten con el modo oscuro, por eso viven solo aquí.            */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  --duration-press: 160ms;   /* respuesta a una pulsación */
+  --duration-ui: 200ms;      /* hover, foco, cambios de color */
+  --duration-reveal: 450ms;  /* entrada de datos: gauges, barras, revelación */
 }
 
 /* --- Modo oscuro (paleta derivada, ver addendum de docs/BRAND.md) --- */
@@ -85,7 +102,8 @@ body {
   color: var(--text-primary);
   font-family: var(--font-inter), system-ui, sans-serif;
   min-height: 100vh;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color var(--duration-ui) var(--ease-out),
+              color var(--duration-ui) var(--ease-out);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -130,14 +148,102 @@ input:-webkit-autofill:focus {
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-/* Aparición suave de tarjetas y pantallas */
+/* --- Entrada de pantalla ---------------------------------------------------
+   Se aplica UNA vez por pantalla, no por tarjeta. Un panel tiene quince
+   tarjetas: animarlas todas en cada visita es movimiento que el usuario ve
+   decenas de veces al día y deja de aportar. Su propósito real es evitar el
+   cambio brusco cuando los datos sustituyen al esqueleto de carga, y para eso
+   basta con el contenedor.                                                  */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-in { animation: fade-in 0.28s ease both; }
+.animate-fade-in { animation: fade-in var(--duration-reveal) var(--ease-out) both; }
+
+/* --- Respuesta a la pulsación ----------------------------------------------
+   Es el detalle que hace que un control parezca escuchar. Va en una clase
+   propia y no suelto en cada botón para poder retirarlo de golpe cuando el
+   sistema pide menos movimiento.                                            */
+.press-feedback {
+  /* Declara AQUÍ toda la transición del control. Si se deja `transition-colors`
+     de Tailwind en el componente, las dos reglas compiten por la propiedad
+     abreviada y gana la última de la hoja — el botón se queda sin una de las
+     dos. Una sola fuente evita esa pelea.
+     La pulsación va más rápida (160 ms) que el color (200 ms): el usuario está
+     mirando el dedo, no el relleno. */
+  transition:
+    transform var(--duration-press) var(--ease-out),
+    color var(--duration-ui) var(--ease-out),
+    background-color var(--duration-ui) var(--ease-out),
+    border-color var(--duration-ui) var(--ease-out),
+    opacity var(--duration-ui) var(--ease-out);
+}
+.press-feedback:active { transform: scale(0.97); }
+.press-feedback:disabled:active { transform: none; }
+
+/* --- Elevación al pasar el ratón -------------------------------------------
+   Tras la consulta de puntero fino: en una pantalla táctil el hover se dispara
+   al tocar y la tarjeta da un salto que nadie ha pedido.                     */
+.lift-on-hover { transition: transform var(--duration-ui) var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
+  .lift-on-hover:hover { transform: translateY(-2px); }
+}
+
+/* --- Revelación escalonada -------------------------------------------------
+   Para el momento de comparar tu nota con la de la IA. `--reveal-delay` ordena
+   la entrada de cada pieza; el remate (la diferencia) llega el último, cuando
+   los indicadores ya han barrido.                                            */
+@keyframes reveal-rise {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.reveal-item {
+  animation: reveal-rise var(--duration-reveal) var(--ease-out) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+/* --- Barrido del indicador circular -----------------------------------------
+   El anillo tenía una transición, pero una transición no se dispara al montar:
+   solo al cambiar de valor. Es decir, aparecía ya relleno la primera vez y solo
+   se animaba al cambiar de filtro, que es justo al revés de lo que interesa.
+   Como keyframe sí arranca en el primer pintado, y sin `fill-mode` deja libre
+   la transición para los cambios posteriores.                                */
+@keyframes gauge-sweep {
+  from { stroke-dashoffset: var(--gauge-circumference); }
+}
+.gauge-sweep { animation: gauge-sweep var(--duration-reveal) var(--ease-out); }
+
+/* Las barras crecen con transform, no con width: así no refluyen el layout. */
+@keyframes bar-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.bar-grow {
+  transform-origin: left;
+  animation: bar-grow var(--duration-reveal) var(--ease-out) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes fade-in-plain {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* --- Menos movimiento, no cero ---------------------------------------------
+   Quien pide movimiento reducido no pide una interfaz muerta: pide que nada se
+   desplace. Se conservan opacidad y color, que son los que explican el cambio,
+   y se retira todo lo que traslada o escala.                                 */
 @media (prefers-reduced-motion: reduce) {
-  .animate-fade-in { animation: none; }
+  .animate-fade-in,
+  .reveal-item {
+    animation: fade-in-plain var(--duration-ui) var(--ease-out) both;
+    animation-delay: 0ms;
+  }
+  .bar-grow,
+  .gauge-sweep { animation: none; }
+  .press-feedback:active { transform: none; }
+  .lift-on-hover:hover { transform: none; }
+  .skeleton { animation: none; }
 }
 
 /* Skeleton de carga */

@@ -340,8 +340,20 @@ export function ConversationMetricsCard({ metrics }: { metrics: ConversationMetr
         <span className="font-medium text-info">Cliente {customerPct}%</span>
       </div>
       <div className="mb-5 flex h-3 w-full overflow-hidden rounded-full bg-bg-accent">
-        <div className="h-full bg-accent-primary" style={{ width: `${agentPct}%`, transition: 'width 0.7s ease' }} />
-        <div className="h-full bg-info" style={{ width: `${customerPct}%`, transition: 'width 0.7s ease' }} />
+        <div
+          className="h-full bg-accent-primary"
+          style={{
+            width: `${agentPct}%`,
+            transition: 'width var(--duration-reveal) var(--ease-out)',
+          }}
+        />
+        <div
+          className="h-full bg-info"
+          style={{
+            width: `${customerPct}%`,
+            transition: 'width var(--duration-reveal) var(--ease-out)',
+          }}
+        />
       </div>
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-card bg-border sm:grid-cols-3 lg:grid-cols-5">
         {tiles.map((t) => (

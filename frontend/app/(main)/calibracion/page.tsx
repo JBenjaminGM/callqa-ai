@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Check, EyeOff, Scale, TrendingUp } from 'lucide-react';
 import { Header } from '@/components/layout/header';
@@ -50,22 +50,7 @@ export default function CalibracionPage() {
           description="Puntúa una llamada sin ver la nota de la IA y compara después. Donde más discrepéis, el criterio está mal escrito."
         />
 
-        <div className="mb-6 mt-4 flex gap-1 border-b border-border">
-          <Tab
-            activa={pestana === 'sesion'}
-            onClick={() => setPestana('sesion')}
-            icon={<EyeOff size={16} />}
-          >
-            Sesión a ciegas
-          </Tab>
-          <Tab
-            activa={pestana === 'acuerdo'}
-            onClick={() => setPestana('acuerdo')}
-            icon={<TrendingUp size={16} />}
-          >
-            Panel de acuerdo
-          </Tab>
-        </div>
+        <Tabs valor={pestana} onCambio={setPestana} />
 
         {pestana === 'sesion' ? <SesionCiega /> : <PanelDeAcuerdo />}
       </main>
@@ -73,31 +58,87 @@ export default function CalibracionPage() {
   );
 }
 
-function Tab({
-  activa,
-  onClick,
-  icon,
-  children,
+const PESTANAS: { id: Pestana; label: string; icon: React.ReactNode }[] = [
+  { id: 'sesion', label: 'Sesión a ciegas', icon: <EyeOff size={16} /> },
+  { id: 'acuerdo', label: 'Panel de acuerdo', icon: <TrendingUp size={16} /> },
+];
+
+/**
+ * Pestañas con el subrayado deslizante.
+ *
+ * Con un `border-bottom` por pestaña el color transiciona pero la línea salta
+ * de sitio, que es el detalle que delata una pestaña hecha deprisa. Aquí el
+ * subrayado es un único elemento que se mueve, midiendo el botón activo.
+ */
+function Tabs({
+  valor,
+  onCambio,
 }: {
-  activa: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  children: React.ReactNode;
+  valor: Pestana;
+  onCambio: (p: Pestana) => void;
 }) {
+  const refs = useRef(new Map<Pestana, HTMLButtonElement>());
+  const [marca, setMarca] = useState<{ left: number; width: number } | null>(
+    null,
+  );
+
+  // Se remide también al redimensionar: el ancho de cada pestaña depende del
+  // texto, y sin esto el subrayado se queda desalineado al cambiar de tamaño.
+  useEffect(() => {
+    function medir() {
+      const el = refs.current.get(valor);
+      if (el) setMarca({ left: el.offsetLeft, width: el.offsetWidth });
+    }
+    medir();
+    window.addEventListener('resize', medir);
+    return () => window.removeEventListener('resize', medir);
+  }, [valor]);
+
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        '-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-body transition-colors',
-        activa
-          ? 'border-rust font-semibold text-accent-primary'
-          : 'border-transparent text-text-secondary hover:text-text-primary',
-      )}
+    <div
+      role="tablist"
+      className="relative mb-6 mt-4 flex gap-1 border-b border-border"
     >
-      {icon}
-      {children}
-    </button>
+      {PESTANAS.map(({ id, label, icon }) => {
+        const activa = valor === id;
+        return (
+          <button
+            key={id}
+            ref={(el) => {
+              if (el) refs.current.set(id, el);
+            }}
+            type="button"
+            role="tab"
+            aria-selected={activa}
+            onClick={() => onCambio(id)}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2.5 text-body',
+              'transition-colors duration-ui ease-out-strong',
+              activa
+                ? 'font-semibold text-accent-primary'
+                : 'text-text-secondary hover:text-text-primary',
+            )}
+          >
+            {icon}
+            {label}
+          </button>
+        );
+      })}
+
+      {/* El subrayado. Se mueve con transform, que no provoca reflujo, y solo
+          aparece cuando ya se ha medido, para no deslizar desde la nada. */}
+      {marca && (
+        <span
+          aria-hidden
+          className="absolute -bottom-px left-0 h-0.5 bg-rust
+                     transition-transform duration-ui ease-out-strong"
+          style={{
+            width: marca.width,
+            transform: `translateX(${marca.left}px)`,
+          }}
+        />
+      )}
+    </div>
   );
 }
 
@@ -362,6 +403,12 @@ function Revelacion({
   const claves = orderByRubric(Object.keys(review.dimension_scores), rubrica);
   const delta = review.global_delta ?? 0;
 
+  // El orden de la revelación: primero tu nota, después la de la IA y, cuando
+  // los dos anillos ya han barrido, el remate — la diferencia. Contarlo todo a
+  // la vez desperdicia el único momento del producto que merece una pausa.
+  const retardo = (ms: number) =>
+    ({ '--reveal-delay': `${ms}ms` }) as React.CSSProperties;
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -369,11 +416,17 @@ function Revelacion({
           Llamada #{review.call_id} · comparación
         </CardTitle>
         <div className="flex flex-wrap items-center justify-center gap-10">
-          <div className="flex flex-col items-center gap-2">
+          <div
+            className="reveal-item flex flex-col items-center gap-2"
+            style={retardo(0)}
+          >
             <span className="destacado text-[11px] text-text-muted">tu nota</span>
             <ScoreGauge value={review.global_score} decimals={0} size={132} />
           </div>
-          <div className="flex flex-col items-center gap-1">
+          <div
+            className="reveal-item flex flex-col items-center gap-1"
+            style={retardo(380)}
+          >
             <span className="destacado text-[11px] text-text-muted">
               diferencia
             </span>
@@ -389,7 +442,10 @@ function Revelacion({
                   : 'La IA fue más severa que tú.'}
             </span>
           </div>
-          <div className="flex flex-col items-center gap-2">
+          <div
+            className="reveal-item flex flex-col items-center gap-2"
+            style={retardo(160)}
+          >
             <span className="destacado text-[11px] text-text-muted">la IA</span>
             <ScoreGauge
               value={review.ai_global_score ?? 0}
@@ -403,10 +459,13 @@ function Revelacion({
       <Card>
         <CardTitle className="mb-4">Dimensión a dimensión</CardTitle>
         <div className="flex flex-col gap-3">
-          {claves.map((key) => {
+          {claves.map((key, i) => {
             const humano = review.dimension_scores[key];
             const maquina = ia[key];
             const d = review.dimension_deltas?.[key];
+            // 40 ms entre barras: suficiente para leerse como cascada, poco
+            // para que la última se haga esperar.
+            const espera = 460 + i * 30;
             return (
               <div key={key}>
                 <div className="mb-1 flex justify-between text-small">
@@ -437,16 +496,17 @@ function Revelacion({
                 </div>
                 <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-bg-accent">
                   <div
-                    className="h-full rounded-full"
+                    className="bar-grow h-full rounded-full"
                     style={{
                       width: `${humano}%`,
                       background: scoreColor(humano),
+                      ...retardo(espera),
                     }}
                   />
                   {maquina != null && (
                     <span
-                      className="absolute top-0 h-full w-0.5 bg-ink/60"
-                      style={{ left: `${maquina}%` }}
+                      className="reveal-item absolute top-0 h-full w-0.5 bg-ink/60"
+                      style={{ left: `${maquina}%`, ...retardo(espera + 120) }}
                       title={`IA: ${maquina}`}
                     />
                   )}

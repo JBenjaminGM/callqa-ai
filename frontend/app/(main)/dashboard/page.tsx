@@ -208,7 +208,7 @@ export default function DashboardPage() {
         )}
 
         {data && data.total_calls > 0 && (
-          <div className="flex flex-col gap-8">
+          <div className="animate-fade-in flex flex-col gap-8">
             {/* ---------- Lo primero: qué hacer hoy ---------- */}
             <section className="flex flex-col gap-3">
               <SectionHeader

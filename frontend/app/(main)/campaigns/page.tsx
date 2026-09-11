@@ -58,7 +58,7 @@ export default function CampaignsPage() {
               <Card
                 key={c.id}
                 onClick={() => router.push(`/campaigns/${c.id}`)}
-                className="cursor-pointer transition-transform hover:-translate-y-0.5"
+                className="lift-on-hover cursor-pointer"
               >
                 <div className="flex items-start gap-3">
                   <div

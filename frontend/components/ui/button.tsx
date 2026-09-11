@@ -35,7 +35,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ref={ref}
       className={cn(
         'inline-flex items-center justify-center gap-2 rounded-control font-medium',
-        'transition-colors duration-200 disabled:cursor-not-allowed',
+        'disabled:cursor-not-allowed',
+        // `press-feedback` (globals.css) baja el botón a 0.97 al pulsarlo —es lo
+        // que hace que parezca que la interfaz ha oído el clic— y declara de paso
+        // la transición de color. Va todo junto a propósito: son la misma
+        // propiedad abreviada y separarlo hace que una pise a la otra.
+        'press-feedback',
         variants[variant],
         sizes[size],
         className,

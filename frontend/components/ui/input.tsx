@@ -4,7 +4,8 @@ import { cn } from '@/lib/utils';
 // Estilo común de los inputs: superficie sólida, radio de control y foco Rust.
 const base =
   'w-full rounded-control border border-border bg-[var(--glass-bg)] ' +
-  'text-text-primary placeholder:text-text-muted transition-all ' +
+  'text-text-primary placeholder:text-text-muted ' +
+  'transition-[border-color,box-shadow] duration-ui ease-out-strong ' +
   'focus:border-accent-primary focus:shadow-[0_0_0_3px_var(--glow)] ' +
   'focus:outline-none disabled:opacity-50';
 
